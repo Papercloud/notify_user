@@ -7,12 +7,22 @@ module NotifyUser
     #
     #   en.notification_mailer.notification_email.subject
     #
-    def notification_email(notification)
+    def notification_email(notification_id)
+
+      notification = NotifyUser::BaseNotificaton.find(notification)
+
       @message = notification.message
 
       mail to: notification.target.email
             # template_path: "notifications",
             # template_name: "notification"
+    end
+
+    def aggregate_notifications_email(notification_ids)
+      # TODO: Customise subject?
+      # TODO: This is one where it would be great to customise the template.
+      @notifications = NotifyUser::BaseNotificaton.where('id IN (?)', notification_ids)
+      mail to: notifications.first.target.email
     end
   end
 end

@@ -1,0 +1,7 @@
+<p>A few things happened:</p>
+
+<ul>
+  <% @notifications.each do |notification| %>
+    <li><%= notification.message %></li>
+  <% end %>
+</ul>
