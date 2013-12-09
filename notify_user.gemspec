@@ -1,0 +1,26 @@
+$:.push File.expand_path("../lib", __FILE__)
+
+# Maintain your gem's version:
+require "notify_user/version"
+
+# Describe your gem and declare its dependencies:
+Gem::Specification.new do |s|
+  s.name        = "notify_user"
+  s.version     = NotifyUser::VERSION
+  s.authors     = ["Tom Spacek"]
+  s.email       = ["ts@papercloud.com.au"]
+  s.homepage    = "http://www.papercloud.com.au"
+  s.summary     = "A Rails engine for user notifications."
+  s.description = "Drop-in solution for user notifications. Handles notifying by email, SMS and APNS, plus per-user notification frequency settings and views for checking new notifications."
+
+  s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
+
+  s.add_dependency "rails", "~> 4.0.1"
+  # s.add_dependency "jquery-rails"
+
+  s.add_development_dependency "sqlite3"
+  s.add_development_dependency "rspec-rails"
+  s.add_development_dependency "factory_girl_rails"
+
+  s.test_files = Dir["spec/**/*"]
+end

@@ -1,0 +1,8 @@
+Description:
+    Create a notification, from which you can customise copy and aggregation settings.
+
+Example:
+    rails generate notify_user:notification PostLiked
+
+    This will create:
+        app/notifications/post_liked.rb

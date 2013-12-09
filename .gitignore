@@ -1,0 +1,7 @@
+.bundle/
+log/*.log
+pkg/
+spec/rails/rails-4.0.1/db/*.sqlite3
+spec/rails/rails-4.0.1/log/*.log
+spec/rails/rails-4.0.1/tmp/
+spec/rails/rails-4.0.1/.sass-cache

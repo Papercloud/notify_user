@@ -1,0 +1,20 @@
+require "spec_helper"
+
+module NotifyUser
+  describe NotificationMailer do
+    describe "notification_email" do
+      let(:mail) { NotificationMailer.notification_email }
+  
+      it "renders the headers" do
+        mail.subject.should eq("Notification email")
+        mail.to.should eq(["to@example.org"])
+        mail.from.should eq(["from@example.com"])
+      end
+  
+      it "renders the body" do
+        mail.body.encoded.should match("Hi")
+      end
+    end
+  
+  end
+end
