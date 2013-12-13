@@ -24,3 +24,14 @@ What can we customise on each?
 - Aggregation key
 - Email layout?
 - Email subject?
+
+To run the tests:
+```
+rspec spec
+```
+
+To run the tests like Travis:
+```
+gem install wwtd
+wwtd
+```
