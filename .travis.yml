@@ -6,3 +6,4 @@ gemfile:
   - gemfiles/rails32.gemfile
   - gemfiles/rails40.gemfile
 script: "bundle exec rspec spec"
+bundler_args: '--no-deployment'
