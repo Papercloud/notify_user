@@ -1,6 +1,8 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH << File.expand_path('../support', __FILE__)
 
+ENV['BUNDLE_GEMFILE'] ||= 'gemfiles/rails40.gemfile'
+
 ENV['BUNDLE_GEMFILE'] = File.expand_path(File.join("../../", ENV['BUNDLE_GEMFILE']), __FILE__)
 require "bundler"
 Bundler.setup
