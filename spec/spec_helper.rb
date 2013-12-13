@@ -1,25 +1,18 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH << File.expand_path('../support', __FILE__)
 
-ENV['BUNDLE_GEMFILE'] = File.expand_path('../../Gemfile', __FILE__)
+ENV['BUNDLE_GEMFILE'] = File.expand_path("../../#{ENV['BUNDLE_GEMFILE']}", __FILE__)
 require "bundler"
 Bundler.setup
 
-ENV['RAILS'] = '4.0.2'
-
 ENV['RAILS_ENV'] = 'test'
-ENV['RAILS_ROOT'] = File.expand_path("../rails/rails-#{ENV['RAILS']}", __FILE__)
-
-# Create the test app if it doesn't exists
-unless File.exists?(ENV['RAILS_ROOT'])
-  system 'rake setup'
-end
-
+ENV['RAILS_ROOT'] = File.expand_path("../dummy", __FILE__)
 
 require 'rails/all'
 require 'sidekiq'
 require File.expand_path("#{ENV['RAILS_ROOT']}/config/environment.rb",  __FILE__)
-# require ENV['RAILS_ROOT'] + '/config/environment'
+
+puts "Testing with Rails #{Rails::VERSION::STRING} and Ruby #{RUBY_VERSION}"
 
 require 'rspec/rails'
 require 'factory_girl_rails'
