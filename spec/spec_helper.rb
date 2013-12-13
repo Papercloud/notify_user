@@ -17,11 +17,14 @@ end
 
 
 require 'rails/all'
+require 'sidekiq'
 require File.expand_path("#{ENV['RAILS_ROOT']}/config/environment.rb",  __FILE__)
 # require ENV['RAILS_ROOT'] + '/config/environment'
 
 require 'rspec/rails'
 require 'factory_girl_rails'
+require 'sidekiq/testing'
+Sidekiq::Testing.inline!
 
 RSpec.configure do |config|
   config.infer_base_class_for_anonymous_controllers = false

@@ -1,10 +1,11 @@
 require 'state_machine'
+require 'sidekiq'
 
 module NotifyUser
   class BaseNotification < ActiveRecord::Base
 
     if ActiveRecord::VERSION::MAJOR < 4
-      attr_accessible :params, :target_id, :target_type, :type, :state
+      attr_accessible :params, :target, :type, :state
     end
 
     # Override point in case of collisions, plus keeps the table name tidy.
@@ -16,7 +17,7 @@ module NotifyUser
     # The user to send the notification to
     belongs_to :target, polymorphic: true
 
-    validates_presence_of :target, :type, :state
+    validates_presence_of :target_id, :target_type, :target, :type, :state
 
     state_machine :state, initial: :pending do
 
@@ -49,6 +50,8 @@ module NotifyUser
 
     # TODO: Something not right here. Need an object to represent aggregate notifications.
     # Because you may want the subject to include content from each aggregated notification.
+    # Could resolve this by making the aggregated templates available to the one being rendered,
+    # as 'siblings' perhaps.
 
     def subject
       "You have a new notification"
@@ -60,19 +63,45 @@ module NotifyUser
       1.minute
     end
 
-
-    ## Scopes
-
-    def self.pending_aggregation_with(notification)
-      where(type: notification.type).where(target: notification.target).where(state: :pending)
-    end
-
-    ## Message sending and aggregation
-
     # TODO: Extend this to use views, i18n and to provide different views for diff formats
     # like JSON, HTML, SMS and APNS.
-    def self.message(notification)
-      "This is a base notification, params: #{notification.params.to_json}"
+    def message
+      "This is a base notification, params: #{params.to_json}"
+    end
+
+    ## Sending
+
+    # Send any Emails/SMS/APNS
+    def notify
+
+      save!
+
+      if self.class.aggregate_per
+
+        # Schedule to send later if there aren't already any scheduled.
+        # Otherwise ignore, as the already-scheduled aggregate job will pick this one up when it runs.
+        if not aggregation_pending?
+
+          # Send in X minutes, along with any others created in the intervening times.
+          self.class.delay_for(self.class.aggregate_per).notify_aggregated(self.id)
+        end
+      else
+        # No aggregation, send immediately.
+        self.deliver
+      end
+    end
+
+    def self.pending_aggregation_with(notification)
+      where(type: notification.type)
+      .where(target_id: notification.target.id)
+      .where(target_type: notification.target.class.name)
+      .where(state: :pending)
+    end
+
+    def aggregation_pending?
+      # A notification of the same type, that would have an aggregation job associated with it,
+      # already exists.
+      return (self.class.pending_aggregation_with(self).where('id != ?', id).count > 0)
     end
 
     def deliver
@@ -86,30 +115,11 @@ module NotifyUser
       # TODO: Needs to be more customisable.
       notifications.map(&:mark_as_sent)
       notifications.map(&:save)
-      NotificationMailer.delay.aggregate_notifications_email(notifications.map(&:id)).deliver
-    end
-
-    # Send any Emails/SMS/APNS
-    def notify
-
-      if self.class.aggregate_per
-
-        # Schedule to send later if there aren't already any scheduled.
-        # Otherwise ignore, as the already-scheduled aggregate job will pick this one up when it runs.
-        if self.class.pending_aggregation_with(self).count == 0
-
-          # Send in X minutes, along with any others created in the intervening times.
-          self.class.delay_for(self.class.aggregate_per).notify_aggregated(self.id)
-        end
-      else
-        # No aggregation, send immediately.
-        self.deliver
-      end
+      NotificationMailer.delay.aggregate_notifications_email(notifications.map(&:id))
     end
 
     def self.notify_aggregated(notification_id)
-      notification = self.find_by_id(notification_id)
-      return if not notification
+      notification = self.find(notification_id) # Raise an exception if not found.
 
       # Find any pending notifications with the same type and target, which can all be sent in one message.
       notifications = self.pending_aggregation_with(notification)

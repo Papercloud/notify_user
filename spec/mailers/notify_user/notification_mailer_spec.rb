@@ -21,6 +21,6 @@ describe NotifyUser::NotificationMailer do
     it "renders the default template" do
       mailer_should_render_template(mailer, "notify_user/notification_mailer/notification_email")
     end
-  end
 
+  end
 end
