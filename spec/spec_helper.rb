@@ -26,4 +26,12 @@ require 'factory_girl_rails'
 RSpec.configure do |config|
   config.infer_base_class_for_anonymous_controllers = false
   config.use_transactional_fixtures = true
+
+  def mailer_should_render_template(mailer, template)
+    mailer.should_receive(:_render_template) do |arg|
+      arg[:template].virtual_path.should eq template
+    end.and_call_original
+    mailer.mail
+  end
+
 end

@@ -4,7 +4,7 @@ module NotifyUser
   class BaseNotification < ActiveRecord::Base
 
     if ActiveRecord::VERSION::MAJOR < 4
-      attr_accessible :params, :target_id, :target_type, :type
+      attr_accessible :params, :target_id, :target_type, :type, :state
     end
 
     # Override point in case of collisions, plus keeps the table name tidy.
@@ -17,11 +17,6 @@ module NotifyUser
     belongs_to :target, polymorphic: true
 
     validates_presence_of :target, :type, :state
-
-    def self.aggregate_per
-      # TODO: Make this a user setting.
-      1.minute
-    end
 
     state_machine :state, initial: :pending do
 
@@ -50,11 +45,29 @@ module NotifyUser
       end
     end
 
+    ## For overriding by subclasses
+
+    # TODO: Something not right here. Need an object to represent aggregate notifications.
+    # Because you may want the subject to include content from each aggregated notification.
+
+    def subject
+      "You have a new notification"
+    end
+
+    def self.aggregate_per
+      # TODO: Make this a user setting.
+      # Consider delaying until a given time of day, rather than for a period. So we can do a daily digest at Xpm.
+      1.minute
+    end
+
+
     ## Scopes
 
     def self.pending_aggregation_with(notification)
       where(type: notification.type).where(target: notification.target).where(state: :pending)
     end
+
+    ## Message sending and aggregation
 
     # TODO: Extend this to use views, i18n and to provide different views for diff formats
     # like JSON, HTML, SMS and APNS.
@@ -62,15 +75,18 @@ module NotifyUser
       "This is a base notification, params: #{notification.params.to_json}"
     end
 
-    # Not sure yet how best to allow customisation of aggregate notifications' messages.
-    # def self.aggregated_message(notifications)
-    #   ""
-    # end
-
-    def send
+    def deliver
       self.mark_as_sent
       self.save
       NotificationMailer.delay.notification_email(self.id).deliver
+    end
+
+    def self.deliver_aggregated(notifications)
+      # Send a special aggregated message to the target
+      # TODO: Needs to be more customisable.
+      notifications.map(&:mark_as_sent)
+      notifications.map(&:save)
+      NotificationMailer.delay.aggregate_notifications_email(notifications.map(&:id)).deliver
     end
 
     # Send any Emails/SMS/APNS
@@ -87,7 +103,7 @@ module NotifyUser
         end
       else
         # No aggregation, send immediately.
-        self.send
+        self.deliver
       end
     end
 
@@ -98,11 +114,7 @@ module NotifyUser
       # Find any pending notifications with the same type and target, which can all be sent in one message.
       notifications = self.pending_aggregation_with(notification)
       
-      # Send a special aggregated message to the target
-      # TODO: Needs to be more customisable.
-      notifications.map(&:mark_as_sent)
-      notifications.map(&:save)
-      NotificationMailer.delay.aggregate_notifications_email(notifications.map(&:id)).deliver
+      self.deliver_aggregated(notifications)
     end
 
   end

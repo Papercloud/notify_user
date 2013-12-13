@@ -1,6 +1,6 @@
 module NotifyUser
   class NotificationMailer < ActionMailer::Base
-    default from: "from@example.com"
+    default from: NotifyUser.mailer_sender
   
     # Subject can be set in your I18n file at config/locales/en.yml
     # with the following lookup:
@@ -9,13 +9,11 @@ module NotifyUser
     #
     def notification_email(notification_id)
 
-      notification = NotifyUser::BaseNotificaton.find(notification)
+      notification = NotifyUser::BaseNotification.find(notification_id)
 
-      @message = notification.message
+      @message = notification.class.message(notification)
 
-      mail to: notification.target.email
-            # template_path: "notifications",
-            # template_name: "notification"
+      mail to: notification.target.email, subject: notification.subject
     end
 
     def aggregate_notifications_email(notification_ids)
