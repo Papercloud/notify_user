@@ -57,6 +57,10 @@ module NotifyUser
       "You have a new notification"
     end
 
+    def aggregate_subject
+      "You have some new notifications"
+    end
+
     def self.aggregate_per
       # TODO: Make this a user setting.
       # Consider delaying until a given time of day, rather than for a period. So we can do a daily digest at Xpm.

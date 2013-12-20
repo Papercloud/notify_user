@@ -20,7 +20,7 @@ module NotifyUser
       # TODO: Customise subject?
       # TODO: This is one where it would be great to customise the template.
       @notifications = NotifyUser::BaseNotification.where('id IN (?)', notification_ids)
-      mail to: @notifications.first.target.email
+      mail to: @notifications.first.target.email, subject: notification.aggregate_subject
     end
   end
 end
