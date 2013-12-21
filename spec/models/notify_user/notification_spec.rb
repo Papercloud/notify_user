@@ -19,6 +19,7 @@ module NotifyUser
           BaseNotification.should_receive(:delay_for)
                           .with(notification.class.aggregate_per)
                           .and_call_original
+          ActionMailerChannel.should_receive(:deliver_aggregated)
           notification.notify
         end
 
@@ -38,7 +39,7 @@ module NotifyUser
           it "sends an aggregated email" do
             Sidekiq::Testing.inline!
             
-            NotificationMailer.should_receive(:aggregate_notifications_email).with([notification.id])
+            NotificationMailer.should_receive(:aggregate_notifications_email).with([notification], anything).and_call_original
             BaseNotification.notify_aggregated(notification.id)
           end
 

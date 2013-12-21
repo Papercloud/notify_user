@@ -46,32 +46,22 @@ module NotifyUser
       end
     end
 
-    ## For overriding by subclasses
+    ## Channels
 
-    # TODO: Something not right here. Need an object to represent aggregate notifications.
-    # Because you may want the subject to include content from each aggregated notification.
-    # Could resolve this by making the aggregated templates available to the one being rendered,
-    # as 'siblings' perhaps.
+    mattr_accessor :channels
+    @@channels = {
+      action_mailer: {}
+    }
 
-    def subject
-      "You have a new notification"
+    # Configure a channel
+    def self.channel(name, options={})
+      channels[name] = options
     end
 
-    def aggregate_subject
-      "You have some new notifications"
-    end
+    ## Aggregation
 
-    def self.aggregate_per
-      # TODO: Make this a user setting.
-      # Consider delaying until a given time of day, rather than for a period. So we can do a daily digest at Xpm.
-      1.minute
-    end
-
-    # TODO: Extend this to use views, i18n and to provide different views for diff formats
-    # like JSON, HTML, SMS and APNS.
-    def message
-      "This is a base notification, params: #{params.to_json}"
-    end
+    mattr_accessor :aggregate_per
+    @@aggregate_per = 1.minute
 
     ## Sending
 
@@ -111,15 +101,25 @@ module NotifyUser
     def deliver
       self.mark_as_sent
       self.save
-      NotificationMailer.delay.notification_email(self.id).deliver
+
+      self.class.delay.deliver_channels(self.id)
     end
 
-    def self.deliver_aggregated(notifications)
-      # Send a special aggregated message to the target
-      # TODO: Needs to be more customisable.
-      notifications.map(&:mark_as_sent)
-      notifications.map(&:save)
-      NotificationMailer.delay.aggregate_notifications_email(notifications.map(&:id))
+    # Deliver a single notification across each channel.
+    def self.deliver_channels(notification_id)
+       # TODO: This bit needs to be async!
+      self.channels.each do |channel_name, options|
+        channel = (channel_name.to_s + "_channel").camelize.constantize
+        channel.deliver(self, options)
+      end
+    end
+
+    # Deliver multiple notifications across each channel as an aggregate message.
+    def self.deliver_channels_aggregated(notifications)
+      self.channels.each do |channel_name, options|
+        channel = (channel_name.to_s + "_channel").camelize.constantize
+        channel.deliver_aggregated(notifications, options)
+      end
     end
 
     def self.notify_aggregated(notification_id)
@@ -128,7 +128,11 @@ module NotifyUser
       # Find any pending notifications with the same type and target, which can all be sent in one message.
       notifications = self.pending_aggregation_with(notification)
       
-      self.deliver_aggregated(notifications)
+      notifications.map(&:mark_as_sent)
+      notifications.map(&:save)
+
+      # Deliver on each channel.
+      self.deliver_channels_aggregated(notifications)
     end
 
   end

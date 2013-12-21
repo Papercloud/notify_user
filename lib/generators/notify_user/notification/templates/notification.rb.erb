@@ -1,0 +1,8 @@
+class <%= name.camelize %> < NotifyUser::BaseNotification
+
+  channel :action_mailer,
+        subject: "<%= Rails.application.class.parent_name.humanize %>: You have a new <%= name.humanize %> notification.",
+        aggregate: {
+          subject: "<%= Rails.application.class.parent_name.humanize %>: You have new <%= name.humanize %> notifications."
+        }
+end

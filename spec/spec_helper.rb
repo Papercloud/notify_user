@@ -32,10 +32,11 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = true
 
   def mailer_should_render_template(mailer, template)
+    original_method = mailer.method(:_render_template)
     mailer.should_receive(:_render_template) do |arg|
       arg[:template].virtual_path.should eq template
-    end.and_call_original
-    mailer.mail
+      original_method.call(arg)
+    end
   end
 
 end

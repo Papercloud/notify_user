@@ -10,3 +10,5 @@ module NotifyUser
     yield self
   end
 end
+
+Gem.find_files("notify_user/channels/**/*.rb").each { |path| require path }

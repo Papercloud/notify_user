@@ -12,7 +12,7 @@ class NotifyUser::InstallGenerator < Rails::Generators::Base
   end
 
   def copy_initializer
-    template "notify_user.rb", "config/initializers/notify_user.rb"
+    template "initializer.rb", "config/initializers/notify_user.rb"
   end
 
   # This is defined in ActiveRecord::Generators::Base, but that inherits from NamedBase, so it expects a name argument

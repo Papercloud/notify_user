@@ -3,7 +3,11 @@ module NotifyUser
     source_root File.expand_path('../templates', __FILE__)
 
     def generate_notification
-      template "notification.rb", "app/notifications/#{name.underscore}.rb"
+      template "notification.rb.erb", "app/notifications/#{name.underscore}.rb"
+    end
+
+    def generate_view_scaffolds
+      template "email_template.html.erb.erb", "app/views/notify_user/#{name.underscore}/action_mailer/notification.html.erb"
     end
   end
 end
