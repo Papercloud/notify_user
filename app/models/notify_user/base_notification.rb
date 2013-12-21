@@ -46,24 +46,17 @@ module NotifyUser
       end
     end
 
-    ## Channels
+    ## Public Interface
 
-    mattr_accessor :channels
-    @@channels = {
-      action_mailer: {}
-    }
-
-    # Configure a channel
-    def self.channel(name, options={})
-      channels[name] = options
+    def to(user)
+      self.target = user
+      self
     end
 
-    ## Aggregation
-
-    mattr_accessor :aggregate_per
-    @@aggregate_per = 1.minute
-
-    ## Sending
+    def with(*args)
+      self.params = args.reduce({}, :update)
+      self
+    end
 
     # Send any Emails/SMS/APNS
     def notify
@@ -84,6 +77,25 @@ module NotifyUser
         self.deliver
       end
     end
+
+    ## Channels
+
+    mattr_accessor :channels
+    @@channels = {
+      action_mailer: {}
+    }
+
+    # Configure a channel
+    def self.channel(name, options={})
+      channels[name] = options
+    end
+
+    ## Aggregation
+
+    mattr_accessor :aggregate_per
+    @@aggregate_per = 1.minute
+
+    ## Sending
 
     def self.pending_aggregation_with(notification)
       where(type: notification.type)
@@ -107,10 +119,12 @@ module NotifyUser
 
     # Deliver a single notification across each channel.
     def self.deliver_channels(notification_id)
-       # TODO: This bit needs to be async!
+      notification = self.where(id: notification_id).first
+      return unless notification
+
       self.channels.each do |channel_name, options|
         channel = (channel_name.to_s + "_channel").camelize.constantize
-        channel.deliver(self, options)
+        channel.deliver(notification, options)
       end
     end
 
@@ -131,8 +145,15 @@ module NotifyUser
       notifications.map(&:mark_as_sent)
       notifications.map(&:save)
 
-      # Deliver on each channel.
-      self.deliver_channels_aggregated(notifications)
+      return if notifications.empty?
+
+      if notifications.length == 1
+        # Despite waiting for more to aggregate, we only got one in the end.
+        self.deliver_channels(notifications.first.id)
+      else
+        # We got several notifications while waiting, send them aggregated.
+        self.deliver_channels_aggregated(notifications)
+      end
     end
 
   end

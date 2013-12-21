@@ -18,8 +18,8 @@ describe NotifyUser::NotificationMailer do
       mail.from.should eq([NotifyUser.mailer_sender])
     end
 
-    it "renders the notification's template" do
-      mailer_should_render_template(mailer, "notify_user/new_post_notification/action_mailer/notification")
+    it "renders a template to render the notification's template as a partial" do
+      mailer_should_render_template(mailer, "notify_user/action_mailer/notification")
       mail
     end
 

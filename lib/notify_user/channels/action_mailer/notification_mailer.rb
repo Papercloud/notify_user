@@ -7,7 +7,7 @@ module NotifyUser
       mail to: notification.target.email,
            subject: options[:subject],
            template_name: "notification",
-           template_path: "notify_user/#{notification.class.name.underscore}/action_mailer",
+           template_path: "notify_user/action_mailer",
            from: NotifyUser.mailer_sender
     end
 

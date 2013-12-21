@@ -19,7 +19,7 @@ module NotifyUser
           BaseNotification.should_receive(:delay_for)
                           .with(notification.class.aggregate_per)
                           .and_call_original
-          ActionMailerChannel.should_receive(:deliver_aggregated)
+          ActionMailerChannel.should_receive(:deliver)
           notification.notify
         end
 
@@ -36,10 +36,19 @@ module NotifyUser
 
         describe ".notify_aggregated" do
 
-          it "sends an aggregated email" do
+          it "sends an aggregated email if more than one notification queued up" do
             Sidekiq::Testing.inline!
             
-            NotificationMailer.should_receive(:aggregate_notifications_email).with([notification], anything).and_call_original
+            NewPostNotification.create({target: user})
+
+            NotificationMailer.should_receive(:aggregate_notifications_email).with(BaseNotification.pending_aggregation_with(notification), anything).and_call_original
+            BaseNotification.notify_aggregated(notification.id)
+          end
+
+          it "sends a singular email if no more notifications were queued since the original was delayed" do
+            Sidekiq::Testing.inline!
+
+            NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
             BaseNotification.notify_aggregated(notification.id)
           end
 

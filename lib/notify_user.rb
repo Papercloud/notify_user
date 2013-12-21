@@ -9,6 +9,10 @@ module NotifyUser
   def self.setup
     yield self
   end
+
+  def self.send_notification(type)
+    type.camelize.constantize.new
+  end
 end
 
 Gem.find_files("notify_user/channels/**/*.rb").each { |path| require path }

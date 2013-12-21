@@ -2,28 +2,28 @@ notify_user
 ===========
 
 
-TODO:
-- Add indexes on notifications to migration generator.
-- Test for presence of Sidekiq dependency. Disable aggregation if it's not there but otherwise work OK.
-- Controller for listing notifications
+Install:
+```
+gem 'notify_user'
+rails g notify_user:install
+```
 
-TODO Later:
-- aggregate based on an arbitrary key, so we can aggregate notifications of different types.
-- read state
+Getting started:
+```
+rails g notify_user:notification NewMyProperty
+```
 
-How to test aggregation?
+Edit views/notify_user/new_my_property/action_mailer/notification.html.erb, e.g.
+```
+<h3>We added <%= @notification.params[:listing_address] %> to your My Properties.</h3>
+```
 
-Just create one having just sent.
+Then send:
+```
+NotifyUser.send_notification('new_my_property').to(user).with(listing_address: "123 Main St").notify
+```
 
-LovedPostNotification.to().params().send
-NotifyUser.type('').to('').params().send
 
-What can we customise on each?
-- Various messages: all view level
-- Aggregation period
-- Aggregation key
-- Email layout?
-- Email subject?
 
 To run the tests:
 ```
