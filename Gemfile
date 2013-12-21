@@ -1,0 +1,1 @@
+instance_eval(Bundler.read_file("gemfiles/rails40.gemfile"), 'rails40.gemfile', 1)

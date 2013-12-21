@@ -97,10 +97,14 @@ module NotifyUser
 
     ## Sending
 
+    def self.for_target(target)
+      where(target_id: target.id)
+      .where(target_type: target.class.name)
+    end
+
     def self.pending_aggregation_with(notification)
       where(type: notification.type)
-      .where(target_id: notification.target.id)
-      .where(target_type: notification.target.class.name)
+      .for_target(notification.target)
       .where(state: :pending)
     end
 

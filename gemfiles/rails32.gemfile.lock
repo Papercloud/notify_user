@@ -2,6 +2,7 @@ PATH
   remote: /Users/tomas/Work/Papercloud/notify_user
   specs:
     notify_user (0.0.1)
+      kaminari
       rails (>= 3.2)
       sidekiq
       state_machine
@@ -52,6 +53,9 @@ GEM
     i18n (0.6.1)
     journey (1.0.4)
     json (1.8.1)
+    kaminari (0.14.1)
+      actionpack (>= 3.0.0)
+      activesupport (>= 3.0.0)
     mail (2.5.4)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
