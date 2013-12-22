@@ -76,13 +76,23 @@ module NotifyUser
         # No aggregation, send immediately.
         self.deliver
       end
+
     end
 
     ## Channels
 
     mattr_accessor :channels
     @@channels = {
-      action_mailer: {}
+      action_mailer: {},
+    }
+
+    # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
+    # them. Not sure if they really need another concept though, they could just be formats on the controller.
+    mattr_accessor :views
+    @@views = {
+      mobile_sdk: {
+        template_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/mobile_sdk/notification" }
+      }
     }
 
     # Configure a channel

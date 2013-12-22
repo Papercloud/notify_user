@@ -8,7 +8,7 @@ class NotifyUser::NotificationsController < ApplicationController
                                                   .limit(30)
                                                   .page(params[:page])
 
-    render json: @notifications
+    render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, template_renderer: self
   end
 
   protected

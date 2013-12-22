@@ -5,3 +5,4 @@ gemspec :path => "../"
 ENV['RAILS_VERSION'] = "4.1.0.beta1"
 gem "rails", ENV['RAILS_VERSION']
 gem 'sidekiq'
+gem 'active_model_serializers-matchers', github: "adambarber/active_model_serializers-matchers"
