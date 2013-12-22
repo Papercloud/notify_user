@@ -8,10 +8,23 @@ class NotifyUser::NotificationsController < ApplicationController
                                                   .limit(30)
                                                   .page(params[:page])
 
-    render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, template_renderer: self
+    render json: @notifications
+  end
+
+  def mark_read
+    @notifications = NotifyUser::BaseNotification.for_target(@user).where('id IN (?)', params[:ids])
+    @notifications.update_all(state: :read)
+    render json: @notifications
   end
 
   protected
+
+  def default_serializer_options
+    {
+      each_serializer: NotifyUser::NotificationSerializer,
+      template_renderer: self
+    }
+  end
 
   def authenticate!
     method(NotifyUser.authentication_method).call

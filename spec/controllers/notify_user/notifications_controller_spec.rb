@@ -16,7 +16,7 @@ describe NotifyUser::NotificationsController do
     get :index
   end
 
-  describe "JSON API" do
+  describe "GET notifications.json" do
     render_views
 
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
@@ -30,7 +30,25 @@ describe NotifyUser::NotificationsController do
       json[:notifications][0][:message].should include "New Post Notification happened with"
       json[:notifications][0][:message].should include notification.params[:name]
     end
+  end
 
+  describe "PUT notifications/mark_read.json" do
+    let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
+
+    before :each do
+      notification.save
+    end
+
+    it "marks notifications as read" do
+      put :mark_read, ids: [notification.id]
+      notification.reload
+      notification.read?.should eq true
+    end
+
+    it "returns updated notifications" do
+      put :mark_read, ids: [notification.id]
+      json[:notifications][0].should_not be_nil
+    end
   end
 
 end
