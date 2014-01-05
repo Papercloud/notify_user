@@ -62,7 +62,7 @@ module NotifyUser
       save!
 
       # Bang version of 'notify' ignores aggregation
-      self.deliver
+      self.deliver!
     end
 
     # Send any Emails/SMS/APNS
@@ -136,6 +136,12 @@ module NotifyUser
       self.save
 
       self.class.delay.deliver_channels(self.id)
+    end
+
+    def deliver!
+      self.mark_as_sent
+      self.save
+      self.class.deliver_channels(self.id)
     end
 
     # Deliver a single notification across each channel.
