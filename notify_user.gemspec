@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency "kaminari"
   s.add_dependency "active_model_serializers"
 
-  s.add_development_dependency "sidekiq"
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"
   s.add_development_dependency "rspec-sidekiq"
