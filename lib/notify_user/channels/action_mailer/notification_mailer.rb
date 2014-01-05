@@ -1,5 +1,7 @@
 module NotifyUser
   class NotificationMailer < ActionMailer::Base
+
+    layout "notify_user/layouts/action_mailer"
   
     def notification_email(notification, options)
       @notification = notification

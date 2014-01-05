@@ -23,5 +23,9 @@ describe NotifyUser::NotificationMailer do
       mail
     end
 
+    it "renders with a layout" do
+      mail.body.raw_source.should include "This is the default generated layout"
+    end
+
   end
 end
