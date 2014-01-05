@@ -58,6 +58,13 @@ module NotifyUser
       self
     end
 
+    def notify!
+      save!
+
+      # Bang version of 'notify' ignores aggregation
+      self.deliver
+    end
+
     # Send any Emails/SMS/APNS
     def notify
 

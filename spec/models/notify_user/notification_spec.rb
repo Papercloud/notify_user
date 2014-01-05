@@ -57,5 +57,15 @@ module NotifyUser
 
     end
 
+    describe "#notify!" do
+
+      it "sends immediately, ignoring aggregation" do
+        BaseNotification.should_not_receive(:delay_for)
+        ActionMailerChannel.should_receive(:deliver)
+        notification.notify!
+      end
+
+    end
+
   end
 end

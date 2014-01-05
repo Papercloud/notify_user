@@ -1,5 +1,5 @@
 <% @notifications.each do |notification| %>
 <div>
-  <%= render template: "notify_user/#{notification.class.name.underscore}/action_mailer/notification", locals: { notification: notification } %>  
+  <%= render template: "notify_user/#{notification.class.name.underscore}/action_mailer/notification", locals: { notification: notification, params: notification.params } %>  
 </div>
 <% end %>
