@@ -6,7 +6,7 @@ class NotifyUser::NotificationSerializer < ActiveModel::Serializer
   def message
     options[:template_renderer].render_to_string(:template => object.class.views[:mobile_sdk][:template_path].call(object),
                                                  :locals => {params: object.params},
-                                                 :layout => false)
+                                                 :layout => false, :formats => [:html])
   end
 
   def read

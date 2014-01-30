@@ -8,7 +8,10 @@ class NotifyUser::NotificationsController < ApplicationController
                                                   .limit(30)
                                                   .page(params[:page])
 
-    render json: @notifications
+    respond_to do |format|
+      format.html
+      format.json {render :json => @notifications}
+    end
   end
 
   def mark_read

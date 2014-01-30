@@ -26,10 +26,26 @@ describe NotifyUser::NotificationsController do
     end
 
     it "returns a message from a rendered template" do
-      get :index
+      get :index, :format => :json
       json[:notifications][0][:message].should include "New Post Notification happened with"
       json[:notifications][0][:message].should include notification.params[:name]
     end
+  end
+
+  describe "GET web Index notifications" do 
+    render_views
+
+    let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
+
+    before :each do
+      notification.save
+    end
+
+    it "returns a list of notifications" do
+      get :index
+      response.body.should have_content("web notifications")
+    end
+
   end
 
   describe "PUT notifications/mark_read.json" do
