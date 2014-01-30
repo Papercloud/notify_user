@@ -116,7 +116,7 @@ module NotifyUser
 
     def self.for_target(target)
       where(target_id: target.id)
-      .where(target_type: target.class.name)
+      .where(target_type: target.class.base_class)
     end
 
     def self.pending_aggregation_with(notification)
