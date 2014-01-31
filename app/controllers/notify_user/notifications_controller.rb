@@ -8,8 +8,14 @@ class NotifyUser::NotificationsController < ApplicationController
                                                   .limit(30)
                                                   .page(params[:page])
 
+    # @messages = @notifications.map {|notification|
+    #   render_to_string(:template => notification.class.views[:mobile_sdk][:template_path].call(object),
+    #                                              :locals => {params: object.params},
+    #                                              :layout => false, :formats => [:html])
+    # }
+
     respond_to do |format|
-      format.html
+      format.html {}
       format.json {render :json => @notifications}
     end
   end

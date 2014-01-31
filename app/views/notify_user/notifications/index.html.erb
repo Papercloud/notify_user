@@ -1,1 +1,49 @@
 web notifications
+
+
+<style type="text/css">
+	.unread a{
+		font-weight: bold;
+	}
+	.read a{
+		font-weight: normal;
+	}
+</style>
+
+<table border="1">
+<tr>
+	<th>ID:</th>
+	<th>Message:</th>
+</tr>
+<% @notifications.each do |notification| %>
+	<% message = render(:template => notification.class.views[:mobile_sdk][:template_path].call(notification),
+	                                                 :locals => {params: notification.params},
+	                                                 :layout => false, :formats => [:html]) %>
+	<tr>
+		<td><%= notification.id %></td>
+		<td class="<%= !notification.read? ? 'unread' : 'read' %>"><%= link_to message, '#', :class => 'message', :id => notification.id %></td>
+	</tr>
+<% end %>
+</table>
+
+<script type="text/javascript">
+$( document ).ready(function() {
+	$('.message').click(function(){
+		td = $(this).parent();
+		$.ajax({
+		    type: "PUT",
+		    url: '/notify_user/notifications/mark_read',
+		    data: {"ids": $(this).attr('id')}
+		}).done(function(){
+			console.log("success");
+ 			$(td).addClass( "read" );
+		}).fail(function(){
+			console.log("failed");
+		});
+	});
+
+
+
+
+});
+</script>

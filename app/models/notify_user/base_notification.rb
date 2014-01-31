@@ -48,6 +48,8 @@ module NotifyUser
 
     ## Public Interface
 
+
+
     def to(user)
       self.target = user
       self
@@ -84,6 +86,12 @@ module NotifyUser
         self.deliver
       end
 
+    end
+
+    def message
+      render_to_string(:template => self.class.views[:mobile_sdk][:template_path].call(self),
+                                                   :locals => {params: self.params},
+                                                   :layout => false, :formats => [:html])
     end
 
     ## Channels

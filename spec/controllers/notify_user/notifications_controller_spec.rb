@@ -43,6 +43,7 @@ describe NotifyUser::NotificationsController do
 
     it "returns a list of notifications" do
       get :index
+      ap response.body
       response.body.should have_content("web notifications")
     end
 

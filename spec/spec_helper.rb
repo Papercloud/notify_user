@@ -27,6 +27,7 @@ require 'capybara/rails'
 require 'factory_girl_rails'
 require 'sidekiq/testing'
 require "awesome_print"
+
 Sidekiq::Testing.inline!
 
 RSpec.configure do |config|
