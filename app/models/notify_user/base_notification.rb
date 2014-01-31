@@ -88,12 +88,6 @@ module NotifyUser
 
     end
 
-    def message
-      render_to_string(:template => self.class.views[:mobile_sdk][:template_path].call(self),
-                                                   :locals => {params: self.params},
-                                                   :layout => false, :formats => [:html])
-    end
-
     ## Channels
 
     mattr_accessor :channels

@@ -1,4 +1,4 @@
-class NotifyUser::NotificationsController < ApplicationController
+class NotifyUser::BaseNotificationsController < ApplicationController
 
   before_filter :authenticate!
 
@@ -15,7 +15,7 @@ class NotifyUser::NotificationsController < ApplicationController
     # }
 
     respond_to do |format|
-      format.html {}
+      format.html
       format.json {render :json => @notifications}
     end
   end
@@ -34,7 +34,7 @@ class NotifyUser::NotificationsController < ApplicationController
   end
 
   def redirect_to
-    render :text => "redirect_to"
+    render :text => "redirect setup goes here"
   end
 
   protected
