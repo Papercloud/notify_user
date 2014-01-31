@@ -43,7 +43,14 @@ describe NotifyUser::NotificationsController do
 
     it "returns a list of notifications" do
       get :index
-      response.body.should have_content("web notifications")
+      response.body.should have_content("Mr. Blobby")
+    end
+
+    it "reading a notification marks it as read and takes to redirect action" do
+      get :read, :id => notification.id
+      @notification = NotifyUser::BaseNotification.last
+      @notification.state.should eq "read"
+      response.body.should have_content("set redirect logic")
     end
 
   end
