@@ -21,29 +21,25 @@ web notifications
 	                                                 :layout => false, :formats => [:html]) %>
 	<tr>
 		<td><%= notification.id %></td>
-		<td class="<%= !notification.read? ? 'unread' : 'read' %>"><%= link_to message, '#', :class => 'message', :id => notification.id %></td>
+		<td class="<%= !notification.read? ? 'unread' : 'read' %>"><%= link_to message, notify_user_path(notification), :class => 'message', :id => notification.id %></td>
 	</tr>
 <% end %>
 </table>
 
 <script type="text/javascript">
-$( document ).ready(function() {
-	$('.message').click(function(){
-		td = $(this).parent();
-		$.ajax({
-		    type: "PUT",
-		    url: '/notify_user/notifications/mark_read',
-		    data: {"ids": $(this).attr('id')}
-		}).done(function(){
-			console.log("success");
- 			$(td).addClass( "read" );
-		}).fail(function(){
-			console.log("failed");
-		});
-	});
-
-
-
-
-});
+// $( document ).ready(function() {
+// 	$('.message').click(function(){
+// 		td = $(this).parent();
+// 		$.ajax({
+// 		    type: "PUT",
+// 		    url: '/notify_user/notifications/mark_read',
+// 		    data: {"ids": $(this).attr('id')}
+// 		}).done(function(){
+// 			console.log("success");
+//  			$(td).addClass( "read" );
+// 		}).fail(function(){
+// 			console.log("failed");
+// 		});
+// 	});
+// });
 </script>

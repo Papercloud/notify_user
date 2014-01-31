@@ -26,6 +26,17 @@ class NotifyUser::NotificationsController < ApplicationController
     render json: @notifications
   end
 
+  #get 
+  def read
+    @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
+    @notification.mark_as_read
+    redirect_to
+  end
+
+  def redirect_to
+    render :text => "redirect_to"
+  end
+
   protected
 
   def default_serializer_options
