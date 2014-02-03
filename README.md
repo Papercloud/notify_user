@@ -40,12 +40,24 @@ wwtd
 ##Web interface
 Display a list of notifications for a logged in user
 ```
-/notify_user/notifications
+visit /notify_user/notifications
 ```
+
 Clicking on a notification gets marked as read and taken to the redirect_logic action (notifications_controller.rb)
 ```
 def redirect_logic(notification)
 	property = Property.find(@notification.params[:property_id])
 	redirect_to property_url(@property)
 end
+```
+
+Unsubscribing from a notification type, first add it to the notify_user.rb initilizer 
+```
+# Override the default notification type
+config.unsubscribable_notifications = ['NewPostNotification']
+```
+
+Users can manage their subscription statuses through the web interface
+```
+visit notify_user/notifications/unsubscribe
 ```
