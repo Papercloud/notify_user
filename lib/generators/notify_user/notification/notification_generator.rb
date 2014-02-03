@@ -5,6 +5,8 @@ module NotifyUser
 
     def generate_notification
       template "notification.rb.erb", "app/notifications/#{name.underscore}.rb"
+      puts "If you wish this notification to be unsubscribable add it to the unsubscribable_notifications array in the initializer"
+
     end
 
     def generate_view_scaffolds
