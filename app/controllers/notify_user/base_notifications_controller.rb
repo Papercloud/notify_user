@@ -37,6 +37,18 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render :text => "redirect setup goes here"
   end
 
+  def unsubscribe
+    unsubscribe_from(params[:type]) if params[:type]
+
+    @unsubscribale = NotifyUser.unsubscribable_notifications
+
+  end
+
+  def subscribe
+    subscribe_to(params[:type]) if params[:type]
+    redirect_to notify_user_notifications_unsubscribe_path
+  end
+
   protected
 
   def default_serializer_options
@@ -49,5 +61,18 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def authenticate!
     method(NotifyUser.authentication_method).call
     @user = method(NotifyUser.current_user_method).call
+  end
+
+  private
+  def unsubscribe_from(type)
+      unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type)
+      flash[:message] = "successfully unsubscribed from #{type} notifications"
+      redirect_to notify_user_notifications_unsubscribe_path  
+  end
+
+  def subscribe_to(type)
+    NotifyUser::Unsubscribe.where(target: @user, type: type).destroy_all
+    flash[:message] = "successfully subscribed to #{type} notifications"
+
   end
 end

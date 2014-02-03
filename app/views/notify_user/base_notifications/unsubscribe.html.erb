@@ -1,0 +1,18 @@
+<%= flash[:message] %>
+
+
+<table border='1'>
+	<tr>
+		<th>Notification type</th>
+	</tr>
+	<tr>
+	<% @unsubscribale.each do |file| %>
+		<td><%= file %></td>
+		<% if NotifyUser::Unsubscribe.has_unsubscribed_from(@user, file).empty? %>
+			<td><%= link_to "Unsubscribe", notify_user_notifications_unsubscribe_path(:type => file) %></td>
+		<% else %>
+			<td><%= link_to "Subscribe", notify_user_notifications_subscribe_path(:type => file) %></td>
+		<% end %>
+	<% end %>
+	</tr>
+</table>

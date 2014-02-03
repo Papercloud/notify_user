@@ -6,6 +6,9 @@ module NotifyUser
     belongs_to :target, polymorphic: true
 
     validates_presence_of :target_id, :target_type, :target, :type
+    
+    validates :type, :uniqueness => {:scope => :target}
+
     self.inheritance_column = :_type_disabled
 
     if ActiveRecord::VERSION::MAJOR < 4

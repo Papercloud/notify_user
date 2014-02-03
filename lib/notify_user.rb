@@ -13,6 +13,9 @@ module NotifyUser
   mattr_accessor :current_user_method
   @@current_user_method = nil
 
+  mattr_accessor :unsubscribable_notifications
+  @@unsubscribable_notifications = nil
+
   # Used to set up NotifyUser from the initializer.
   def self.setup
     yield self

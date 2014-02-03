@@ -50,9 +50,6 @@ module NotifyUser
     end
 
     ## Public Interface
-
-
-
     def to(user)
       self.target = user
       self
