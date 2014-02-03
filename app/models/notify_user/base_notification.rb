@@ -11,6 +11,9 @@ module NotifyUser
     # Override point in case of collisions, plus keeps the table name tidy.
     self.table_name = "notify_user_notifications"
 
+    #checks if user has unsubscribed from this notif type
+    validate :unsubscribed_validation
+
     # Params for creating the notification message.
     serialize :params, Hash
 
@@ -61,7 +64,7 @@ module NotifyUser
     end
 
     def notify!
-      save!
+      save
 
       # Bang version of 'notify' ignores aggregation
       self.deliver!
@@ -70,7 +73,7 @@ module NotifyUser
     # Send any Emails/SMS/APNS
     def notify
 
-      save!
+      save
 
       if self.class.aggregate_per
 
@@ -134,16 +137,20 @@ module NotifyUser
     end
 
     def deliver
-      self.mark_as_sent
-      self.save
+      unless user_has_unsubscribed?
+        self.mark_as_sent
+        self.save
 
-      self.class.delay.deliver_channels(self.id)
+        self.class.delay.deliver_channels(self.id)
+      end
     end
 
     def deliver!
-      self.mark_as_sent
-      self.save
-      self.class.deliver_channels(self.id)
+      unless user_has_unsubscribed?
+        self.mark_as_sent
+        self.save
+        self.class.deliver_channels(self.id)
+      end
     end
 
     # Deliver a single notification across each channel.
@@ -184,6 +191,19 @@ module NotifyUser
         self.deliver_channels_aggregated(notifications)
       end
     end
+
+    private
+    def unsubscribed_validation
+      errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?   
+    end
+
+    def user_has_unsubscribed?
+      #return true if user has unsubscribed 
+      return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(self.target, self.type).empty?  
+
+      return false 
+    end
+
 
   end
 end

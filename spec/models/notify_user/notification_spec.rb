@@ -66,6 +66,5 @@ module NotifyUser
       end
 
     end
-
   end
 end

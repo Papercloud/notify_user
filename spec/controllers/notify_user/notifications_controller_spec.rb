@@ -52,7 +52,7 @@ describe NotifyUser::NotificationsController do
 
     it "reading a notification marks it as read and takes to redirect action" do
       get :read, :id => notification.id
-      @notification = NotifyUser::BaseNotification.last
+      @notification = NotifyUser::BaseNotification.where(id: notification.id).first
       @notification.state.should eq "read"
       response.body.should have_content("set redirect logic")
     end
