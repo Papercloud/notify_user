@@ -24,10 +24,10 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
     @notification.mark_as_read
-    redirect_to
+    redirect_logic(@notification)
   end
 
-  def redirect_to
+  def redirect_logic(notification)
     render :text => "redirect setup goes here"
   end
 
