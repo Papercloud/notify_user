@@ -3,5 +3,7 @@ Rails.application.routes.draw do
     resources :notifications, only: [:index]
     put 'notifications/mark_read' => 'notifications#mark_read'
     get 'notifications/:id/read' => 'notifications#read'
+    get 'notifications/mark_all' => 'notifications#mark_all'
+
   end
 end

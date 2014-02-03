@@ -20,6 +20,12 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render json: @notifications
   end
 
+  def mark_all
+    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', '["pending","sent"]')
+    @notifications.update_all(state: :read)
+    redirect_to 'index'
+  end
+
   #get 
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first

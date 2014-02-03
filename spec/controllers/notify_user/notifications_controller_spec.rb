@@ -36,9 +36,13 @@ describe NotifyUser::NotificationsController do
     render_views
 
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
+    let(:notification1) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Adams") }
+    let(:notification2) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mrs. James") }
 
     before :each do
       notification.save
+      notification1.save
+      notification2.save
     end
 
     it "returns a list of notifications" do
@@ -51,6 +55,12 @@ describe NotifyUser::NotificationsController do
       @notification = NotifyUser::BaseNotification.last
       @notification.state.should eq "read"
       response.body.should have_content("set redirect logic")
+    end
+
+    it "marks all unread messages as read" do
+      get :mark_all
+      notifications = NotifyUser::BaseNotification.for_target(user).where('state IN (?)', '["pending","sent"]')
+      notifications.length.should eq 0
     end
 
   end
