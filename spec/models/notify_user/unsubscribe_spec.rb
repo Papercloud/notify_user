@@ -19,7 +19,8 @@ module NotifyUser
       end
 
       it "doesnt create object if notification type isn't unsubscribable" do
-
+        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "UnsubscribableNotification"})
+        NotifyUser::Unsubscribe.last.type.should_not eq "UnsubscribableNotification"
       end
     end
 
