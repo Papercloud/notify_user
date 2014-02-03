@@ -17,6 +17,10 @@ module NotifyUser
         notification.save
         notification.errors[:target].first.should eq " has unsubscribed from this type"
       end
+
+      it "doesnt create object if notification type isn't unsubscribable" do
+
+      end
     end
 
     describe "subscribed" do

@@ -73,6 +73,5 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def subscribe_to(type)
     NotifyUser::Unsubscribe.where(target: @user, type: type).destroy_all
     flash[:message] = "successfully subscribed to #{type} notifications"
-
   end
 end

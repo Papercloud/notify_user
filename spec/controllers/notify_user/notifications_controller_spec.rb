@@ -91,7 +91,8 @@ describe NotifyUser::NotificationsController do
       NotifyUser::Unsubscribe.last.type.should eq "NewPostNotification"
     end
 
-    it "subscibing deletes the unsubscribe object" do
+    it "subscribing deletes the unsubscribe object" do
+      #lack of unsubscribe object implies the user is subscribed
       NotifyUser::Unsubscribe.create(target: user, type: "NewPostNotification")
       get :subscribe, :type => "NewPostNotification"
       NotifyUser::Unsubscribe.all.should eq []

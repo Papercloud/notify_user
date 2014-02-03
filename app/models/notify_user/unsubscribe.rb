@@ -6,7 +6,9 @@ module NotifyUser
     belongs_to :target, polymorphic: true
 
     validates_presence_of :target_id, :target_type, :target, :type
-    
+
+    validate :is_unsubscribale
+
     validates :type, :uniqueness => {:scope => :target}
 
     self.inheritance_column = :_type_disabled
@@ -25,5 +27,11 @@ module NotifyUser
       .where(target_type: target.class.base_class)
       .where(type: type)
     end
+
+    private
+    def is_unsubscribale
+      errors.add(:type, ("not found")) unless NotifyUser.unsubscribable_notifications.include? self.type  
+    end
+
   end
 end
