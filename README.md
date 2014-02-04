@@ -24,7 +24,6 @@ NotifyUser.send_notification('new_my_property').to(user).with(listing_address: "
 ```
 
 
-
 To run the tests:
 ```
 BUNDLE_GEMFILE=gemfiles/rails40.gemfile bundle install

@@ -1,17 +1,13 @@
 var notifyUser = {};
 dispatcher = new WebSocketRails(window.location.origin.split("//")[1] + "/websocket");
 
-
-handleNew = function(response) {
-	debugger;
+var handleNew = function(response) {
 	console.log(response);
 };
 
-var channel = dispatcher.subscribe('notify_user');
-
-
-channel.bind('new_notification', handleNew);
+dispatcher.bind('notify_user.new_notification', handleNew);
+dispatcher.trigger("notify_user.connected", {foo: 1});
 
 notifyUser.dispatcher = dispatcher;
-notifyUser.handleNew = handleNew;
+notifyUser.dispatcher = dispatcher;
 window.notifyUser = notifyUser;

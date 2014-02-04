@@ -11,4 +11,5 @@ NotifyUser.setup do |config|
 
   # Override the default notification type
   config.unsubscribable_notifications = ['NewPostNotification']
+
 end
