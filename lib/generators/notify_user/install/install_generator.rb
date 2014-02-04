@@ -12,9 +12,9 @@ class NotifyUser::InstallGenerator < Rails::Generators::Base
     puts "  rake db:migrate"
   end
 
-  def install_websocket
-    generate "websocket_rails:install"
-  end
+  # def install_websocket
+  #   generate "websocket_rails:install"
+  # end
 
   def copy_initializer
     template "initializer.rb", "config/initializers/notify_user.rb"
@@ -22,6 +22,20 @@ class NotifyUser::InstallGenerator < Rails::Generators::Base
 
   def copy_notifications_controller
     template "notifications_controller.rb", "app/controllers/notify_user/notifications_controller.rb"
+  end
+
+  def append_application_js
+    manifest = "application.js"
+    js_path  = "app/assets/javascripts"
+
+    # create_file("#{js_path}/#{manifest}") unless File.exists?("#{js_path}/#{manifest}")
+
+    append_to_file "#{js_path}/#{manifest}" do
+      out = ""
+      out << "//= require notify_user/main"
+      out << "\n"
+      out << "\n"
+    end
   end
 
   # This is defined in ActiveRecord::Generators::Base, but that inherits from NamedBase, so it expects a name argument

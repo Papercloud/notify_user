@@ -7,7 +7,7 @@ GIT
       rspec (~> 2.0)
 
 PATH
-  remote: /Users/william/Papercloud/notify_user
+  remote: /Users/kg/notify_user
   specs:
     notify_user (0.0.1)
       active_model_serializers

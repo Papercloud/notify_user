@@ -1,6 +1,7 @@
 require "kaminari"
 
 require "notify_user/engine"
+require "notify_user/events"
 
 module NotifyUser
 
@@ -25,5 +26,7 @@ module NotifyUser
     type.camelize.constantize.new
   end
 end
+
+setup_socket_event_routes
 
 Gem.find_files("notify_user/channels/**/*.rb").each { |path| require path }
