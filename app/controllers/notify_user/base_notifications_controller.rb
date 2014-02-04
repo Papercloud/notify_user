@@ -1,6 +1,6 @@
 class NotifyUser::BaseNotificationsController < ApplicationController
 
-  before_filter :authenticate!
+  before_filter :authenticate!, :except => [:unauth_subscribe]
 
   def index
     @notifications = NotifyUser::BaseNotification.for_target(@user)
@@ -41,7 +41,14 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     unsubscribe_from(params[:type]) if params[:type]
 
     @unsubscribale = NotifyUser.unsubscribable_notifications
+  end
 
+  def unauth_unsubscribe
+    if NotifyUser::UserHash.confirm_hash(params[:token], params[:user]) if params[:token] && token
+      unsubscribe_from(params[:type]) if params[:type]
+      NotifyUser::UserHash.where(token: params[:token], type: params[:type]).first.deactive
+    end
+    render :text => "successfully unsubscribed from #{params[:type]} notifications"
   end
 
   def subscribe
