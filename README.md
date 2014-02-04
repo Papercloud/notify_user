@@ -46,8 +46,8 @@ visit /notify_user/notifications
 Clicking on a notification gets marked as read and taken to the redirect_logic action (notifications_controller.rb)
 ```
 def redirect_logic(notification)
-	property = Property.find(@notification.params[:property_id])
-	redirect_to property_url(@property)
+	property = Property.find(notification.params[:property_id])
+	redirect_to property_url(property)
 end
 ```
 

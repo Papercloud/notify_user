@@ -1,4 +1,5 @@
 require 'rails/generators/active_record'
+require 'websocket-rails'
 
 class NotifyUser::InstallGenerator < Rails::Generators::Base
   include Rails::Generators::Migration
@@ -11,6 +12,10 @@ class NotifyUser::InstallGenerator < Rails::Generators::Base
     puts "  rake db:migrate"
   end
 
+  def install_websocket
+    generate "websocket_rails:install"
+  end
+
   def copy_initializer
     template "initializer.rb", "config/initializers/notify_user.rb"
   end
@@ -18,6 +23,8 @@ class NotifyUser::InstallGenerator < Rails::Generators::Base
   def copy_notifications_controller
     template "notifications_controller.rb", "app/controllers/notify_user/notifications_controller.rb"
   end
+
+
 
   # This is defined in ActiveRecord::Generators::Base, but that inherits from NamedBase, so it expects a name argument
   # which we don't want here. So we redefine it here. Yuck.
