@@ -1,5 +1,6 @@
 module NotifyUser
   class Engine < ::Rails::Engine
+
   	require 'websocket-rails'
     config.generators do |g|
       g.test_framework      :rspec,        :fixture => false

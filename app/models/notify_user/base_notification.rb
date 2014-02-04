@@ -34,6 +34,7 @@ module NotifyUser
 
       # The user has seen this notification.
       state :read do
+        WebsocketRails[:notify_user].trigger(:new_notification, {})
       end
 
       # Record that we have sent message(s) to the user about this notification.
