@@ -22,6 +22,7 @@ Then send:
 ```
 NotifyUser.send_notification('new_my_property').to(user).with(listing_address: "123 Main St").notify
 ```
+Use ! on the end of that command if you do not have redis running to bypass reddis.
 
 
 To run the tests:
@@ -60,3 +61,11 @@ Users can manage their subscription statuses through the web interface
 ```
 visit notify_user/notifications/unsubscribe
 ```
+
+
+Karl TODO:
+test on unicorn
+config option to turn socket refreshing off
+test in IE8
+test in ruby 3.2 and others
+

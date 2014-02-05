@@ -2,6 +2,7 @@ require 'state_machine'
 require 'sidekiq'
 
 module NotifyUser
+
   class BaseNotification < ActiveRecord::Base
 
     if ActiveRecord::VERSION::MAJOR < 4
@@ -34,7 +35,6 @@ module NotifyUser
 
       # The user has seen this notification.
       state :read do
-        WebsocketRails[:notify_user].trigger(:new_notification, {})
       end
 
       # Record that we have sent message(s) to the user about this notification.
@@ -48,6 +48,34 @@ module NotifyUser
       event :mark_as_read do
         transition [:pending, :sent] => :read
       end
+    end
+
+    def message_body
+      ActionView::Base.new(
+       Rails.configuration.paths["app/views"]).render(
+       :template => self.class.views[:mobile_sdk][:template_path].call(self), :format => :html, 
+            :locals => {params: self.params}, :layout => false)
+    end
+
+    def html_for_message
+      action_view = ActionView::Base.new(Rails.configuration.paths["app/views"])
+      action_view.class_eval do 
+          include Rails.application.routes.url_helpers
+          include ApplicationHelper
+
+          def protect_against_forgery?
+            false
+          end
+      end
+      action_view.render(
+       :partial => self.class.views[:web][:template_path].call(self), :format => :html, 
+            :locals => {notification: self}, :layout => false)
+    end
+
+    after_create do
+      puts "Sending a websocket notification to client for new message."
+      puts target_id
+      WebsocketRails["ch_" + target_id.to_s].trigger('new_notification', html_for_message) if (WebsocketRails["ch_" + target_id.to_s])
     end
 
     ## Public Interface
@@ -102,6 +130,9 @@ module NotifyUser
     @@views = {
       mobile_sdk: {
         template_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/mobile_sdk/notification" }
+      },
+      web: {
+        template_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/web/notification" }
       }
     }
 

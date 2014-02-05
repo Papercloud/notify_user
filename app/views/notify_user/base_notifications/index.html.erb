@@ -8,37 +8,11 @@ web notifications
 		font-weight: normal;
 	}
 </style>
-<%= link_to 'Mark all as read', notify_user_notifications_mark_all_path %>
-<table border="1">
-<tr>
-	<th>ID:</th>
-	<th>Message:</th>
-</tr>
-<% @notifications.each do |notification| %>
-	<% message = render(:template => notification.class.views[:mobile_sdk][:template_path].call(notification),
-	                                                 :locals => {params: notification.params},
-	                                                 :layout => false, :formats => [:html]) %>
-	<tr>
-		<td><%= notification.id %></td>
-		<td class="<%= !notification.read? ? 'unread' : 'read' %>"><%= link_to message, notify_user_path(notification), :class => 'message', :id => notification.id %></td>
-	</tr>
-<% end %>
-</table>
 
-<script type="text/javascript">
-// $( document ).ready(function() {
-// 	$('.message').click(function(){
-// 		td = $(this).parent();
-// 		$.ajax({
-// 		    type: "PUT",
-// 		    url: '/notify_user/notifications/mark_read',
-// 		    data: {"ids": $(this).attr('id')}
-// 		}).done(function(){
-// 			console.log("success");
-//  			$(td).addClass( "read" );
-// 		}).fail(function(){
-// 			console.log("failed");
-// 		});
-// 	});
-// });
-</script>
+<%= link_to 'Mark all as read', notify_user_notifications_mark_all_path %>
+
+<ul id="notify-user-messages">
+	<% @notifications.each do |notification| %>
+		<%= notification.html_for_message %>
+	<% end %>
+</ul>

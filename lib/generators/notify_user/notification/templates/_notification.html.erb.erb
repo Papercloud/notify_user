@@ -1,0 +1,3 @@
+<li class="<%%= !notification.read? ? 'unread' : 'read' %>">
+	<%%= link_to notification.message_body, notify_user_path(notification), :class => 'message', :id => notification.id %>
+</li>

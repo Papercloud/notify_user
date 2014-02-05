@@ -12,4 +12,3 @@
 //
 //= require websocket_rails/main
 //= require notify_user/receiver
-//= require notify_user/sender

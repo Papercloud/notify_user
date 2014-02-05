@@ -7,7 +7,6 @@ class NotifyUser::BaseNotificationsController < ApplicationController
                                                   .order("created_at DESC")
                                                   .limit(30)
                                                   .page(params[:page])
-
     respond_to do |format|
       format.html
       format.json {render :json => @notifications}
