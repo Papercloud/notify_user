@@ -38,17 +38,25 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def unsubscribe
-    unsubscribe_from(params[:type]) if params[:type]
-
+    if params[:type]
+      unsubscribe_from(params[:type])
+      redirect_to notify_user_notifications_unsubscribe_path  
+    end
     @unsubscribale = NotifyUser.unsubscribable_notifications
   end
 
   def unauth_unsubscribe
-    if NotifyUser::UserHash.confirm_hash(params[:token], params[:user]) if params[:token] && token
-      unsubscribe_from(params[:type]) if params[:type]
-      NotifyUser::UserHash.where(token: params[:token], type: params[:type]).first.deactive
+    if params[:token] && params[:type]
+      if NotifyUser::UserHash.confirm_hash(params[:token], params[:type])
+        user_hash = NotifyUser::UserHash.where(token: params[:token], type: params[:type]).first
+        @user = user_hash.target
+        unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: params[:type])
+        user_hash.deactivate
+      else
+        return render :text => "invalid token"
+      end
     end
-    render :text => "successfully unsubscribed from #{params[:type]} notifications"
+    return render :text => "successfully unsubscribed from #{params[:type]} notifications"
   end
 
   def subscribe
@@ -74,7 +82,6 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def unsubscribe_from(type)
       unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type)
       flash[:message] = "successfully unsubscribed from #{type} notifications"
-      redirect_to notify_user_notifications_unsubscribe_path  
   end
 
   def subscribe_to(type)

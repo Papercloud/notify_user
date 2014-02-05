@@ -88,6 +88,11 @@ module NotifyUser
 
     end
 
+    def generate_unsubscribe_hash
+      #check if a hash already exists for that user otherwise create a new one
+      return user_hash = NotifyUser::UserHash.find_or_create_by(target: self.target, type: self.type, active: true)
+    end
+
     ## Channels
 
     mattr_accessor :channels

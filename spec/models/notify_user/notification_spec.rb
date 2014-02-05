@@ -5,6 +5,7 @@ module NotifyUser
 
     let(:user) { User.create({email: "user@example.com" })}
     let(:notification) { NewPostNotification.create({target: user}) }
+    Rails.application.routes.default_url_options[:host]= 'localhost:5000' 
 
     describe "#notify" do
 
@@ -48,6 +49,7 @@ module NotifyUser
           it "sends a singular email if no more notifications were queued since the original was delayed" do
             Sidekiq::Testing.inline!
 
+            NotificationMailer.stub(:notification_email)
             NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
             BaseNotification.notify_aggregated(notification.id)
           end
@@ -65,6 +67,29 @@ module NotifyUser
         notification.notify!
       end
 
+    end
+
+    describe "generate hash" do
+      it "creates a new hash if an active hash doesn't already exist" do
+        user_hash = notification.generate_unsubscribe_hash
+        user_hash.should_not eq nil
+      end
+
+      it "uses the old hash if an active hash already exists" do
+        user_hash = notification.generate_unsubscribe_hash
+
+        another_hash = notification.generate_unsubscribe_hash
+        another_hash.token.should eq user_hash.token
+      end
+
+      it "creates a new hash if no active hash exists" do
+        user_hash = notification.generate_unsubscribe_hash
+        user_hash.deactivate
+
+        another_hash = notification.generate_unsubscribe_hash
+        another_hash.token.should_not eq user_hash.token
+
+      end
     end
   end
 end

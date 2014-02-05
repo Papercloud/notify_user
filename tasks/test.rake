@@ -4,4 +4,8 @@ task :setup do
   create_dummy = "bundle exec rails new #{ENV['RAILS_ROOT']} -m spec/support/rails_template.rb --skip-bundle"
   puts "Running '#{create_dummy}'"
   system(create_dummy)
+  append_to_file "spec/dummy/#{ENV['RAILS_ROOT']}/config/test.rb" do
+      out = ""
+      out << "host: bla"
+    end
 end

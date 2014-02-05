@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     get 'notifications/mark_all' => 'notifications#mark_all'
     get 'notifications/unsubscribe' => 'notifications#unsubscribe'
     get 'notifications/subscribe' => 'notifications#subscribe'
+    get 'notifications/unauth_unsubscribe' => 'notifications#unauth_unsubscribe'
 
   end
 end
