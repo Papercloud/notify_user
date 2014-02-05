@@ -52,11 +52,12 @@ class NotifyUser::BaseNotificationsController < ApplicationController
         @user = user_hash.target
         unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: params[:type])
         user_hash.deactivate
+        return render :text => "successfully unsubscribed from #{params[:type]} notifications"
       else
         return render :text => "invalid token"
       end
     end
-    return render :text => "successfully unsubscribed from #{params[:type]} notifications"
+    return render :text => "Something went wrong please try again later"
   end
 
   def subscribe
