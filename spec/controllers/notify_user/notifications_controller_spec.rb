@@ -109,7 +109,6 @@ describe NotifyUser::NotificationsController do
 
       user_hash = NotifyUser::UserHash.last
       user_hash.active.should eq false
-
     end
 
   end

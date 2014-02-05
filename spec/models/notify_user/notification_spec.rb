@@ -49,7 +49,6 @@ module NotifyUser
           it "sends a singular email if no more notifications were queued since the original was delayed" do
             Sidekiq::Testing.inline!
 
-            NotificationMailer.stub(:notification_email)
             NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
             BaseNotification.notify_aggregated(notification.id)
           end
