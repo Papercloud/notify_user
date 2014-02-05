@@ -57,6 +57,12 @@ Unsubscribing from a notification type, first add it to the notify_user.rb initi
 config.unsubscribable_notifications = ['NewPostNotification']
 ```
 
+Add line to environment.rb file to configure host url for mail notifications
+```
+config.action_mailer.default_url_options = { :host => "http://example.com" }
+
+```
+
 Users can manage their subscription statuses through the web interface
 ```
 visit notify_user/notifications/unsubscribe

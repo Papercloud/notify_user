@@ -6,4 +6,7 @@
 </div>
 <% end %>
 <br><br>
+<% if NotifyUser.unsubscribable_notifications.include? @notifications.first.type  %>
+
 <%= link_to "Unsubscribe", notify_user_notifications_unauth_unsubscribe_url(:type => @notifications.first.type, :token => user_hash.token)%>
+<% end %>
