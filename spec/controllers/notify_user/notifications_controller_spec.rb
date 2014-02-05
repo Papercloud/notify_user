@@ -85,7 +85,11 @@ describe NotifyUser::NotificationsController do
   end
 
   describe "unsubscribing and subscribing" do
+    let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
 
+    before :each do
+      notification.save
+    end
     it "unsubscribing from notification type" do
       get :unsubscribe, :type => "NewPostNotification"
       NotifyUser::Unsubscribe.last.type.should eq "NewPostNotification"
@@ -96,6 +100,15 @@ describe NotifyUser::NotificationsController do
       NotifyUser::Unsubscribe.create(target: user, type: "NewPostNotification")
       get :subscribe, :type => "NewPostNotification"
       NotifyUser::Unsubscribe.all.should eq []
+
+    end
+
+    it "verifies user token before unsubscribe then deactivates that token" do
+      user_hash = notification.generate_unsubscribe_hash
+      get :unauth_unsubscribe, :type => "NewPostNotification", :token => user_hash.token
+
+      user_hash = NotifyUser::UserHash.last
+      user_hash.active.should eq false
 
     end
 
