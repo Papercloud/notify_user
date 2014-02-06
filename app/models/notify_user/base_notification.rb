@@ -56,6 +56,13 @@ module NotifyUser
              :locals => { :params => self.params}, :layout => false)
     end
 
+    def mobile_message
+      ActionView::Base.new(
+             Rails.configuration.paths["app/views"]).render(
+             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
+             :locals => { :params => self.params}, :layout => false)
+    end
+
     ## Public Interface
     def to(user)
       self.target = user
@@ -73,6 +80,23 @@ module NotifyUser
       # Bang version of 'notify' ignores aggregation
       self.deliver!
     end
+
+    def push_notification
+      notification = {
+        :schedule_for => [1.hour.from_now],
+        :aliases => ["#{self.target_id}"],
+        :aps => {:alert => self.mobile_message, :badge => 1}
+      }
+      response = Urbanairship.push(notification)
+        if response.success?
+          puts "Push notification sent successfully."
+          return true
+        else
+          puts "Push notification failed."
+          self.errors[:base] << "Couldn't contact Urban Airship to send push notification."
+          return false
+        end    
+      end
 
     # Send any Emails/SMS/APNS
     def notify
