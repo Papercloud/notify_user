@@ -49,6 +49,13 @@ module NotifyUser
       end
     end
 
+    def message
+      ActionView::Base.new(
+             Rails.configuration.paths["app/views"]).render(
+             :template => self.class.views[:mobile_sdk][:template_path].call(self), :format => :html, 
+             :locals => { :params => self.params}, :layout => false)
+    end
+
     ## Public Interface
     def to(user)
       self.target = user

@@ -1,13 +1,5 @@
 web notifications
 
-<style type="text/css">
-	.unread a{
-		font-weight: bold;
-	}
-	.read a{
-		font-weight: normal;
-	}
-</style>
 <%= link_to 'Mark all as read', notify_user_notifications_mark_all_path %>
 <table border="1">
 <tr>
@@ -15,12 +7,9 @@ web notifications
 	<th>Message:</th>
 </tr>
 <% @notifications.each do |notification| %>
-	<% message = render(:template => notification.class.views[:mobile_sdk][:template_path].call(notification),
-	                                                 :locals => {params: notification.params},
-	                                                 :layout => false, :formats => [:html]) %>
 	<tr>
 		<td><%= notification.id %></td>
-		<td class="<%= !notification.read? ? 'unread' : 'read' %>"><%= link_to message, notify_user_path(notification), :class => 'message', :id => notification.id %></td>
+		<td class="<%= !notification.read? ? 'unread' : 'read' %>"><%= link_to notification.message, notify_user_path(notification), :class => 'message', :id => notification.id %></td>
 	</tr>
 <% end %>
 </table>
