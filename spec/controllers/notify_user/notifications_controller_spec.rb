@@ -46,6 +46,7 @@ describe NotifyUser::NotificationsController do
     end
 
     it "returns a list of notifications" do
+      NotifyUser::BaseNotification.any_instance.stub(:message).and_return("Mr. Blobby")
       get :index
       response.body.should have_content("Mr. Blobby")
     end
