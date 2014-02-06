@@ -81,12 +81,12 @@ module NotifyUser
       self.deliver!
     end
 
-    def push_notification
+    def push_notify
       notification = {
-        :schedule_for => [1.hour.from_now],
         :aliases => ["#{self.target_id}"],
         :aps => {:alert => self.mobile_message, :badge => 1}
       }
+
       response = Urbanairship.push(notification)
         if response.success?
           puts "Push notification sent successfully."
@@ -96,7 +96,7 @@ module NotifyUser
           self.errors[:base] << "Couldn't contact Urban Airship to send push notification."
           return false
         end    
-      end
+    end
 
     # Send any Emails/SMS/APNS
     def notify
@@ -129,6 +129,7 @@ module NotifyUser
     mattr_accessor :channels
     @@channels = {
       action_mailer: {},
+      push_notification: {},
     }
 
     # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
