@@ -41,8 +41,9 @@
 #notifications_list .item.read{
 	background: #eaeaea;
 }
-#notifications_list .item:hover{
-	cursor: pointer;
+#notifications_list .item .time_ago{
+	font-size: 12px;
+	text-align: right;
 }
 #notifications_list .mark_as_read{
 	text-align: right;

@@ -7,6 +7,9 @@
 	<% @notifications.each do |notification| %>
 		<div class="item <%= !notification.read? ? 'unread' : 'read' %>">
 			<div class="content"><%= link_to notification.message, notify_user_path(notification), :class => 'message', :id => notification.id %></div>
+			<div class="time_ago">
+				<%= time_ago_in_words(notification.created_at) %> ago
+			</div>
 		</div>
 	<% end %>
 	</div>
