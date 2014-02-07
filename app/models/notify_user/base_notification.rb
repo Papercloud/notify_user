@@ -81,9 +81,46 @@ module NotifyUser
       self.deliver!
     end
 
+    # Send any Emails/SMS/APNS
+    def notify
+
+      save
+
+      #if aggregation is false bypass aggregation completely
+      self.channels.each do |channel_name, options|
+        if(options[:aggregate_per] == false)
+          self.class.deliver_notification_channel(self.id, channel_name)    
+        else
+          if not aggregation_pending?
+            self.class.delay_for(options[:aggregate_per]).notify_aggregated_channel(self.id, channel_name)
+          end
+        end
+      end
+
+      # #notify_aggregated for a single channel
+
+      # if self.class.aggregate_per 
+      #   # Schedule to send later if there aren't already any scheduled.
+      #   # Otherwise ignore, as the already-scheduled aggregate job will pick this one up when it runs.
+      #   if not aggregation_pending?
+
+      #     # Send in X minutes, along with any others created in the intervening times.
+      #     self.class.delay_for(self.class.aggregate_per).notify_aggregated(self.id)
+
+      #     #selectively schedule 
+      #     #self.class.delay_for(options[:aggregate_per]).notify_aggregated_channel(self.id, channel_name)
+      #   end
+      # else
+      #   # No aggregation, send immediately.
+      #   self.deliver
+      # end
+
+    end
+
+    #sends push notification
     def push_notify
       notification = {
-        :aliases => ["#{self.target_id}"],
+        :device_tokens => ['"#{self.target_id}"'],
         :aps => {:alert => self.mobile_message, :badge => 1}
       }
 
@@ -98,27 +135,6 @@ module NotifyUser
         end    
     end
 
-    # Send any Emails/SMS/APNS
-    def notify
-
-      save
-
-      if self.class.aggregate_per
-
-        # Schedule to send later if there aren't already any scheduled.
-        # Otherwise ignore, as the already-scheduled aggregate job will pick this one up when it runs.
-        if not aggregation_pending?
-
-          # Send in X minutes, along with any others created in the intervening times.
-          self.class.delay_for(self.class.aggregate_per).notify_aggregated(self.id)
-        end
-      else
-        # No aggregation, send immediately.
-        self.deliver
-      end
-
-    end
-
     def generate_unsubscribe_hash
       #check if a hash already exists for that user otherwise create a new one
       return user_hash = NotifyUser::UserHash.find_or_create_by(target: self.target, type: self.type, active: true)
@@ -129,7 +145,7 @@ module NotifyUser
     mattr_accessor :channels
     @@channels = {
       action_mailer: {},
-      push_notification: {},
+      apns: {},
     }
 
     # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
@@ -193,16 +209,61 @@ module NotifyUser
       return unless notification
 
       self.channels.each do |channel_name, options|
-        channel = (channel_name.to_s + "_channel").camelize.constantize
-        channel.deliver(notification, options)
+          channel = (channel_name.to_s + "_channel").camelize.constantize
+          channel.deliver(notification, options)
       end
     end
 
     # Deliver multiple notifications across each channel as an aggregate message.
     def self.deliver_channels_aggregated(notifications)
       self.channels.each do |channel_name, options|
-        channel = (channel_name.to_s + "_channel").camelize.constantize
-        channel.deliver_aggregated(notifications, options)
+          if options[:aggregate_per] != false
+            channel = (channel_name.to_s + "_channel").camelize.constantize
+            channel.deliver_aggregated(notifications, options)
+          end
+      end
+    end
+
+    #deliver to specific channel methods
+
+    # Deliver a single notification to a specific channel.
+    def self.deliver_notification_channel(notification_id, channel_name)
+      notification = self.where(id: notification_id).first
+      return unless notification
+      channel_options = channels[channel_name.to_sym]
+
+      channel = (channel_name.to_s + "_channel").camelize.constantize
+      channel.deliver(notification, channel_options)
+    end
+
+    # Deliver a aggregated notifications to a specific channel.
+    def self.deliver_notifications_channel(notifications, channel_name)
+      notification = self.where(id: notification_id).first
+      return unless notification
+      channel_options = channels[channel_name.to_sym]
+
+      channel = (channel_name.to_s + "_channel").camelize.constantize
+      channel.deliver_aggregated(notifications, channel_options)
+    end
+
+    #notifies a single channel for aggregation
+    def self.notify_aggregated_channel(notification_id, channel_name)
+      notification = self.find(notification_id) # Raise an exception if not found.
+
+      # Find any pending notifications with the same type and target, which can all be sent in one message.
+      notifications = self.pending_aggregation_with(notification)
+      
+      notifications.map(&:mark_as_sent)
+      notifications.map(&:save)
+
+      return if notifications.empty?
+
+      if notifications.length == 1
+        # Despite waiting for more to aggregate, we only got one in the end.
+        self.deliver_notification_channel(notifications.first.id, channel_name)
+      else
+        # We got several notifications while waiting, send them aggregated.
+        self.deliver_notifications_channel(notifications, channel_name)
       end
     end
 

@@ -26,6 +26,12 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     redirect_to notify_user_notifications_path  
   end
 
+  def notifications_count
+    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', ["sent"])
+    #need to render as {count: <count>}
+    render json: @notifications.count
+  end
+
   #get 
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
