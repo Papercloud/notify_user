@@ -5,6 +5,8 @@ class <%= name.camelize %> < NotifyUser::BaseNotification
         aggregate: {
           subject: "<%= Rails.application.class.parent_name.titleize %>: You have new <%= name.humanize %> notifications."
         }
+  channel :apns,
+  	aggregate_per: false      
 
   @@aggregate_per = 10.minutes
 end
