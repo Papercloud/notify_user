@@ -92,7 +92,7 @@ module NotifyUser
           self.class.delay.deliver_notification_channel(self.id, channel_name)    
         else
           if not aggregation_pending?
-            self.class.delay_for(options[:aggregate_per]).notify_aggregated_channel(self.id, channel_name)
+            self.class.delay_for(options[:aggregate_per] || @@aggregate_per).notify_aggregated_channel(self.id, channel_name)
           end
         end
       end

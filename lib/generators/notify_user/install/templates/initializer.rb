@@ -9,9 +9,6 @@ NotifyUser.setup do |config|
   # NotifyUser will call this within NotificationsController to return the current logged in user.
   config.current_user_method = :current_user
 
-  # Enable push notifications
-  config.use_push_notifications = false
-
   # Override the default notification type
   config.unsubscribable_notifications = ['NewPostNotification']
 end

@@ -1,6 +1,6 @@
 class NotifyUser::BaseNotificationsController < ApplicationController
 
-  before_filter :authenticate!, :except => [:unauth_subscribe]
+  before_filter :authenticate!, :except => [:unauth_subscribe, :notifications_count]
 
   def index
     @notifications = NotifyUser::BaseNotification.for_target(@user)
@@ -27,9 +27,9 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def notifications_count
-    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', ["sent"])
+    @notifications = NotifyUser::BaseNotification.for_target(User.find(params[:user_id])).where('state IN (?)', ["sent"])
     #need to render as {count: <count>}
-    render json: @notifications.count
+    render json: {:count => @notifications.count}
   end
 
   #get 
