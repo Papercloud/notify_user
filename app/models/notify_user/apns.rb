@@ -4,7 +4,7 @@ module NotifyUser
     #sends push notification
     def self.push_notification(notification)
       payload = {
-        :device_tokens => ["#{notification.target_id}"],
+        :aliases => ["#{notification.target_id}"],
         :aps => {alert: notification.mobile_message, badge: 1},
         :notification_data => {
           '#' => notification.id,     
@@ -13,8 +13,10 @@ module NotifyUser
       }
 
       payload[:notification_data][:action_id] = notification.params[:action_id] if notification.params[:action_id]
-      payload[:notification_data][:action_id] = notification.params[:action_type] if notification.params[:action_type]
+      payload[:notification_data][:action_type] = notification.params[:action_type] if notification.params[:action_type]
 
+
+      puts payload
       response = Urbanairship.push(payload)
         if response.success?
           puts "Push notification sent successfully."
