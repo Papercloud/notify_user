@@ -7,6 +7,10 @@ module NotifyUser
     let(:notification) { NewPostNotification.create({target: user}) }
     Rails.application.routes.default_url_options[:host]= 'localhost:5000' 
 
+    before :each do
+      BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
+    end
+
     describe "#notify" do
 
       it "raises an exception if the notification is not valid" do
@@ -21,6 +25,7 @@ module NotifyUser
                           .with(notification.class.aggregate_per)
                           .and_call_original
           ActionMailerChannel.should_receive(:deliver)
+          Apns.should_receive(:push_notification)
           notification.notify
         end
 
@@ -48,9 +53,10 @@ module NotifyUser
 
           it "sends a singular email if no more notifications were queued since the original was delayed" do
             Sidekiq::Testing.inline!
-
+            Apns.should_receive(:push_notification)
             NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
             BaseNotification.notify_aggregated(notification.id)
+
           end
 
         end
@@ -61,6 +67,7 @@ module NotifyUser
     describe "#notify!" do
 
       it "sends immediately, ignoring aggregation" do
+        Apns.should_receive(:push_notification)
         BaseNotification.should_not_receive(:delay_for)
         ActionMailerChannel.should_receive(:deliver)
         notification.notify!

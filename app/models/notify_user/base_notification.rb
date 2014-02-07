@@ -214,10 +214,8 @@ module NotifyUser
       return unless notification
       channel_options = channels[channel_name.to_sym]
 
-      unless user_has_unsubscribed?
-        channel = (channel_name.to_s + "_channel").camelize.constantize
-        channel.deliver(notification, channel_options)
-      end
+      channel = (channel_name.to_s + "_channel").camelize.constantize
+      channel.deliver(notification, channel_options)
     end
 
     # Deliver a aggregated notifications to a specific channel.
@@ -225,10 +223,8 @@ module NotifyUser
       notification = self.where(id: notification_id).first
       return unless notification
       channel_options = channels[channel_name.to_sym]
-      unless user_has_unsubscribed?
-        channel = (channel_name.to_s + "_channel").camelize.constantize
-        channel.deliver_aggregated(notifications, channel_options)
-      end
+      channel = (channel_name.to_s + "_channel").camelize.constantize
+      channel.deliver_aggregated(notifications, channel_options)
     end
 
     #notifies a single channel for aggregation
