@@ -89,7 +89,7 @@ module NotifyUser
       #if aggregation is false bypass aggregation completely
       self.channels.each do |channel_name, options|
         if(options[:aggregate_per] == false)
-          self.class.deliver_notification_channel(self.id, channel_name)    
+          self.class.delay.deliver_notification_channel(self.id, channel_name)    
         else
           if not aggregation_pending?
             self.class.delay_for(options[:aggregate_per]).notify_aggregated_channel(self.id, channel_name)
@@ -115,24 +115,6 @@ module NotifyUser
       #   self.deliver
       # end
 
-    end
-
-    #sends push notification
-    def push_notify
-      notification = {
-        :device_tokens => ['"#{self.target_id}"'],
-        :aps => {:alert => self.mobile_message, :badge => 1}
-      }
-
-      response = Urbanairship.push(notification)
-        if response.success?
-          puts "Push notification sent successfully."
-          return true
-        else
-          puts "Push notification failed."
-          self.errors[:base] << "Couldn't contact Urban Airship to send push notification."
-          return false
-        end    
     end
 
     def generate_unsubscribe_hash
