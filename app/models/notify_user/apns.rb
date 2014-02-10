@@ -1,22 +1,27 @@
 module NotifyUser
   class Apns
+    SYMBOL_NAMES_SIZE = 10 
+    PAYLOAD_LIMIT = 255
 
     #sends push notification
     def self.push_notification(notification)
+      #calculates the bytes already used 
+      used_space = SYMBOL_NAMES_SIZE + notification.id.size + notification.created_at.to_time.to_i.size +
+                    notification.type.size + notification.params[:action_id].size
+
+      space_allowance = PAYLOAD_LIMIT - used_space   
+
       payload = {
-        :aliases => ["#{notification.target_id}"],
-        :aps => {alert: notification.mobile_message, badge: 1},
-        :notification_data => {
+        :alias => notification.target_id,
+        :aps => {alert: notification.mobile_message(space_allowance), badge: 1},
+        :n_data => {
           '#' => notification.id,     
-          t: notification.created_at.to_time.to_i
+          t: notification.created_at.to_time.to_i, 
+          '?' => notification.type
         }
       }
+      payload[:n_data]['!'] = notification.params[:action_id] if notification.params[:action_id]
 
-      payload[:notification_data][:action_id] = notification.params[:action_id] if notification.params[:action_id]
-      payload[:notification_data][:action_type] = notification.params[:action_type] if notification.params[:action_type]
-
-
-      puts payload
       response = Urbanairship.push(payload)
         if response.success?
           puts "Push notification sent successfully."

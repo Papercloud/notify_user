@@ -3,6 +3,7 @@ require 'sidekiq'
 
 module NotifyUser
   class BaseNotification < ActiveRecord::Base
+    include ActionView::Helpers::TextHelper
 
     if ActiveRecord::VERSION::MAJOR < 4
       attr_accessible :params, :target, :type, :state
@@ -16,6 +17,8 @@ module NotifyUser
 
     # Params for creating the notification message.
     serialize :params, Hash
+
+    # @@action_types = ActiveRecord::Base.descendants.map(&:name)
 
     # The user to send the notification to
     belongs_to :target, polymorphic: true
@@ -49,6 +52,10 @@ module NotifyUser
       end
     end
 
+    # def self.action_types
+    #   @@action_types
+    # end
+
     def message
       ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
@@ -56,11 +63,12 @@ module NotifyUser
              :locals => { :params => self.params}, :layout => false)
     end
 
-    def mobile_message
-      ActionView::Base.new(
+    def mobile_message(length=115)
+      puts length
+      truncate(ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
-             :locals => { :params => self.params}, :layout => false)
+             :locals => { :params => self.params}, :layout => false), :length => length)
     end
 
     ## Public Interface
