@@ -99,24 +99,6 @@ module NotifyUser
         end
       end
 
-      # #notify_aggregated for a single channel
-
-      # if self.class.aggregate_per 
-      #   # Schedule to send later if there aren't already any scheduled.
-      #   # Otherwise ignore, as the already-scheduled aggregate job will pick this one up when it runs.
-      #   if not aggregation_pending?
-
-      #     # Send in X minutes, along with any others created in the intervening times.
-      #     self.class.delay_for(self.class.aggregate_per).notify_aggregated(self.id)
-
-      #     #selectively schedule 
-      #     #self.class.delay_for(options[:aggregate_per]).notify_aggregated_channel(self.id, channel_name)
-      #   end
-      # else
-      #   # No aggregation, send immediately.
-      #   self.deliver
-      # end
-
     end
 
     def generate_unsubscribe_hash
@@ -225,13 +207,11 @@ module NotifyUser
 
     # Deliver a aggregated notifications to a specific channel.
     def self.deliver_notifications_channel(notifications, channel_name)
-      notification = self.where(id: notification_id).first
-      return unless notification
       channel_options = channels[channel_name.to_sym]
       channel = (channel_name.to_s + "_channel").camelize.constantize
 
       #check if user unsubsribed from channel type
-      unless self.unsubscribed_from_channel?(notification.target, channel_name)
+      unless self.unsubscribed_from_channel?(notifications.first.target, channel_name)
         channel.deliver_aggregated(notifications, channel_options)
       end
     end

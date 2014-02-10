@@ -71,6 +71,26 @@ module NotifyUser
           end
 
         end
+
+        describe " .notify_aggregated_channel" do
+
+          it "sends an aggregated email if more than one notification queued up" do
+            Sidekiq::Testing.inline!
+            
+            NewPostNotification.create({target: user, type: 'NewPostNotification'})
+
+            BaseNotification.should_receive(:deliver_notifications_channel).and_call_original
+            BaseNotification.notify_aggregated_channel(notification.id, 'action_mailer')
+          end
+
+          it "sends a single email if more not pending notifications" do
+            Sidekiq::Testing.inline!
+
+            BaseNotification.should_receive(:deliver_notification_channel).and_call_original
+            BaseNotification.notify_aggregated_channel(notification.id, 'action_mailer')
+          end
+        end
+
       end
 
     end
