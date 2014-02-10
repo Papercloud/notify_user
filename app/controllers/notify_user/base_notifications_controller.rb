@@ -56,6 +56,14 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     @types = build_notification_types
 
     render :json => @types
+  end
+
+  def update_subscriptions
+    types = params[:types]
+    types.each do |type|
+      NotifyUser::Unsubscribe.toggle_status(@user, type)
+    end 
+    render :json => build_notification_types
 
   end
 
@@ -109,7 +117,6 @@ class NotifyUser::BaseNotificationsController < ApplicationController
         flash[:message] = "successfully unsubscribed from #{type} notifications"
       else
         flash[:message] = "Please try again"
-        raise
       end
   end
 

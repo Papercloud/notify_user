@@ -22,6 +22,12 @@ module NotifyUser
         unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "UnsubscribableNotification"})
         NotifyUser::Unsubscribe.last.type.should_not eq "UnsubscribableNotification"
       end
+
+      it "toggles the status of a subscription" do
+        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"})
+        NotifyUser::Unsubscribe.toggle_status(user, "NewPostNotification")
+        NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+      end
     end
 
     describe "subscribed" do

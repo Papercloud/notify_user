@@ -22,6 +22,14 @@ module NotifyUser
       .where(target_type: target.class.base_class)
     end
 
+    def self.toggle_status(target, type)
+      if NotifyUser::Unsubscribe.has_unsubscribed_from(target, type).empty?
+        NotifyUser::Unsubscribe.create(target: target, type: type)
+      else
+        NotifyUser::Unsubscribe.where(target: target, type: type).destroy_all
+      end 
+    end
+
     def self.has_unsubscribed_from(target, type)
       where(target_id: target.id)
       .where(target_type: target.class.base_class)
@@ -29,8 +37,11 @@ module NotifyUser
     end
 
     private
+
+    #only throw error if both are false
     def is_unsubscribale
-      errors.add(:type, ("not found")) if NotifyUser.unsubscribable_notifications.include? self.type && NotifyUser::BaseNotification.channels.has_key?(self.type.to_sym)
+      errors.add(:type, ("not found")) if (NotifyUser.unsubscribable_notifications.include? self.type) == false && 
+                            NotifyUser::BaseNotification.channels.has_key?(self.type.to_sym) == false
     end
 
   end

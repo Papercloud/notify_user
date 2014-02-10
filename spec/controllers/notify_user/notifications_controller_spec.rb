@@ -91,6 +91,13 @@ describe NotifyUser::NotificationsController do
     before :each do
       notification.save
     end
+
+    it "endpoint for toggling subscriptions statuses" do
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+      get :update_subscriptions, :format => :json, :types => ['NewPostNotification']
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should_not eq []
+    end
+
     it "unsubscribing from notification type" do
       get :unsubscribe, :type => "NewPostNotification"
       NotifyUser::Unsubscribe.last.type.should eq "NewPostNotification"
