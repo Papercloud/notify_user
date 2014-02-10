@@ -7,9 +7,9 @@ module NotifyUser
 
     validates_presence_of :target_id, :target_type, :target, :type
 
-    validate :is_unsubscribale
+    validate :is_unsubscribable
 
-    # validates :type, :uniqueness => {:scope => :target}
+    validates :type, :uniqueness => {:scope => :target}
 
     self.inheritance_column = :_type_disabled
 
@@ -23,6 +23,7 @@ module NotifyUser
     end
 
     def self.toggle_status(target, type)
+      raise
       if NotifyUser::Unsubscribe.has_unsubscribed_from(target, type).empty?
         NotifyUser::Unsubscribe.create(target: target, type: type)
       else
@@ -39,7 +40,7 @@ module NotifyUser
     private
 
     #only throw error if both are false
-    def is_unsubscribale
+    def is_unsubscribable
       errors.add(:type, ("not found")) if (NotifyUser.unsubscribable_notifications.include? self.type) == false && 
                             NotifyUser::BaseNotification.channels.has_key?(self.type.to_sym) == false
     end

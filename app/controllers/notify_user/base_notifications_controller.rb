@@ -54,7 +54,6 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   #endpoint for accessing subscriptions and their statuses
   def subscriptions
     @types = build_notification_types
-
     render :json => @types
   end
 
@@ -104,9 +103,19 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   private
   def build_notification_types
     types = {:notification_types => []}
+
     notification_types = NotifyUser.unsubscribable_notifications
+
+    #iterates over channels
+    NotifyUser::BaseNotification.channels.each do |type, options|
+      channel = (type.to_s + "_channel").camelize.constantize
+      types[:notification_types] << {type: type, description: channel.default_options[:description],
+        status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
+    end 
+
+    #iterates over type
     notification_types.each do |type|
-      types[:notification_types] << {type: type, description: type.constantize.description,
+      types[:notification_types] << {type: type, description: "",
         status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
     end 
     return types
