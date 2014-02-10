@@ -106,6 +106,10 @@ module NotifyUser
       return user_hash = NotifyUser::UserHash.find_or_create_by(target: self.target, type: self.type, active: true)
     end
 
+    ## Notification description
+    mattr_accessor :description
+    @@description = ""
+
     ## Channels
 
     mattr_accessor :channels
