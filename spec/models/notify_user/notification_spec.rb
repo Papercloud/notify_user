@@ -18,6 +18,17 @@ module NotifyUser
         expect { notification.notify }.to raise_error
       end
 
+      it "doesn't send if unsubscribed from channel" do
+        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) 
+        ActionMailerChannel.should_not_receive(:deliver)
+        BaseNotification.deliver_notification_channel(notification.id, "action_mailer")
+      end
+
+      it "does send if subscribed to channel" do
+        ActionMailerChannel.should_receive(:deliver)
+        BaseNotification.deliver_notification_channel(notification.id, "action_mailer")
+      end
+
       describe "with aggregation enabled" do
 
         it "schedules a job to wait for more notifications to aggregate if there is not one already" do
@@ -70,6 +81,22 @@ module NotifyUser
         Apns.should_receive(:push_notification)
         BaseNotification.should_not_receive(:delay_for)
         ActionMailerChannel.should_receive(:deliver)
+        notification.notify!
+      end
+
+      it "doesn't send if unsubscribed from type" do
+        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) 
+        ActionMailerChannel.should_not_receive(:deliver)
+        ApnsChannel.should_not_receive(:deliver)
+
+        notification.notify!
+
+      end
+
+      it "doesn't send if unsubscribed from mailer channel" do
+        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
+        ActionMailerChannel.should_not_receive(:deliver)
+        ApnsChannel.should_receive(:deliver)
         notification.notify!
       end
 
