@@ -18,8 +18,6 @@ module NotifyUser
     # Params for creating the notification message.
     serialize :params, Hash
 
-    # @@action_types = ActiveRecord::Base.descendants.map(&:name)
-
     # The user to send the notification to
     belongs_to :target, polymorphic: true
 
@@ -51,10 +49,6 @@ module NotifyUser
         transition [:pending, :sent] => :read
       end
     end
-
-    # def self.action_types
-    #   @@action_types
-    # end
 
     def message
       ActionView::Base.new(
@@ -134,8 +128,8 @@ module NotifyUser
 
     mattr_accessor :channels
     @@channels = {
-      action_mailer: {},
-      apns: {},
+      action_mailer: {desc: 'Email notifications'},
+      apns: {desc: 'Apple Push Notifications'},
     }
 
     # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
@@ -197,17 +191,18 @@ module NotifyUser
     def self.deliver_channels(notification_id)
       notification = self.where(id: notification_id).first
       return unless notification
-
       self.channels.each do |channel_name, options|
+        unless unsubscribed_from_channel?(notification.target, channel_name)
           channel = (channel_name.to_s + "_channel").camelize.constantize
           channel.deliver(notification, options)
+        end
       end
     end
 
     # Deliver multiple notifications across each channel as an aggregate message.
     def self.deliver_channels_aggregated(notifications)
       self.channels.each do |channel_name, options|
-          if options[:aggregate_per] != false
+          if options[:aggregate_per] != false && !unsubscribed_from_channel?(notifications.first.target, channel_name)
             channel = (channel_name.to_s + "_channel").camelize.constantize
             channel.deliver_aggregated(notifications, options)
           end
@@ -223,7 +218,9 @@ module NotifyUser
       channel_options = channels[channel_name.to_sym]
 
       channel = (channel_name.to_s + "_channel").camelize.constantize
-      channel.deliver(notification, channel_options)
+      unless self.unsubscribed_from_channel?(notification.target, channel_name)
+        channel.deliver(notification, channel_options)
+      end
     end
 
     # Deliver a aggregated notifications to a specific channel.
@@ -232,7 +229,11 @@ module NotifyUser
       return unless notification
       channel_options = channels[channel_name.to_sym]
       channel = (channel_name.to_s + "_channel").camelize.constantize
-      channel.deliver_aggregated(notifications, channel_options)
+
+      #check if user unsubsribed from channel type
+      unless self.unsubscribed_from_channel?(notification.target, channel_name)
+        channel.deliver_aggregated(notifications, channel_options)
+      end
     end
 
     #notifies a single channel for aggregation
@@ -284,6 +285,13 @@ module NotifyUser
     def user_has_unsubscribed?
       #return true if user has unsubscribed 
       return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(self.target, self.type).empty?  
+
+      return false 
+    end
+ 
+    def self.unsubscribed_from_channel?(user, type)
+      #return true if user has unsubscribed 
+      return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?  
 
       return false 
     end

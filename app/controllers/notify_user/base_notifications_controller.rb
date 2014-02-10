@@ -47,7 +47,16 @@ class NotifyUser::BaseNotificationsController < ApplicationController
       unsubscribe_from(params[:type])
       redirect_to notify_user_notifications_unsubscribe_path  
     end
-    @unsubscribale = NotifyUser.unsubscribable_notifications
+    @unsubscribale_types = NotifyUser.unsubscribable_notifications
+    @unsubscribale_channels = NotifyUser::BaseNotification.channels
+  end
+
+  #endpoint for accessing subscriptions and their statuses
+  def subscriptions
+    @types = build_notification_types
+
+    render :json => @types
+
   end
 
   def unauth_unsubscribe
@@ -85,9 +94,23 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   private
+  def build_notification_types
+    types = {:notification_types => []}
+    notification_types = NotifyUser.unsubscribable_notifications
+    notification_types.each do |type|
+      types[:notification_types] << {type: type, status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
+    end 
+    return types
+  end
+
   def unsubscribe_from(type)
-      unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type)
-      flash[:message] = "successfully unsubscribed from #{type} notifications"
+      unsubscribe = NotifyUser::Unsubscribe.new(target: @user, type: type)
+      if unsubscribe.save
+        flash[:message] = "successfully unsubscribed from #{type} notifications"
+      else
+        flash[:message] = "Please try again"
+        raise
+      end
   end
 
   def subscribe_to(type)

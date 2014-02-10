@@ -9,7 +9,7 @@ module NotifyUser
 
     validate :is_unsubscribale
 
-    validates :type, :uniqueness => {:scope => :target}
+    # validates :type, :uniqueness => {:scope => :target}
 
     self.inheritance_column = :_type_disabled
 
@@ -30,7 +30,7 @@ module NotifyUser
 
     private
     def is_unsubscribale
-      errors.add(:type, ("not found")) unless NotifyUser.unsubscribable_notifications.include? self.type  
+      errors.add(:type, ("not found")) if NotifyUser.unsubscribable_notifications.include? self.type && NotifyUser::BaseNotification.channels.has_key?(self.type.to_sym)
     end
 
   end

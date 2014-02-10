@@ -7,7 +7,9 @@ module NotifyUser
     def self.push_notification(notification)
       #calculates the bytes already used 
       used_space = SYMBOL_NAMES_SIZE + notification.id.size + notification.created_at.to_time.to_i.size +
-                    notification.type.size + notification.params[:action_id].size
+                    notification.type.size
+                    
+      used_space += notification.params[:action_id].size if notification.params[:action_id]               
 
       space_allowance = PAYLOAD_LIMIT - used_space   
 
