@@ -58,7 +58,6 @@ module NotifyUser
     end
 
     def mobile_message(length=115)
-      puts length
       truncate(ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
