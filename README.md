@@ -42,10 +42,6 @@ Display a list of notifications for a logged in user
 ```
 visit /notify_user/notifications
 ```
-Add stylesheet to application.css
-```
-//= require notify_user_stylesheet
-```
 Clicking on a notification gets marked as read and taken to the redirect_logic action (notifications_controller.rb)
 ```
 def redirect_logic(notification)
