@@ -156,14 +156,14 @@ module NotifyUser
       return (self.class.pending_aggregation_with(self).where('id != ?', id).count > 0)
     end
 
-    def deliver
-      unless user_has_unsubscribed?
-        self.mark_as_sent
-        self.save
+    # def deliver
+    #   unless user_has_unsubscribed?
+    #     self.mark_as_sent
+    #     self.save
 
-        self.class.delay.deliver_channels(self.id)
-      end
-    end
+    #     self.class.delay.deliver_channels(self.id)
+    #   end
+    # end
 
     def deliver!
       unless user_has_unsubscribed?
