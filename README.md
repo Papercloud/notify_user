@@ -53,19 +53,19 @@ def redirect_logic(notification)
 	redirect_to property_url(@property)
 end
 ```
-
-Unsubscribing from a notification type, first add it to the notify_user.rb initilizer 
-```
-# Override the default notification type
-config.unsubscribable_notifications = ['NewPostNotification']
-```
-
 Add line to environment.rb file to configure host url for mail notifications
 ```
 config.action_mailer.default_url_options = { :host => "http://example.com" }
 ```
 
+##Subscriptions
+Unsubscribing from a notification type, first add it to the notify_user.rb initilizer 
+```
+# Override the default notification type
+config.unsubscribable_notifications = ['NewPostNotification']
+```
 Users can manage their subscription statuses through the web interface
 ```
 visit notify_user/notifications/unsubscribe
 ```
+
