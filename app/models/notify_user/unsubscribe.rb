@@ -23,7 +23,6 @@ module NotifyUser
     end
 
     def self.toggle_status(target, type)
-      raise
       if NotifyUser::Unsubscribe.has_unsubscribed_from(target, type).empty?
         NotifyUser::Unsubscribe.create(target: target, type: type)
       else

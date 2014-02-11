@@ -9,6 +9,6 @@ Rails.application.routes.draw do
     get 'notifications/subscribe' => 'notifications#subscribe'
     get 'notifications/unauth_unsubscribe' => 'notifications#unauth_unsubscribe'
     get 'notifications/subscriptions' => 'notifications#subscriptions'
-    put 'notifications/update_subscriptions' => 'notifications#update_subscriptions'
+    put 'notifications/subscriptions' => 'notifications#subscriptions'
   end
 end
