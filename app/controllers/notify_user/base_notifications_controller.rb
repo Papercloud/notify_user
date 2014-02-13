@@ -6,11 +6,11 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     @notifications = NotifyUser::BaseNotification.for_target(@user)
                                                   .order("created_at DESC")
                                                   .limit(30)
-                                                  .page(params[:page])
+                                                  .page(params[:page]).per(params[:per_page])
 
     respond_to do |format|
       format.html
-      format.json {render :json => @notifications}
+      format.json {render :json => @notifications, meta: { pagination: { per_page: @notifications.limit_value, total_pages: @notifications.total_pages, total_objects: @notifications.total_count } }}
     end
   end
 
