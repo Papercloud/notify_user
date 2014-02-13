@@ -94,27 +94,29 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def authenticate!
-    method(NotifyUser.authentication_method).call
-    @user = method(NotifyUser.current_user_method).call
+    # method(NotifyUser.authentication_method).call
+    # @user = method(NotifyUser.current_user_method).call
+    @user = User.first
   end
 
   private
-  def build_notification_types
+  def build_notification_types()
+    #dirty way to build a json hash with pagination
     types = {:subscriptions => []}
 
     notification_types = NotifyUser.unsubscribable_notifications
 
     #iterates over channels
     NotifyUser::BaseNotification.channels.each do |type, options|
-      channel = (type.to_s + "_channel").camelize.constantize
-      types[:subscriptions] << {type: type, description: channel.default_options[:description],
-        status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
+        channel = (type.to_s + "_channel").camelize.constantize
+        types[:subscriptions] << {type: type, description: channel.default_options[:description],
+          status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
     end 
 
     #iterates over type
     notification_types.each do |type|
-      types[:subscriptions] << {type: type, description: type.constantize.description,
-        status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
+        types[:subscriptions] << {type: type, description: type.constantize.description,
+          status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
     end 
     return types
   end

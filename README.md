@@ -59,7 +59,7 @@ config.action_mailer.default_url_options = { :host => "http://example.com" }
 Unsubscribing from a notification type, first add it to the notify_user.rb initilizer 
 ```
 # Override the default notification type
-config.unsubscribable_notifications = ['NewPostNotification']
+config.unsubscribable_notifications = ['NewPostNotification','NewSale']
 ```
 Users can manage their subscription statuses through the web interface
 ```
