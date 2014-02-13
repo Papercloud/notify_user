@@ -94,9 +94,8 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def authenticate!
-    # method(NotifyUser.authentication_method).call
-    # @user = method(NotifyUser.current_user_method).call
-    @user = User.first
+    method(NotifyUser.authentication_method).call
+    @user = method(NotifyUser.current_user_method).call
   end
 
   private
