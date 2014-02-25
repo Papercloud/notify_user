@@ -9,11 +9,11 @@ module NotifyUser
 
     validate :is_unsubscribable
 
-    validates :type, :uniqueness => {:scope => :target}
+    validates :type, :uniqueness => {:scope => [:target_type, :target_id]}
 
     self.inheritance_column = :_type_disabled
 
-    if ActiveRecord::VERSION::MAJOR < 4
+    if Rails.version.to_i < 4
       attr_accessible :target, :type
     end
 
@@ -26,7 +26,7 @@ module NotifyUser
       if NotifyUser::Unsubscribe.has_unsubscribed_from(target, type).empty?
         NotifyUser::Unsubscribe.create(target: target, type: type)
       else
-        NotifyUser::Unsubscribe.where(target: target, type: type).destroy_all
+        NotifyUser::Unsubscribe.has_unsubscribed_from(target,type).destroy_all
       end 
     end
 
