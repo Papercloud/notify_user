@@ -5,9 +5,6 @@ module NotifyUser
     # The user to send the notification to
     belongs_to :target, polymorphic: true
 
-    attr_accessible :target, :type, :active
-
-
     validates_presence_of :target_id, :target_type, :target, :type
 
     validate :is_unsubscribable
@@ -16,7 +13,7 @@ module NotifyUser
 
     self.inheritance_column = :_type_disabled
 
-    if ActiveRecord::VERSION::MAJOR < 4
+    if Rails.version < 4
       attr_accessible :target, :type
     end
 
