@@ -1,0 +1,50 @@
+.unread a{
+  font-weight: bold;
+}
+.read a{
+  font-weight: normal;
+}
+#notifications_list{
+  margin: 0 auto;
+  width: 100%;
+  width: 720px;
+  color: #000;
+  font-family: arial;
+  font-size: 14px;
+  text-align: right;
+  padding: 5px;
+  text-align: center;
+}
+
+#notifications_list .inner{
+  margin-top: 10px;
+  border: 1px solid #dedede;
+  text-align: left;
+
+}
+#notifications_list a{
+  color: #454545;
+  text-decoration: none;
+}
+#notifications_list .item:hover a{
+  text-decoration: underline;
+}
+
+#notifications_list .title{
+  text-align: left;
+}
+
+#notifications_list .item{
+  padding: 20px 10px;
+  border-bottom: 1px solid #dedede;
+}
+#notifications_list .item.read{
+  background: #eaeaea;
+}
+#notifications_list .item .time_ago{
+  font-size: 12px;
+  text-align: right;
+}
+#notifications_list .mark_as_read{
+  text-align: right;
+}

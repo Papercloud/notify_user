@@ -1,5 +1,5 @@
 require "kaminari"
-
+require "notify_user/railtie"
 require "notify_user/engine"
 
 module NotifyUser
