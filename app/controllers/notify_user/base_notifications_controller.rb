@@ -130,7 +130,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def subscribe_to(type)
-    NotifyUser::Unsubscribe.has_unsubscribed_from(@user,type).destroy_all
+    NotifyUser::Unsubscribe.unsubscribe(@user,type)
     flash[:message] = "successfully subscribed to #{type} notifications"
   end
 end

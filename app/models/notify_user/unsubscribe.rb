@@ -26,9 +26,15 @@ module NotifyUser
       if NotifyUser::Unsubscribe.has_unsubscribed_from(target, type).empty?
         NotifyUser::Unsubscribe.create(target: target, type: type)
       else
-        NotifyUser::Unsubscribe.has_unsubscribed_from(target,type).destroy_all
+        NotifyUser::Unsubscribe.unsubscribe(target,type)
       end 
     end
+
+    def self.unsubscribe(target, type)
+      where(target_id: target.id)
+      .where(target_type: target.class.base_class)
+      .where(type: type).destroy_all
+    end    
 
     def self.has_unsubscribed_from(target, type)
       where(target_id: target.id)
