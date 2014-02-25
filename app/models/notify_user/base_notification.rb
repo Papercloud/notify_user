@@ -102,7 +102,7 @@ module NotifyUser
 
     def generate_unsubscribe_hash
       #check if a hash already exists for that user otherwise create a new one
-      return user_hash = NotifyUser::UserHash.find_or_create_by(target: self.target, type: self.type, active: true)
+      return NotifyUser::UserHash.where(target_id: self.target.id).where(target_type: self.target.class.base_class).where(type: self.type).where(active: true).first || NotifyUser::UserHash.create(target: self.target, type: self.type, active: true)
     end
 
     ## Notification description
