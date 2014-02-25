@@ -13,7 +13,7 @@ module NotifyUser
 
     self.inheritance_column = :_type_disabled
 
-    if Rails.version < 4
+    if Rails.version.to_i < 4
       attr_accessible :target, :type
     end
 
