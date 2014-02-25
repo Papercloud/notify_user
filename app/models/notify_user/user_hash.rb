@@ -2,7 +2,7 @@ module NotifyUser
   class UserHash < ActiveRecord::Base
     self.table_name = "notify_user_user_hashes"
 
-    # attr_accessible :target, :type, :active
+    attr_accessible :target, :type, :active
 
     # The user to send the notification to
     belongs_to :target, polymorphic: true
