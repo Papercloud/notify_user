@@ -9,7 +9,5 @@ module NotifyUser
       g.assets false
       g.helper false
     end
-
-    Rails.application.config.assets.precompile += %w{ notify_user/notify_user.css }
   end
 end
