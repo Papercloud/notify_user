@@ -2,7 +2,7 @@ module NotifyUser
   class UserHash < ActiveRecord::Base
     self.table_name = "notify_user_user_hashes"
 
-    attr_accessible :target, :type, :active
+    # attr_accessible :target, :type, :active
 
     # The user to send the notification to
     belongs_to :target, polymorphic: true
@@ -14,7 +14,7 @@ module NotifyUser
     self.inheritance_column = :_type_disabled
 
     if ActiveRecord::VERSION::MAJOR < 4
-      attr_accessible :target, :type
+      attr_accessible :target, :type, :active
     end
 
     def self.confirm_hash(token, type)
