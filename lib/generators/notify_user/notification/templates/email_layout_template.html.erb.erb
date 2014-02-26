@@ -13,11 +13,17 @@
 </div>
 <div style="width: 100%; background-color: #fff; margin: 0; padding: 0;">
   <div style="width: 500px; margin: 0 auto; padding: 40px 0; ">
-    <%%= yield %>
+    <%= yield %>
   </div>
 </div>
+
 <div style="width: 100%; min-height: 80px; margin: 0; padding: 0;">
   <div style="width: 600px; margin: 0 auto; padding: 0;">
+    <% if NotifyUser.unsubscribable_notifications.include? @notification.type  %>
+      <p style="text-align: center;">
+        <%= unsubscribe_link(@notification, "Unsubscribe") %>
+      </p>
+    <% end %>
     <p style="text-align: center;">
       This is the default generated layout. A privacy declaration could go here.
     </p>

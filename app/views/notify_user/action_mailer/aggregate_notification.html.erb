@@ -1,12 +1,6 @@
-<% user_hash =  @notifications.first.generate_unsubscribe_hash %>
 
 <% @notifications.each do |notification| %>
 <div>
   <%= render template: "notify_user/#{notification.class.name.underscore}/action_mailer/notification", locals: { notification: notification, params: notification.params } %>  
 </div>
-<% end %>
-<br><br>
-<% if NotifyUser.unsubscribable_notifications.include? @notifications.first.type  %>
-
-<%= link_to "Unsubscribe", notify_user_notifications_unauth_unsubscribe_url(:type => @notifications.first.type, :token => user_hash.token)%>
 <% end %>
