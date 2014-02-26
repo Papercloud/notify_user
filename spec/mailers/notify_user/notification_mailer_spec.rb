@@ -24,6 +24,7 @@ describe NotifyUser::NotificationMailer do
     end
 
     it "renders with a layout" do
+      NotifyUser::NotificationMailer.any_instance.stub(:notification).and_return(notification)
       mail.body.raw_source.should include "This is the default generated layout"
     end
 
