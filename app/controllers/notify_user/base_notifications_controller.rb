@@ -1,6 +1,6 @@
 class NotifyUser::BaseNotificationsController < ApplicationController
 
-  before_filter :authenticate!, :except => [:unauth_subscribe]
+  before_filter :authenticate!, :except => [:unauth_unsubscribe]
 
   def index
     @notifications = NotifyUser::BaseNotification.for_target(@user)
