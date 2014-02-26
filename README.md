@@ -65,4 +65,11 @@ Users can manage their subscription statuses through the web interface
 ```
 visit notify_user/notifications/unsubscribe
 ```
-
+Unsubscribe link helper - add this to your views/notify_user/layouts/action_mailer.html.erb
+```
+<% if is_unsubscribeable? @notification  %>
+	<p style="text-align: center;">
+		<%= unsubscribe_link(@notification, "Unsubscribe") %>
+	</p>
+<% end %>
+```
