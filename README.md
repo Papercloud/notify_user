@@ -23,7 +23,11 @@ Then send:
 NotifyUser.send_notification('new_my_property').to(user).with(listing_address: "123 Main St").notify
 ```
 
-
+To enable APNS add this line to your app/notification/notification_type.rb
+```
+channel :apns,
+	aggregate_per: false    
+```
 
 To run the tests:
 ```
