@@ -4,9 +4,7 @@ class <%= name.camelize %> < NotifyUser::BaseNotification
         subject: "<%= Rails.application.class.parent_name.titleize %>: You have a new <%= name.humanize %> notification.",
         aggregate: {
           subject: "<%= Rails.application.class.parent_name.titleize %>: You have new <%= name.humanize %> notifications."
-        }
-  channel :apns,
-  	aggregate_per: false      
+        }  
 
   @@description = "please override this type description" 
   @@aggregate_per = 10.minutes
