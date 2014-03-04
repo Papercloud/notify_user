@@ -7,8 +7,11 @@ module NotifyUser
     let(:notification) { NewPostNotification.create({target: user}) }
     Rails.application.routes.default_url_options[:host]= 'localhost:5000' 
 
+
+
     before :each do
       BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
+      BaseNotification.channel(:apns, {aggregate_per: false})
     end
 
     describe "#notify" do
