@@ -49,8 +49,8 @@ visit /notify_user/notifications
 Clicking on a notification gets marked as read and taken to the redirect_logic action (notifications_controller.rb)
 ```
 def redirect_logic(notification)
-	class = notification.params[:action_type].capitalize.constantize
-	object = class.find(@notification.params[:action_id])
+	class = notification.params[:type].capitalize.constantize
+	object = class.find(@notification.params[:id])
 	redirect_to property_url(object)
 end
 ```
