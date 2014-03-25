@@ -31,6 +31,7 @@ module NotifyUser
     end
 
     def self.unsubscribe(target, type)
+      #deletes unsubscribe object in essence subscribing a user
       where(target_id: target.id)
       .where(target_type: target.class.base_class)
       .where(type: type).destroy_all

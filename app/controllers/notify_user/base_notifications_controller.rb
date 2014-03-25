@@ -60,7 +60,15 @@ class NotifyUser::BaseNotificationsController < ApplicationController
 
   def update_subscriptions(types)
     types.each do |type|
-      NotifyUser::Unsubscribe.toggle_status(@user, type)
+      unsubscribe = NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type[:type])
+      if type[:status] == '0'
+        if unsubscribe.empty?
+          #if unsubscribe doesn't exist create it 
+          unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type[:type])
+        end
+      else
+        subscribe_to(type[:type])
+      end
     end 
   end
 

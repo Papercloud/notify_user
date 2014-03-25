@@ -92,10 +92,28 @@ describe NotifyUser::NotificationsController do
       notification.save
     end
 
-    it "endpoint for toggling subscriptions statuses" do
-      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+    xit "endpoint for toggling subscriptions statuses" do
+      # NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
       put :subscriptions, :types => ['NewPostNotification']
       NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should_not eq []
+    end
+
+    it "endpoint for updating notification subscription statuses" do
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+      put :subscriptions, :types => [{
+        type: 'NewPostNotification',
+        status: '0'
+        }]
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should_not eq []        
+    end
+
+    it "endpoint for updating notification subscription statuses passing 1 does nothing" do
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+      put :subscriptions, :types => [{
+        type: 'NewPostNotification',
+        status: '1'
+        }]
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []        
     end
 
     it "unsubscribing from notification type" do
