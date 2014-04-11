@@ -124,7 +124,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     notification_types.each do |type|
         types[:subscriptions] << {type: type, description: type.constantize.description,
           status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
-    end 
+    end
     return types
   end
 
