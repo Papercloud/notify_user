@@ -1,16 +1,21 @@
 development:
   adapter: postgresql
   encoding: unicode
-  database: rails-4_0_2_development
+  database: notify_user_development
+  pool: 5
+  timeout: 5000
 
 test:
   adapter: postgresql
   encoding: unicode
-  database: rails-4_0_2_test
+  database: notify_user_test
+  pool: 5
+  timeout: 5000
 
 
 production:
   adapter: postgresql
   encoding: unicode
-  database: rails-4_0_2_production
-
+  database: notify_user_production
+  pool: 5
+  timeout: 5000
