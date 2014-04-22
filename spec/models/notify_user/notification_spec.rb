@@ -7,11 +7,47 @@ module NotifyUser
     let(:notification) { NewPostNotification.create({target: user}) }
     Rails.application.routes.default_url_options[:host]= 'localhost:5000' 
 
-
-
     before :each do
       BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
       BaseNotification.channel(:apns, {aggregate_per: false})
+    end
+
+    describe "params" do
+      before :each do
+
+      end
+
+      it "doesn't fail if params nil" do
+        notification.params.should eq nil
+      end
+
+      it "can reference params using string when submitted as json" do
+        notification.params = {"listing_id" => 1}
+        notification.save
+
+        NewPostNotification.last.params["listing_id"].should eq 1
+      end
+
+      it "can reference params using symbol when submitted as json" do
+        notification.params = {"listing_id" => 1}
+        notification.save
+
+        NewPostNotification.last.params[:listing_id].should eq 1
+      end
+
+      it "can reference params using symbol when submitted as hash" do
+        notification.params = {:listing_id => 1}
+        notification.save
+
+        NewPostNotification.last.params[:listing_id].should eq 1
+      end
+
+      it "can reference params using string when subbmited as hash" do
+        notification.params = {:listing_id => 1}
+        notification.save
+
+        NewPostNotification.last.params["listing_id"].should eq 1
+      end
     end
 
     describe "#notify" do

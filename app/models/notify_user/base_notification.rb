@@ -50,6 +50,12 @@ module NotifyUser
       end
     end
 
+    def params
+      {}  
+      super.with_indifferent_access if super
+
+    end
+
     def message
       ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(

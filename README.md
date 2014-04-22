@@ -20,7 +20,7 @@ Edit views/notify_user/new_my_property/action_mailer/notification.html.erb, e.g.
 
 Then send:
 ```
-NotifyUser.send_notification('new_my_property').to(user).with(listing_address: "123 Main St").notify
+NotifyUser.send_notification('new_my_property').to(user).with("listing_address" => "123 Main St").notify
 ```
 
 To enable APNS add this line to your app/notification/notification_type.rb

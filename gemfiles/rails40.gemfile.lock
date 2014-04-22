@@ -9,7 +9,7 @@ GIT
 PATH
   remote: ../
   specs:
-    notify_user (0.0.1)
+    notify_user (0.0.2)
       active_model_serializers
       kaminari
       rails (>= 3.2)
