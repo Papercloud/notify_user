@@ -41,6 +41,14 @@ gem install wwtd
 wwtd
 ```
 
+##Upgrading
+If your upgrading from a pervious version of notify_user params has been changed from text to the new json data type run this rake task to update
+```
+rake notify_user::move_params_to_json
+rake db:migrate
+```
+
+
 ##Web interface
 Display a list of notifications for a logged in user
 ```

@@ -1,0 +1,5 @@
+Description:
+    Updates notify_user params to the PostgresSQL datatype json
+
+Example:
+    rails generate notify_user:json_update 

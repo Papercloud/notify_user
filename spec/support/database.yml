@@ -1,0 +1,16 @@
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: rails-4_0_2_development
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: rails-4_0_2_test
+
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: rails-4_0_2_production
+

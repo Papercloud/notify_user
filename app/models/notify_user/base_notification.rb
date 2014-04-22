@@ -16,7 +16,7 @@ module NotifyUser
     validate :unsubscribed_validation
 
     # Params for creating the notification message.
-    serialize :params, Hash
+    # serialize :params, Hash
 
     # The user to send the notification to
     belongs_to :target, polymorphic: true
