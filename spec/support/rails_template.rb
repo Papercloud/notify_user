@@ -2,6 +2,9 @@
 system("cat #{ENV['RAILS_ROOT']}/config/database.yml | grep -v 'username' > #{ENV['RAILS_ROOT']}/config/database2.yml ")
 system("cat #{ENV['RAILS_ROOT']}/config/database2.yml | grep -v 'password' > #{ENV['RAILS_ROOT']}/config/database.yml ")
 
+rake "db:drop:all"
+rake "db:create:all"
+
 generate :model, 'user email:string'
 
 generate "notify_user:install"
