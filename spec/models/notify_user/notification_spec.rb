@@ -13,12 +13,14 @@ module NotifyUser
     end
 
     describe "params" do
-      before :each do
 
+      it "doesn't fail if searching for param variable that doesn't exist" do
+        notification.params[:unknown].should eq nil
       end
 
-      it "doesn't fail if params nil" do
-        notification.params.should eq nil
+      it "doesn't fail if searching for a param that doesn't exist if other params are present" do
+        notification.params = {name: "hello_world"}
+        notification.params[:unknown].should eq nil
       end
 
       it "can reference params using string when submitted as json" do
