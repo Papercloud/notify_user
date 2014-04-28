@@ -51,7 +51,11 @@ module NotifyUser
     end
 
     def params
-      super.with_indifferent_access
+      if super.nil?
+        {}
+      else
+        super.with_indifferent_access
+      end
     end
 
     def message
