@@ -4,7 +4,7 @@ class ApnsChannel
   
   	def default_options
   	  {
-  	    description: "Apple push notifications service"
+  	    description: "Push Notifications"
   	  }
   	end
 
