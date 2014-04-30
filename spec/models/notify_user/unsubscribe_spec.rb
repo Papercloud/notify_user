@@ -18,6 +18,11 @@ module NotifyUser
         notification.errors[:target].first.should eq " has unsubscribed from this type"
       end
 
+      it "doesn't queue an aggregation background worker if unsubscribed" do
+        notification.class.should_not_receive(:delay_for)
+        notification.notify
+      end
+
       it "doesnt create object if notification type isn't unsubscribable" do
         unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "UnsubscribableNotification"})
         NotifyUser::Unsubscribe.last.type.should_not eq "UnsubscribableNotification"

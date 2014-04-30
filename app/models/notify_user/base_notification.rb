@@ -93,17 +93,19 @@ module NotifyUser
     # Send any Emails/SMS/APNS
     def notify
 
-      save
+      if save
 
-      #if aggregation is false bypass aggregation completely
-      self.channels.each do |channel_name, options|
-        if(options[:aggregate_per] == false)
-          self.class.delay.deliver_notification_channel(self.id, channel_name)    
-        else
-          if not aggregation_pending?
-            self.class.delay_for(options[:aggregate_per] || self.aggregate_per).notify_aggregated_channel(self.id, channel_name)
+        #if aggregation is false bypass aggregation completely
+        self.channels.each do |channel_name, options|
+          if(options[:aggregate_per] == false)
+            self.class.delay.deliver_notification_channel(self.id, channel_name)    
+          else
+            if not aggregation_pending?
+              self.class.delay_for(options[:aggregate_per] || self.aggregate_per).notify_aggregated_channel(self.id, channel_name)
+            end
           end
         end
+
       end
 
     end
