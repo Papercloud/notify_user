@@ -1,8 +1,9 @@
-source "https://rubygems.org"
+source "http://rubygems.org"
 
 gemspec :path => "../"
 
-ENV['RAILS_VERSION'] = "3.2.13"
+ENV['RAILS_VERSION'] = "3.2.17"
 gem "rails", ENV['RAILS_VERSION']
+gem 'surus', '~> 0.4.2'
 gem 'sidekiq'
 gem 'active_model_serializers-matchers', github: "adambarber/active_model_serializers-matchers"

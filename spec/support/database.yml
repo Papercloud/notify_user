@@ -2,6 +2,7 @@ development:
   adapter: postgresql
   encoding: unicode
   database: notify_user_development
+  host: localhost
   pool: 5
   timeout: 5000
 
@@ -9,6 +10,7 @@ test:
   adapter: postgresql
   encoding: unicode
   database: notify_user_test
+  host: localhost
   pool: 5
   timeout: 5000
 
@@ -17,5 +19,6 @@ production:
   adapter: postgresql
   encoding: unicode
   database: notify_user_production
+  host: localhost
   pool: 5
   timeout: 5000

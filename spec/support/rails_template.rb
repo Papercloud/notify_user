@@ -1,6 +1,6 @@
 #removes the username and password fields from database.yml
-system("cat #{ENV['RAILS_ROOT']}/config/database.yml | grep -v 'username' > #{ENV['RAILS_ROOT']}/config/database2.yml ")
-system("cat #{ENV['RAILS_ROOT']}/config/database2.yml | grep -v 'password' > #{ENV['RAILS_ROOT']}/config/database.yml ")
+remove_file "#{ENV['RAILS_ROOT']}/config/database.yml"
+copy_file File.expand_path('../../support/database.yml'), "#{ENV['RAILS_ROOT']}/config/database.yml"
 
 rake "db:drop:all"
 rake "db:create:all"

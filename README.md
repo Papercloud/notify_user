@@ -32,7 +32,7 @@ channel :apns,
 To run the tests:
 ```
 BUNDLE_GEMFILE=gemfiles/rails40.gemfile bundle install
-rspec spec
+BUNDLE_GEMFILE=gemfiles/rails40.gemfile bundle exec rspec spec
 ```
 
 To run the tests like Travis:

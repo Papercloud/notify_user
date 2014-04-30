@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 gemspec :path => "../"
 
-ENV['RAILS_VERSION'] = "4.0.2"
+ENV['RAILS_VERSION'] = "4.0.5"
 gem "rails", ENV['RAILS_VERSION']
 gem 'sidekiq'
 gem 'active_model_serializers-matchers', github: "adambarber/active_model_serializers-matchers"
