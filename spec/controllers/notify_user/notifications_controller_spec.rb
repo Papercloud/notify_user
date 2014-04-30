@@ -12,7 +12,7 @@ describe NotifyUser::NotificationsController do
 
   it "delegates authentication to Devise" do
     subject.should_receive(:authenticate_user!).and_return(true)
-    subject.should_receive(:current_user).any_number_of_times.and_return(user)
+    subject.stub(:current_user).and_return(user)
     get :index
   end
 

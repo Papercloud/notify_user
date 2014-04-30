@@ -1,9 +1,10 @@
-require 'state_machine'
+require 'aasm'
 require 'sidekiq'
 
 module NotifyUser
   class BaseNotification < ActiveRecord::Base
     include ActionView::Helpers::TextHelper
+    include AASM
 
     if ActiveRecord::VERSION::MAJOR < 4
       attr_accessible :params, :target, :type, :state
@@ -16,37 +17,36 @@ module NotifyUser
     validate :unsubscribed_validation
 
     # Params for creating the notification message.
-    # serialize :params, Hash
+    if ActiveRecord::VERSION::MAJOR < 4
+      serialize :params, JSON
+    end
 
     # The user to send the notification to
     belongs_to :target, polymorphic: true
 
     validates_presence_of :target_id, :target_type, :target, :type, :state
 
-    state_machine :state, initial: :pending do
+    aasm column: :state do
 
       # Created, not sent yet. Possibly waiting for aggregation.
-      state :pending do
-      end
+      state :pending, initial: true
 
       # Email/SMS/APNS has been sent.
-      state :sent do
-      end
+      state :sent
 
       # The user has seen this notification.
-      state :read do
-      end
+      state :read
 
       # Record that we have sent message(s) to the user about this notification.
       event :mark_as_sent do
-        transition :pending => :sent
+        transitions from: :pending, to: :sent
       end
 
       # Record that the user has seen this notification, usually on a page or in the app.
       # A notification can go straight from pending to read if it's seen in a view before
       # sent in an email.
       event :mark_as_read do
-        transition [:pending, :sent] => :read
+        transitions from: [:pending, :sent], to: :read
       end
     end
 
