@@ -6,6 +6,6 @@ class <%= name.camelize %> < NotifyUser::BaseNotification
           subject: "<%= Rails.application.class.parent_name.titleize %>: You have new <%= name.humanize %> notifications."
         }  
 
-  @@description = "please override this type description" 
-  @@aggregate_per = 10.minutes
+  self.description = "please override this type description" 
+  self.aggregate_per = 10.minutes
 end

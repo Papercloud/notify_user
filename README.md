@@ -85,3 +85,23 @@ Unsubscribe link helper - add this to your views/notify_user/layouts/action_mail
 	</p>
 <% end %>
 ```
+
+##Upgrading to JSON params data type
+Run json_update generator which generates the migrations to change the params datatype to json as well as convert the current data to json
+```
+rails generate notify_user:json_update 
+rake db:migrate
+```
+
+##Changes
+Notification description and aggregates has changed syntax slighly from
+```
+@@description = "please override this type description" 
+@@aggregate_per = 10.minutes
+```
+to 
+```
+self.description = "please override this type description" 
+self.aggregate_per = 10.minutes
+```
+
