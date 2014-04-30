@@ -1,6 +1,6 @@
 class AddJsonColumnToNotifications < ActiveRecord::Migration
   def up
-  	add_column :notify_user_notifications, :json, :json, default: {}
+  	add_column :notify_user_notifications, :json, :json
   end
 
   def down
