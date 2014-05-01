@@ -9,3 +9,5 @@ gemfile:
   - gemfiles/rails41.gemfile
 script: "bundle exec rspec spec"
 bundler_args: '--no-deployment'
+notifications:
+  slack: papercloud:SDpE0qusrXrC49QBryGVcR2B
