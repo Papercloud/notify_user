@@ -58,6 +58,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
       unsubscribe_from(params[:type])
       redirect_to notify_user_notifications_unsubscribe_path  
     end
+    @types = build_notification_types
     @unsubscribale_types = NotifyUser.unsubscribable_notifications
     @unsubscribale_channels = NotifyUser::BaseNotification.channels
   end
