@@ -58,6 +58,12 @@ describe NotifyUser::NotificationsController do
       response.body.should have_content("set redirect logic")
     end
 
+    it "reading a notification twice doesn't throw an exception" do
+      get :read, :id => notification.id
+      get :read, :id => notification.id
+      
+    end
+
     it "marks all unread messages as read" do
       get :mark_all
       notifications = NotifyUser::BaseNotification.for_target(user).where('state IN (?)', '["pending","sent"]')

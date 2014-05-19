@@ -45,7 +45,10 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   #get 
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
-    @notification.mark_as_read!
+    unless @notification.read?
+      @notification.mark_as_read!
+    end
+
     redirect_logic(@notification)
   end
 
