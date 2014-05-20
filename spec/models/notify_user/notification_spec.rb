@@ -70,6 +70,20 @@ module NotifyUser
           notification.notify
         end
 
+        it "if dev urbanairship keys detected send notifications both to production and dev keys" do
+          BaseNotification.should_receive(:delay_for)
+                          .with(notification.class.aggregate_per)
+                          .and_call_original
+          ActionMailerChannel.should_receive(:deliver)
+          Apns.should_receive(:push_notification).twice
+
+          ENV['DEV_UA_APPLICATION_KEY'] = 'sdfsdf'
+          ENV['DEV_UA_APPLICATION_SECRET'] = 'dsfsdf'
+          ENV['DEV_UA_MASTER_SECRET'] = 'sdfsdf'
+
+          notification.notify
+        end
+
         it "does not schedule an aggregation job if there is one already" do
           Sidekiq::Testing.fake!
 
@@ -94,7 +108,7 @@ module NotifyUser
 
           it "sends a singular email if no more notifications were queued since the original was delayed" do
             Sidekiq::Testing.inline!
-            Apns.should_receive(:push_notification)
+            Apns.should_receive(:push_notification).at_least(1).times
             NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
             BaseNotification.notify_aggregated(notification.id)
           end
@@ -142,7 +156,7 @@ module NotifyUser
     describe "#notify!" do
 
       it "sends immediately, ignoring aggregation" do
-        Apns.should_receive(:push_notification)
+        Apns.should_receive(:push_notification).at_least(1).times
         BaseNotification.should_not_receive(:delay_for)
         ActionMailerChannel.should_receive(:deliver)
         notification.notify!
