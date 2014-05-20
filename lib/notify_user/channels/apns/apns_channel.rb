@@ -19,6 +19,12 @@ class ApnsChannel
         Urbanairship.master_secret = ENV['DEV_UA_MASTER_SECRET']
 
         NotifyUser::Apns.push_notification(notification)
+
+        #sets the api keys bake to their original state
+
+        Urbanairship.application_key = ENV['UA_APPLICATION_KEY']
+        Urbanairship.application_secret = ENV['UA_APPLICATION_SECRET']
+        Urbanairship.master_secret = ENV['UA_MASTER_SECRET']
       end
     end
 
