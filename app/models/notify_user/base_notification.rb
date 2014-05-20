@@ -58,6 +58,10 @@ module NotifyUser
       end
     end
 
+    def count_for_target
+      NotifyUser::BaseNotification.for_target(target).where('state IN (?)', ["sent", "pending"]).count
+    end
+
     def message
       ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(

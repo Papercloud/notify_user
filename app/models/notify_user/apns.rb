@@ -15,7 +15,7 @@ module NotifyUser
 
       payload = {
         :alias => notification.target_id,
-        :aps => {alert: notification.mobile_message(space_allowance), badge: 1},
+        :aps => {alert: notification.mobile_message(space_allowance), badge: notification.count_for_target},
         :n_data => {
           '#' => notification.id,     
           t: notification.created_at.to_time.to_i, 

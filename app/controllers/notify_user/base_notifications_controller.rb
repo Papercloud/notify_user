@@ -38,7 +38,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def notifications_count
-    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', ["sent"])
+    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', ["sent", "pending"])
     render json: {:count => @notifications.count}
   end
 

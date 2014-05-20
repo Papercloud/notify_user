@@ -12,6 +12,12 @@ module NotifyUser
       BaseNotification.channel(:apns, {aggregate_per: false})
     end
 
+    describe "notification count" do
+      it "returns the sent count for a user" do
+        notification.count_for_target.should eq 1
+      end
+    end
+
     describe "params" do
 
       it "doesn't fail if searching for param variable that doesn't exist" do
