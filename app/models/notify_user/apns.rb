@@ -26,10 +26,10 @@ module NotifyUser
 
       response = Urbanairship.push(payload)
         if response.success?
-          puts "Push notification sent successfully."
+          logger.info "Push notification sent successfully."
           return true
         else
-          puts "Push notification failed."
+          logger.info "Push notification failed."
           return false
         end    
     end

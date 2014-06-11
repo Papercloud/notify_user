@@ -9,7 +9,7 @@ GIT
 PATH
   remote: ../
   specs:
-    notify_user (0.0.13)
+    notify_user (0.0.14)
       aasm
       active_model_serializers
       kaminari
@@ -20,7 +20,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    aasm (3.1.1)
+    aasm (3.2.0)
     actionmailer (4.0.4)
       actionpack (= 4.0.4)
       mail (~> 2.5.4)

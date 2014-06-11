@@ -125,15 +125,15 @@ module NotifyUser
 
     ## Channels
 
-    mattr_accessor :channels
-    @@channels = {
+    class_attribute :channels
+    self.channels = {
       action_mailer: {description: 'Email notifications'}
     }
 
     # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
     # them. Not sure if they really need another concept though, they could just be formats on the controller.
-    mattr_accessor :views
-    @@views = {
+    class_attribute :views
+    self.views = {
       mobile_sdk: {
         template_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/mobile_sdk/notification" }
       }
