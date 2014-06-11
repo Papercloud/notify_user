@@ -8,7 +8,7 @@ class ActionMailerChannel
         aggregate: {
           subject: "New Notifications"
         },
-        description: "Email notifications"
+        description: "Email Notifications"
       }
     end
     
