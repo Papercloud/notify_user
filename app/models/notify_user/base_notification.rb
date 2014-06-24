@@ -124,6 +124,10 @@ module NotifyUser
     self.description = ""
 
     ## Channels
+    # class << self
+    #   attr_accessor :channels
+    #   attr_writer :channels
+    # end
 
     class_attribute :channels
     self.channels = {
@@ -141,7 +145,9 @@ module NotifyUser
 
     # Configure a channel
     def self.channel(name, options={})
-      channels[name] = options
+      channels_clone = self.channels.clone
+      channels_clone[name] = options
+      self.channels[name] = options      
     end
 
     ## Aggregation
