@@ -147,7 +147,7 @@ module NotifyUser
     def self.channel(name, options={})
       channels_clone = self.channels.clone
       channels_clone[name] = options
-      self.channels[name] = options      
+      self.channels = channels_clone
     end
 
     ## Aggregation

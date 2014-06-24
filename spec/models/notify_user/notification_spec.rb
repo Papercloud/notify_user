@@ -66,6 +66,9 @@ module NotifyUser
       end
 
       describe "with aggregation enabled" do
+        before :each do
+          NewPostNotification.channel(:apns, {aggregate_per: false})
+        end
 
         it "schedules a job to wait for more notifications to aggregate if there is not one already" do
           BaseNotification.should_receive(:delay_for)
@@ -160,6 +163,9 @@ module NotifyUser
     end
 
     describe "#notify!" do
+      before :each do 
+        NewPostNotification.channel(:apns, {aggregate_per: false})
+      end
 
       it "sends immediately, ignoring aggregation" do
         Apns.should_receive(:push_notification).at_least(1).times
@@ -180,6 +186,7 @@ module NotifyUser
       it "doesn't send if unsubscribed from mailer channel" do
         unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
         ActionMailerChannel.should_not_receive(:deliver)
+
         ApnsChannel.should_receive(:deliver)
         notification.notify!
       end
