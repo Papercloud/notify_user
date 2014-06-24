@@ -124,11 +124,6 @@ module NotifyUser
     self.description = ""
 
     ## Channels
-    # class << self
-    #   attr_accessor :channels
-    #   attr_writer :channels
-    # end
-
     class_attribute :channels
     self.channels = {
       action_mailer: {description: 'Email notifications'}
