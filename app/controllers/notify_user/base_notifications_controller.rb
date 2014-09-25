@@ -73,6 +73,24 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render :json => @types
   end
 
+  def mass_subscriptions
+    types = build_notification_types()
+    if params[:type]
+      types[:subscriptions].each do |type|
+        unsubscribe = NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type[:type])
+        if params[:type][type[:type]] == "1"
+          NotifyUser::Unsubscribe.unsubscribe(@user,type[:type])
+        else
+          if unsubscribe.empty?
+            #if unsubscribe doesn't exist create it 
+            unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type[:type])
+          end
+        end
+      end
+    end  
+    redirect_to notify_user_notifications_unsubscribe_path  
+  end
+
   def update_subscriptions(types)
     types.each do |type|
       unsubscribe = NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type[:type])
