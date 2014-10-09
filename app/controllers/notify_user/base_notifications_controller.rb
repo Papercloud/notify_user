@@ -87,6 +87,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
           end
         end
       end
+      flash[:message] = "Successfully updated your notifcation settings"
     end  
     redirect_to notify_user_notifications_unsubscribe_path  
   end

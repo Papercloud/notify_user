@@ -126,7 +126,7 @@ module NotifyUser
     ## Channels
     class_attribute :channels
     self.channels = {
-      action_mailer: {description: 'Email notifications'}
+
     }
 
     # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
