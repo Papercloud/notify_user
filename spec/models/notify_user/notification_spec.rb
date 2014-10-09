@@ -111,15 +111,15 @@ module NotifyUser
             
             NewPostNotification.create({target: user})
 
-            NotificationMailer.should_receive(:aggregate_notifications_email).with(BaseNotification.pending_aggregation_with(notification), anything).and_call_original
-            BaseNotification.notify_aggregated(notification.id)
+            NotificationMailer.should_receive(:aggregate_notifications_email).with(NewPostNotification.pending_aggregation_with(notification), anything).and_call_original
+            NewPostNotification.notify_aggregated(notification.id)
           end
 
           it "sends a singular email if no more notifications were queued since the original was delayed" do
             Sidekiq::Testing.inline!
             Apns.should_receive(:push_notification).at_least(1).times
             NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
-            BaseNotification.notify_aggregated(notification.id)
+            NewPostNotification.notify_aggregated(notification.id)
           end
 
         end
@@ -146,15 +146,15 @@ module NotifyUser
             
             NewPostNotification.create({target: user, type: 'NewPostNotification'})
 
-            BaseNotification.should_receive(:deliver_notifications_channel).and_call_original
-            BaseNotification.notify_aggregated_channel(notification.id, 'action_mailer')
+            NewPostNotification.should_receive(:deliver_notifications_channel).and_call_original
+            NewPostNotification.notify_aggregated_channel(notification.id, 'action_mailer')
           end
 
           it "sends a single email if more not pending notifications" do
             Sidekiq::Testing.inline!
 
-            BaseNotification.should_receive(:deliver_notification_channel).and_call_original
-            BaseNotification.notify_aggregated_channel(notification.id, 'action_mailer')
+            NewPostNotification.should_receive(:deliver_notification_channel).and_call_original
+            NewPostNotification.notify_aggregated_channel(notification.id, 'action_mailer')
           end
         end
 
@@ -185,6 +185,7 @@ module NotifyUser
 
       it "doesn't send if unsubscribed from mailer channel" do
         unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
+        unsubscribe.save!
         ActionMailerChannel.should_not_receive(:deliver)
 
         ApnsChannel.should_receive(:deliver)

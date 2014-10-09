@@ -7,8 +7,6 @@ module NotifyUser
 
     validates_presence_of :target_id, :target_type, :target, :type
 
-    validate :is_unsubscribable
-
     validates :type, :uniqueness => {:scope => [:target_type, :target_id]}
 
     self.inheritance_column = :_type_disabled
@@ -41,14 +39,6 @@ module NotifyUser
       where(target_id: target.id)
       .where(target_type: target.class.base_class)
       .where(type: type)
-    end
-
-    private
-
-    #only throw error if both are false
-    def is_unsubscribable
-      errors.add(:type, ("not found")) if (NotifyUser.unsubscribable_notifications.include? self.type) == false && 
-                            NotifyUser::BaseNotification.channels.has_key?(self.type.to_sym) == false
     end
 
   end
