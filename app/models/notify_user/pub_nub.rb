@@ -21,9 +21,12 @@ module NotifyUser
       pubnub.publish(
         channel: notification.target.uuid,
         http_sync: true,
-        :message => {
-          aps: {
-            alert: notification.params["message"]
+        message: {
+          pn_apns: {
+            aps: {
+              alert: notification.mobile_message,
+              badge: 1
+            }
           }
         }
       )
