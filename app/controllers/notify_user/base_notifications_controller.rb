@@ -3,7 +3,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   before_filter :authenticate!, :except => [:unauth_unsubscribe]
 
   def index
-    collection                                     
+    collection
     respond_to_method
   end
 
@@ -43,7 +43,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def mark_all
     @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', ["pending","sent"])
     @notifications.update_all(state: :read)
-    redirect_to notify_user_notifications_path  
+    redirect_to notify_user_notifications_path
   end
 
   def notifications_count
@@ -51,7 +51,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render json: {:count => @notifications.count}
   end
 
-  #get 
+  #get
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
     unless @notification.read?
@@ -68,7 +68,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def unsubscribe
     if params[:type]
       unsubscribe_from(params[:type])
-      redirect_to notify_user_notifications_unsubscribe_path  
+      redirect_to notify_user_notifications_unsubscribe_path
     end
     @types = build_notification_types
     @unsubscribale_types = NotifyUser.unsubscribable_notifications
@@ -91,14 +91,14 @@ class NotifyUser::BaseNotificationsController < ApplicationController
           NotifyUser::Unsubscribe.unsubscribe(@user,type[:type])
         else
           if unsubscribe.empty?
-            #if unsubscribe doesn't exist create it 
+            #if unsubscribe doesn't exist create it
             unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type[:type])
           end
         end
       end
       flash[:message] = "Successfully updated your notifcation settings"
-    end  
-    redirect_to notify_user_notifications_unsubscribe_path  
+    end
+    redirect_to notify_user_notifications_unsubscribe_path
   end
 
   def update_subscriptions(types)
@@ -106,13 +106,13 @@ class NotifyUser::BaseNotificationsController < ApplicationController
       unsubscribe = NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type[:type])
       if type[:status] == '0'
         if unsubscribe.empty?
-          #if unsubscribe doesn't exist create it 
+          #if unsubscribe doesn't exist create it
           unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type[:type])
         end
       else
         subscribe_to(type[:type])
       end
-    end 
+    end
   end
 
   def unauth_unsubscribe
@@ -160,7 +160,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
         channel = (type.to_s + "_channel").camelize.constantize
         types[:subscriptions] << {type: type, description: channel.default_options[:description],
           status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
-    end 
+    end
 
     #iterates over type
     notification_types.each do |type|
