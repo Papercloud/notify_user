@@ -21,7 +21,16 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def respond_to_method
     respond_to do |format|
       format.html
-      format.json {render :json => @notifications, meta: { pagination: { per_page: @notifications.limit_value, total_pages: @notifications.total_pages, total_objects: @notifications.total_count } }}
+      format.json {
+        render json: @notifications,
+        meta: {
+          pagination: {
+            per_page: @notifications.limit_value,
+            total_pages: @notifications.total_pages,
+            total_objects: @notifications.total_count
+          }
+        }
+      }
     end
   end
 
@@ -130,8 +139,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
 
   def default_serializer_options
     {
-      each_serializer: NotifyUser::NotificationSerializer,
-      template_renderer: self
+      each_serializer: NotifyUser::NotificationSerializer
     }
   end
 
