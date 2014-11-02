@@ -4,8 +4,12 @@ class <%= name.camelize %> < NotifyUser::BaseNotification
         subject: "<%= Rails.application.class.parent_name.titleize %>: You have a new <%= name.humanize %> notification.",
         aggregate: {
           subject: "<%= Rails.application.class.parent_name.titleize %>: You have new <%= name.humanize %> notifications."
-        }  
+        }
 
-  self.description = "please override this type description" 
+  self.description = "please override this type description"
   self.aggregate_per = 10.minutes
+
+  def message
+    "<%= name.titleize %> happened with #{params.as_json}"
+  end
 end
