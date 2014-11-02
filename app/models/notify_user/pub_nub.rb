@@ -18,16 +18,21 @@ module NotifyUser
                     :http_sync => true
                   )
 
+      pn_apns = {
+        aps: {
+          alert: notification.mobile_message,
+          badge: 1,
+          type: notification.type
+        }
+      }
+
+      pn_apns[:aps][:action_id] = notification.params[:action_id] if notification.params[:action_id]
+      
       pubnub.publish(
         channel: notification.target.uuid,
         http_sync: true,
         message: {
-          pn_apns: {
-            aps: {
-              alert: notification.mobile_message,
-              badge: 1
-            }
-          }
+          pn_apns: pn_apns
         }
       )
     end
