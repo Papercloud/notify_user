@@ -27,7 +27,8 @@ module NotifyUser
       }
 
       pn_apns[:aps][:action_id] = notification.params[:action_id] if notification.params[:action_id]
-      
+      pn_apns[:aps]['content-available'] = notification.params['content-available'] if notification.params['content-available']
+
       pubnub.publish(
         channel: notification.target.uuid,
         http_sync: true,
