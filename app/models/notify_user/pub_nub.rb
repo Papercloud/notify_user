@@ -30,8 +30,10 @@ module NotifyUser
       pn_apns[:aps]['content-available'] = notification.params['content-available'] if notification.params['content-available']
 
       pn_gcm = {
-        message: notification.mobile_message,
-        type: notification.type
+        data: {
+          message: notification.mobile_message,
+          type: notification.type
+        }
       }
 
       pn_gcm[:action_id] = notification.params[:action_id] if notification.params[:action_id]
