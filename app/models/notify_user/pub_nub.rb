@@ -21,7 +21,7 @@ module NotifyUser
       pn_apns = {
         aps: {
           alert: notification.mobile_message,
-          badge: 1,
+          badge: notification.count_for_target,
           type: notification.type
         }
       }
@@ -32,7 +32,8 @@ module NotifyUser
       pn_gcm = {
         data: {
           message: notification.mobile_message,
-          type: notification.type
+          type: notification.type,
+          unread_count: notification.count_for_target
         }
       }
 

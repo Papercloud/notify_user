@@ -9,7 +9,7 @@ GIT
 PATH
   remote: ../
   specs:
-    notify_user (0.0.24)
+    notify_user (0.0.27)
       aasm
       active_model_serializers
       kaminari

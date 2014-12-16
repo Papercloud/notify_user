@@ -3,6 +3,7 @@ require 'sidekiq'
 
 module NotifyUser
   class BaseNotification < ActiveRecord::Base
+    require 'cgi'
     include ActionView::Helpers::TextHelper
     include AASM
 
@@ -63,17 +64,20 @@ module NotifyUser
     end
 
     def message
-      ActionView::Base.new(
+      string = ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
              :locals => { :params => self.params}, :layout => false)
+      return ::CGI.unescapeHTML("#{string}")        
     end
 
     def mobile_message(length=115)
-      truncate(ActionView::Base.new(
+      string = truncate(ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
              :locals => { :params => self.params}, :layout => false), :length => length)
+
+      return ::CGI.unescapeHTML("#{string}") 
     end
 
     ## Public Interface
