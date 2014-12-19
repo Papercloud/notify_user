@@ -31,13 +31,14 @@ module NotifyUser
 
       pn_gcm = {
         data: {
+          notification_id: notification.id,
           message: notification.mobile_message,
           type: notification.type,
           unread_count: notification.count_for_target
         }
       }
 
-      pn_gcm[:action_id] = notification.params[:action_id] if notification.params[:action_id]
+      pn_gcm[:data][:action_id] = notification.params[:action_id] if notification.params[:action_id]
 
       pubnub.publish(
         channel: notification.target.uuid,
