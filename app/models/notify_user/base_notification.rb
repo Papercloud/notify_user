@@ -59,6 +59,7 @@ module NotifyUser
       end
     end
 
+    # returns the global unread notification count for a user
     def count_for_target
       NotifyUser::BaseNotification.for_target(target).where('state IN (?)', ["sent", "pending"]).count
     end
@@ -93,29 +94,15 @@ module NotifyUser
 
     def notify!
       save
-
       # Bang version of 'notify' ignores aggregation
       self.deliver!
     end
 
     # Send any Emails/SMS/APNS
     def notify
-
-      if save
-
-        #if aggregation is false bypass aggregation completely
-        self.channels.each do |channel_name, options|
-          if(options[:aggregate_per] == false)
-            self.class.delay.deliver_notification_channel(self.id, channel_name)    
-          else
-            if not aggregation_pending?
-              self.class.delay_for(options[:aggregate_per] || self.aggregate_per).notify_aggregated_channel(self.id, channel_name)
-            end
-          end
-        end
-
-      end
-
+      save
+      # Sends with aggregation if enabled
+      self.deliver
     end
 
     def generate_unsubscribe_hash
@@ -172,32 +159,37 @@ module NotifyUser
       return (self.class.pending_aggregation_with(self).where('id != ?', id).count > 0)
     end
 
-    # def deliver
-    #   unless user_has_unsubscribed?
-    #     self.mark_as_sent
-    #     self.save
+    # Aggregates appropriately
+    def deliver
+      unless user_has_unsubscribed?
+        self.mark_as_sent!
 
-    #     self.class.delay.deliver_channels(self.id)
-    #   end
-    # end
+        # if aggregation is false bypass aggregation completely
+        self.channels.each do |channel_name, options|
+          if(options[:aggregate_per] == false)
+            self.class.delay.deliver_notification_channel(self.id, channel_name)    
+          else
+            # only notifies channels if no pending aggreagte notifications
+            if not aggregation_pending?
+              self.class.delay_for(options[:aggregate_per] || self.aggregate_per).notify_aggregated_channel(self.id, channel_name)
+            end
+          end
+        end
+      end
+    end
 
+    # Sends immediately and without aggregation 
     def deliver!
       unless user_has_unsubscribed?
-        self.mark_as_sent
-        self.save
+        self.mark_as_sent!
         self.class.deliver_channels(self.id)
       end
     end
 
     # Deliver a single notification across each channel.
     def self.deliver_channels(notification_id)
-      notification = self.where(id: notification_id).first
-      return unless notification
       self.channels.each do |channel_name, options|
-        unless unsubscribed_from_channel?(notification.target, channel_name)
-          channel = (channel_name.to_s + "_channel").camelize.constantize
-          channel.deliver(notification, options)
-        end
+        self.deliver_notification_channel(notification_id, channel_name)
       end
     end
 
@@ -236,7 +228,7 @@ module NotifyUser
       end
     end
 
-    #notifies a single channel for aggregation
+    # Prepares a single channel for aggregation
     def self.notify_aggregated_channel(notification_id, channel_name)
       notification = self.find(notification_id) # Raise an exception if not found.
 
@@ -247,7 +239,6 @@ module NotifyUser
       notifications.map(&:save)
 
       return if notifications.empty?
-
       if notifications.length == 1
         # Despite waiting for more to aggregate, we only got one in the end.
         self.deliver_notification_channel(notifications.first.id, channel_name)
@@ -257,27 +248,8 @@ module NotifyUser
       end
     end
 
-    def self.notify_aggregated(notification_id)
-      notification = self.find(notification_id) # Raise an exception if not found.
-
-      # Find any pending notifications with the same type and target, which can all be sent in one message.
-      notifications = self.pending_aggregation_with(notification)
-      
-      notifications.map(&:mark_as_sent)
-      notifications.map(&:save)
-
-      return if notifications.empty?
-
-      if notifications.length == 1
-        # Despite waiting for more to aggregate, we only got one in the end.
-        self.deliver_channels(notifications.first.id)
-      else
-        # We got several notifications while waiting, send them aggregated.
-        self.deliver_channels_aggregated(notifications)
-      end
-    end
-
     private
+    
     def unsubscribed_validation
       errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?   
     end
