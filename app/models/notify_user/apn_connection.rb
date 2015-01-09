@@ -29,7 +29,7 @@ class APNConnection
       attempts ||= 0
       attempts += 1
 
-      if attempts < 5
+      if attempts < NotifyUser.failure_tolerance
         setup
         retry
       else
