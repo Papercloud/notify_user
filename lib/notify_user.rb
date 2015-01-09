@@ -16,6 +16,10 @@ module NotifyUser
   mattr_accessor :unsubscribable_notifications
   @@unsubscribable_notifications = nil
 
+  # Provider for APNS:
+  mattr_accessor :apns_provider
+  @@apns_provider = nil
+
   # Number of connections Houston will maintain to APNS:
   mattr_accessor :connection_pool_size
   @@connection_pool_size = nil
