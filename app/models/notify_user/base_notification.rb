@@ -215,11 +215,11 @@ module NotifyUser
 
     # Deliver a single notification to a specific channel.
     def self.deliver_notification_channel(notification_id, channel_name)
-      notification = self.where(id: notification_id).first
-      return unless notification
-      channel_options = channels[channel_name.to_sym]
+      notification = self.find(notification_id) # Raise an exception if not found.
 
+      channel_options = channels[channel_name.to_sym]
       channel = (channel_name.to_s + "_channel").camelize.constantize
+
       unless self.unsubscribed_from_channel?(notification.target, channel_name)
         channel.deliver(notification, channel_options)
       end
@@ -291,9 +291,7 @@ module NotifyUser
  
     def self.unsubscribed_from_channel?(user, type)
       #return true if user has unsubscribed 
-      return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?  
-
-      return false 
+      return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?   
     end
 
 
