@@ -18,7 +18,8 @@ module NotifyUser
       push_options = {
         alert: @notification.mobile_message(space_allowance),
         badge: @notification.count_for_target,
-        category: @notification.params[:category] || @notification.type
+        category: @notification.params[:category] || @notification.type,
+        custom_data: @notification.params
       }
 
       Houston.notify(push_options, @notification.target.devices)
