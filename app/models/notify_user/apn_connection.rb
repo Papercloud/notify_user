@@ -21,21 +21,17 @@ class APNConnection
     @connection.open
   end
 
-  def write(data)
-    begin
-      raise "Connection is closed" unless @connection.open?
-      @connection.write(data)
-    rescue Exception => e
-      attempts ||= 0
-      attempts += 1
+  def ssl
+    @connection.ssl
+  end
 
-      if attempts < NotifyUser.failure_tolerance
-        setup
-        retry
-      else
-        raise e
-      end
-    end
+  def connection
+    @connection
+  end
+
+  def write(data)
+    raise "Connection is closed" unless @connection.open?
+    @connection.write(data)
   end
 
 end

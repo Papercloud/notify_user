@@ -10,26 +10,61 @@ module NotifyUser
       APNConnection.new
     end
 
+    NO_ERROR = -42
+
     def push
       space_allowance = PAYLOAD_LIMIT - used_space
 
-      APN_POOL.with do |connection|
-        devices = @notification.target.devices
+      push_options = {
+        alert: @notification.mobile_message(space_allowance),
+        badge: @notification.count_for_target,
+      }
 
-        devices.each do |device|
-          h_notification = ::Houston::Notification.new(device: device.token)
+      Houston.notify(push_options, @notification.target.devices)
+    end
 
-          h_notification.alert = @notification.mobile_message(space_allowance)
-          h_notification.badge = @notification.count_for_target
+    class << self
 
-          begin
-            connection.write(h_notification.message)
-          rescue Exception => e
-            device.delete
-            next
+      def notify(push_options = {}, devices)
+        APN_POOL.with do |connection|
+          connection = APNConnection.new
+
+          ssl = connection.ssl
+          error_index = NO_ERROR
+
+          devices.each_with_index do |device, index|
+            notification = ::Houston::Notification.new(push_options.dup.merge({ token: device.token, id: index }))
+
+            connection.write(notification.message)
           end
+
+          read_socket, write_socket = IO.select([ssl], [], [ssl], 1)
+          if (read_socket && read_socket[0])
+            if error = connection.connection.read(6)
+              command, status, error_index = error.unpack("ccN")
+
+              if error_index != NO_ERROR
+                device = devices[error_index]
+
+                if device.failures + 1 > NotifyUser.failure_tolerance
+                  # Delete the device token if it has failed consecutively too many times:
+                  device.delete
+                else
+                  # Up the failure rate for the device that failed to send:
+                  device.update_attributes(failures: device.failures + 1)
+                end
+              end
+            end
+          end
+
+          # Set the failure rate for all successfully sent notifications back to 0:
+          Device.where(id: devices[0...error_index].map(&:id)).update_all(failures: 0 )
+
+          # Resend all notifications after the once that produced the error:
+          notify(push_options, devices[(error_index+1)..-1]) if error_index != NO_ERROR
         end
       end
+
     end
 
   end
