@@ -9,7 +9,7 @@ GIT
 PATH
   remote: ../
   specs:
-    notify_user (0.0.27)
+    notify_user (0.0.28)
       aasm
       active_model_serializers
       kaminari
@@ -21,7 +21,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    aasm (3.4.0)
+    aasm (4.0.8)
     actionmailer (4.0.4)
       actionpack (= 4.0.4)
       mail (~> 2.5.4)
@@ -69,7 +69,7 @@ GEM
     connection_pool (2.0.0)
     diff-lcs (1.2.5)
     erubis (2.7.0)
-    eventmachine (1.0.3)
+    eventmachine (1.0.4)
     execjs (2.0.2)
     factory_girl (4.4.0)
       activesupport (>= 3.0.0)
@@ -97,10 +97,10 @@ GEM
       mini_portile (~> 0.5.0)
     pg (0.17.1)
     polyglot (0.3.4)
-    pubnub (3.5.8)
-      eventmachine
-      json
-      net-http-persistent
+    pubnub (3.6.10)
+      eventmachine (~> 1.0)
+      json (~> 1.8)
+      net-http-persistent (~> 2.9)
     rack (1.5.2)
     rack-test (0.6.2)
       rack (>= 1.0)
