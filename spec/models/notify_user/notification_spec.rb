@@ -59,9 +59,11 @@ module NotifyUser
     end
 
     describe "#notify" do
-      it "receives deliver" do
-        notification.should_receive(:deliver)
+
+      it "sets the state to pending" do
+        notification = NewPostNotification.create({target: user})
         notification.notify
+        notification.state.should eq "pending"
       end
 
       describe "#deliver" do
@@ -97,10 +99,13 @@ module NotifyUser
     end
 
     describe "notify!" do
-      it "receives deliver!" do
-        notification.should_receive(:deliver!)
+
+      it "sets the state to pending_no_aggregation" do
+        notification = NewPostNotification.create({target: user})
         notification.notify!
+        notification.state.should eq "pending_no_aggregation"
       end
+
       describe ".deliver_notification_channel" do 
 
           before :each do
@@ -121,6 +126,7 @@ module NotifyUser
 
       describe "#deliver!" do
         it "schedules to be delivered to channels" do
+          notification.dont_aggregate
           NewPostNotification.should_receive(:deliver_channels)
                               .with(notification.id)
                               .and_call_original
@@ -150,38 +156,6 @@ module NotifyUser
 
         NewPostNotification.should_receive(:deliver_notifications_channel).once
         NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
-      end
-
-    end
-
-    describe "#notify!" do
-      before :each do 
-        NewPostNotification.channel(:apns, {aggregate_per: false})
-      end
-
-      it "sends immediately, ignoring aggregation" do
-        Apns.should_receive(:push_notification).at_least(1).times
-        BaseNotification.should_not_receive(:delay_for)
-        ActionMailerChannel.should_receive(:deliver)
-        notification.notify!
-      end
-
-      it "doesn't send if unsubscribed from type" do
-        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) 
-        ActionMailerChannel.should_not_receive(:deliver)
-        ApnsChannel.should_not_receive(:deliver)
-
-        notification.notify!
-
-      end
-
-      it "doesn't send if unsubscribed from mailer channel" do
-        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
-        unsubscribe.save!
-        ActionMailerChannel.should_not_receive(:deliver)
-
-        ApnsChannel.should_receive(:deliver)
-        notification.notify!
       end
 
     end

@@ -7,6 +7,9 @@ module NotifyUser
     include ActionView::Helpers::TextHelper
     include AASM
 
+    after_commit :deliver!, on: :create
+    after_commit :deliver, on: :create
+
     if ActiveRecord::VERSION::MAJOR < 4
       attr_accessible :params, :target, :type, :state
     end
@@ -32,6 +35,9 @@ module NotifyUser
       # Created, not sent yet. Possibly waiting for aggregation.
       state :pending, initial: true
 
+      # Delivers without aggregation
+      state :pending_no_aggregation
+
       # Email/SMS/APNS has been sent.
       state :sent
 
@@ -40,7 +46,11 @@ module NotifyUser
 
       # Record that we have sent message(s) to the user about this notification.
       event :mark_as_sent do
-        transitions from: :pending, to: :sent
+        transitions from: [:pending, :pending_no_aggregation], to: :sent
+      end
+
+      event :dont_aggregate do
+        transitions from: :pending, to: :pending_no_aggregation
       end
 
       # Record that the user has seen this notification, usually on a page or in the app.
@@ -93,16 +103,14 @@ module NotifyUser
     end
 
     def notify!
-      save
       # Bang version of 'notify' ignores aggregation
-      self.deliver!
+      dont_aggregate!
     end
 
     # Send any Emails/SMS/APNS
     def notify
-      save
       # Sends with aggregation if enabled
-      self.deliver
+      save
     end
 
     def generate_unsubscribe_hash
@@ -161,7 +169,7 @@ module NotifyUser
 
     # Aggregates appropriately
     def deliver
-      unless user_has_unsubscribed?
+      if pending? and not user_has_unsubscribed?
         self.mark_as_sent!
 
         # if aggregation is false bypass aggregation completely
@@ -180,7 +188,7 @@ module NotifyUser
 
     # Sends immediately and without aggregation 
     def deliver!
-      unless user_has_unsubscribed?
+      if pending_no_aggregation? and not user_has_unsubscribed?
         self.mark_as_sent!
         self.class.deliver_channels(self.id)
       end
