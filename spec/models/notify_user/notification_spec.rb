@@ -101,6 +101,23 @@ module NotifyUser
         notification.should_receive(:deliver!)
         notification.notify!
       end
+      describe ".deliver_notification_channel" do 
+
+          before :each do
+            @notification = NewPostNotification.create({target: user})
+          end
+
+          it "doesn't send if unsubscribed from channel" do
+            unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
+            ActionMailerChannel.should_not_receive(:deliver)
+            BaseNotification.deliver_notification_channel(@notification.id, "action_mailer")
+          end
+
+          it "does send if subscribed to channel" do
+            ActionMailerChannel.should_receive(:deliver)
+            BaseNotification.deliver_notification_channel(@notification.id, "action_mailer")
+          end
+      end
 
       describe "#deliver!" do
         it "schedules to be delivered to channels" do
