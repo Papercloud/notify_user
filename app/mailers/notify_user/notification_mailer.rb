@@ -8,7 +8,7 @@ module NotifyUser
       @notification = notification
 
       mail to: notification.target.email,
-           subject: options[:subject],
+           subject: subject(notification, options[:subject]),
            template_name: "notification",
            template_path: "notify_user/action_mailer",
            from: NotifyUser.mailer_sender
@@ -21,8 +21,12 @@ module NotifyUser
       mail to: @notifications.first.target.email,
            template_name: "aggregate_notification",
            template_path: ["notify_user/#{notifications.first.class.name.underscore}/action_mailer", "notify_user/action_mailer"],
-           subject: options[:aggregate][:subject],
+           subject: subject(@notification, options[:aggregate][:subject]),
            from: NotifyUser.mailer_sender
+    end
+
+    def subject(notification, subject)
+      subject % notification.params.symbolize_keys
     end
 
     protected
