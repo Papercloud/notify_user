@@ -3,8 +3,9 @@ module NotifyUser
     SYMBOL_NAMES_SIZE = 10
     PAYLOAD_LIMIT = 255
 
-    def initialize(notification)
+    def initialize(notification, options)
       @notification = notification
+      @options = options
     end
 
     # Calculates the bytes already used:

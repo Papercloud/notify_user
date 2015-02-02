@@ -11,7 +11,7 @@ class ApnsChannel
     def deliver(notification, options={})
       case NotifyUser.apns_provider
       when :houston
-        NotifyUser::Houston.new(notification).push
+        NotifyUser::Houston.new(notification, options).push
       when :urban_airship
         # Check for the existence of development api keys and resend for development:
         if !ENV['DEV_UA_APPLICATION_KEY'].nil? && !ENV['DEV_UA_APPLICATION_SECRET'].nil? && !ENV['DEV_UA_MASTER_SECRET'].nil?
