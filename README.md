@@ -22,6 +22,15 @@ Then send:
 ```
 NotifyUser.send_notification('new_my_property').to(user).with("listing_address" => "123 Main St").notify
 ```
+Dynamic email titles use %{tags} that correspond to your params hash (Will throw an exception if key is missing)
+```
+channel :action_mailer,
+      subject: "%{name} sent you a message",
+      aggregate: {
+        subject: "%{name} sent you %{count} messages"
+      }
+```
+
 
 To enable APNS add this line to your app/notification/notification_type.rb
 ```

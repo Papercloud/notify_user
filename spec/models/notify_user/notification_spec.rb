@@ -9,7 +9,7 @@ module NotifyUser
 
     before :each do
       BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
-      BaseNotification.channel(:apns, {aggregate_per: false})
+      # BaseNotification.channel(:apns, {aggregate_per: false})
     end
 
     describe "notification count" do
@@ -60,136 +60,102 @@ module NotifyUser
 
     describe "#notify" do
 
-      it "raises an exception if the notification is not valid" do
-        notification.target = nil
-        expect { notification.notify }.to raise_error
+      it "sets the state to pending" do
+        notification = NewPostNotification.create({target: user})
+        notification.notify
+        notification.state.should eq "pending"
       end
 
-      describe "with aggregation enabled" do
-        before :each do
-          NewPostNotification.channel(:apns, {aggregate_per: false})
-        end
+      describe "#deliver" do
 
-        it "schedules a job to wait for more notifications to aggregate if there is not one already" do
-          BaseNotification.should_receive(:delay_for)
-                          .with(notification.class.aggregate_per)
-                          .and_call_original
-          ActionMailerChannel.should_receive(:deliver)
-          Apns.should_receive(:push_notification)
-          notification.notify
-        end
+        describe "with aggregation enabled" do
+          it "schedules a job to wait for more notifications to aggregate if there is not one already" do
+            NewPostNotification.should_receive(:delay_for)
+                            .with(notification.class.aggregate_per).and_call_original
 
-        it "if dev urbanairship keys detected send notifications both to production and dev keys" do
-          BaseNotification.should_receive(:delay_for)
-                          .with(notification.class.aggregate_per)
-                          .and_call_original
-          ActionMailerChannel.should_receive(:deliver)
-          Apns.should_receive(:push_notification).twice
-
-          ENV['DEV_UA_APPLICATION_KEY'] = 'sdfsdf'
-          ENV['DEV_UA_APPLICATION_SECRET'] = 'dsfsdf'
-          ENV['DEV_UA_MASTER_SECRET'] = 'sdfsdf'
-
-          notification.notify
-        end
-
-        it "does not schedule an aggregation job if there is one already" do
-          Sidekiq::Testing.fake!
-
-          notification.notify
-          
-          another_notification = NewPostNotification.new({target: user})
-
-          BaseNotification.should_not_receive(:delay_for)
-          another_notification.notify
-        end
-
-        describe ".notify_aggregated" do
-
-          it "sends an aggregated email if more than one notification queued up" do
-            Sidekiq::Testing.inline!
-            
-            NewPostNotification.create({target: user})
-
-            NotificationMailer.should_receive(:aggregate_notifications_email).with(NewPostNotification.pending_aggregation_with(notification), anything).and_call_original
-            NewPostNotification.notify_aggregated(notification.id)
+            notification.deliver
           end
 
-          it "sends a singular email if no more notifications were queued since the original was delayed" do
-            Sidekiq::Testing.inline!
-            Apns.should_receive(:push_notification).at_least(1).times
-            NotificationMailer.should_receive(:notification_email).with(notification, anything).and_call_original
-            NewPostNotification.notify_aggregated(notification.id)
-          end
+          it "doesn't schedule a job if a pending notification awaiting aggregation already exists" do
+            another_notification = NewPostNotification.create({target: user})
+            NewPostNotification.should_not_receive(:delay_for)
+                            .with(notification.class.aggregate_per).and_call_original
 
+            notification.deliver
+          end
         end
 
-        describe ".delovery_notification_channel" do 
+        describe "with aggregation disabled" do
+          before :each do
+            NewPostNotification.channel(:action_mailer, {aggregate_per: false})
+          end
+
+          it "schedules notification to be sent through channels" do
+            NewPostNotification.should_receive(:delay).and_call_original
+            notification.deliver        
+          end
+        end
+      end
+    end
+
+    describe "notify!" do
+
+      it "sets the state to pending_no_aggregation" do
+        notification = NewPostNotification.create({target: user})
+        notification.notify!
+        notification.state.should eq "pending_no_aggregation"
+      end
+
+      describe ".deliver_notification_channel" do 
+
+          before :each do
+            @notification = NewPostNotification.create({target: user})
+          end
 
           it "doesn't send if unsubscribed from channel" do
-            unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) 
+            unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
             ActionMailerChannel.should_not_receive(:deliver)
-            BaseNotification.deliver_notification_channel(notification.id, "action_mailer")
+            BaseNotification.deliver_notification_channel(@notification.id, "action_mailer")
           end
 
           it "does send if subscribed to channel" do
             ActionMailerChannel.should_receive(:deliver)
-            BaseNotification.deliver_notification_channel(notification.id, "action_mailer")
+            BaseNotification.deliver_notification_channel(@notification.id, "action_mailer")
           end
+      end
 
+      describe "#deliver!" do
+        it "schedules to be delivered to channels" do
+          notification.dont_aggregate
+          NewPostNotification.should_receive(:deliver_channels)
+                              .with(notification.id)
+                              .and_call_original
+          notification.deliver!            
         end
+      end
 
-        describe " .notify_aggregated_channel" do
-
-          it "sends an aggregated email if more than one notification queued up" do
-            Sidekiq::Testing.inline!
-            
-            NewPostNotification.create({target: user, type: 'NewPostNotification'})
-
-            NewPostNotification.should_receive(:deliver_notifications_channel).and_call_original
-            NewPostNotification.notify_aggregated_channel(notification.id, 'action_mailer')
-          end
-
-          it "sends a single email if more not pending notifications" do
-            Sidekiq::Testing.inline!
-
-            NewPostNotification.should_receive(:deliver_notification_channel).and_call_original
-            NewPostNotification.notify_aggregated_channel(notification.id, 'action_mailer')
-          end
+      describe "#deliver_channels" do
+        
+        it "delivers notification to channels" do
+          ActionMailerChannel.should_receive(:deliver).once
+          NewPostNotification.deliver_channels(notification.id)
         end
 
       end
-
     end
 
-    describe "#notify!" do
-      before :each do 
-        NewPostNotification.channel(:apns, {aggregate_per: false})
+    describe "#notify_aggregated_channel"  do
+
+      it "if only one notification to aggregate hit deliver_notification_channel" do
+        NewPostNotification.should_receive(:deliver_notification_channel).with(notification.id, :action_mailer).once
+        NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
       end
 
-      it "sends immediately, ignoring aggregation" do
-        Apns.should_receive(:push_notification).at_least(1).times
-        BaseNotification.should_not_receive(:delay_for)
-        ActionMailerChannel.should_receive(:deliver)
-        notification.notify!
-      end
+      it "if many notifications to aggregate hit deliver_notifications_channel" do
+        another_notification = NewPostNotification.create({target: user})
 
-      it "doesn't send if unsubscribed from type" do
-        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) 
-        ActionMailerChannel.should_not_receive(:deliver)
-        ApnsChannel.should_not_receive(:deliver)
-
-        notification.notify!
-
-      end
-
-      it "doesn't send if unsubscribed from mailer channel" do
-        unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
-        unsubscribe.save!
-        ActionMailerChannel.should_not_receive(:deliver)
-
-        ApnsChannel.should_receive(:deliver)
-        notification.notify!
+        NewPostNotification.should_receive(:deliver_notifications_channel).once
+        NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
       end
 
     end
