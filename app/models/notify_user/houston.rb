@@ -24,8 +24,16 @@ module NotifyUser
         alert: @notification.mobile_message(space_allowance),
         badge: @notification.count_for_target,
         category: @notification.params[:category] || @notification.type,
-        custom_data: @notification.params
+        custom_data: @notification.params,
+        sound: 'default'
       }
+
+      if @options[:silent]
+        @push_options.merge!({
+          sound: '',
+          content_available: true
+        })
+      end
 
       send_notifications
     end
