@@ -5,7 +5,7 @@ class APNConnection
   end
 
   def setup
-    @uri, @certificate = if Rails.env.production?
+    @uri, @certificate = if Rails.env.production? || Rails.env.staging?
       [
         Houston::APPLE_PRODUCTION_GATEWAY_URI,
         File.read("#{Rails.root}/config/keys/production_push.pem")
