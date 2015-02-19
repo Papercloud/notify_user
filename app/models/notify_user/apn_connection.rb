@@ -5,7 +5,7 @@ class APNConnection
   end
 
   def setup
-    @uri, @certificate = if Rails.env.production? || Rails.env.staging?
+    @uri, @certificate = if Rails.env.production? || apn_environment == :production
       [
         Houston::APPLE_PRODUCTION_GATEWAY_URI,
         File.read("#{Rails.root}/config/keys/production_push.pem")
@@ -32,6 +32,14 @@ class APNConnection
   def write(data)
     raise "Connection is closed" unless @connection.open?
     @connection.write(data)
+  end
+
+  private
+
+  def apn_environment
+    return nil unless ENV['APN_ENVIRONMENT']
+
+    ENV['APN_ENVIRONMENT'].downcase.to_sym
   end
 
 end
