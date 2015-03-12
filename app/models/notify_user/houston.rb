@@ -5,6 +5,7 @@ module NotifyUser
   class Houston < Apns
 
     NO_ERROR = -42
+    INVALID_TOKEN_ERROR = 8
     APN_POOL = ConnectionPool.new(
       size: NotifyUser.connection_pool_size,
       timeout: NotifyUser.connection_pool_timeout) do
@@ -49,12 +50,11 @@ module NotifyUser
           connection = APNConnection.new
         end
 
-        ssl = connection.ssl
+        ssl = connection.connection.ssl
         error_index = NO_ERROR
 
         @devices.each_with_index do |device, index|
           notification = ::Houston::Notification.new(@push_options.dup.merge({ token: device.token, id: index }))
-
           connection.write(notification.message)
         end
 
@@ -63,24 +63,19 @@ module NotifyUser
           if error = connection.connection.read(6)
             command, status, error_index = error.unpack("ccN")
 
+            # Remove all the devices prior to the error (we assume they were successful), and close the current connection:
             if error_index != NO_ERROR
-              device = @devices[error_index]
-              range = 0...error_index
+              device = @devices.at(error_index)
+              Rails.logger.info "Error: #{status} with id: #{error_index}. Token: #{device.token}."
 
-              if device.failures + 1 >= NotifyUser.failure_tolerance
-                # Delete the device token if it has failed consecutively too many times:
-                device.delete
-                range = 0..error_index
-              else
-                # Up the failure rate for the device that failed to send:
-                device.update_attributes(failures: device.failures + 1)
+              # If we encounter the Invalid Token error from APNS, just remove the device:
+              if status == ERROR_INVALID_TOKEN
+                Rails.logger.info "Invalid token encountered, removing device. Token: #{device.token}."
+                device.destroy
               end
 
-              # Close the connection:
+              @devices.slice!(0..error_index)
               connection.connection.close
-
-              # Set the failure rate for all successfully sent notifications back to 0:
-              Device.where(id: @devices.slice!(range).map(&:id)).update_all(failures: 0 )
             end
           end
         end
