@@ -11,4 +11,17 @@ NotifyUser.setup do |config|
 
   # Override the default notification type
   config.unsubscribable_notifications = ['NewPostNotification']
+
+  # Provider for APNS:
+  config.apns_provider = :houston
+
+  # Number of connections Houston will maintain to APNS:
+  config.connection_pool_size = 3
+
+  # Time in seconds Houston will wait for a free connection before failing:
+  config.connection_pool_timeout = 300
+
+  # Number of times a device can fail to send via APNS:
+  config.failure_tolerance = 5
+
 end

@@ -1,37 +1,28 @@
 module NotifyUser
   class Apns
-    SYMBOL_NAMES_SIZE = 10 
+    SYMBOL_NAMES_SIZE = 10
     PAYLOAD_LIMIT = 255
 
-    #sends push notification
-    def self.push_notification(notification)
-      #calculates the bytes already used 
-      used_space = SYMBOL_NAMES_SIZE + notification.id.size + notification.created_at.to_time.to_i.size +
-                    notification.type.size
-                    
-      used_space += notification.params[:action_id].size if notification.params[:action_id]               
+    def initialize(notification, options)
+      @notification = notification
+      @options = options
+    end
 
-      space_allowance = PAYLOAD_LIMIT - used_space   
+    # Sends push notification:
+    def push
+      raise "Base APNS class should not be used."
+    end
 
-      payload = {
-        :alias => notification.target_id,
-        :aps => {alert: notification.mobile_message(space_allowance), badge: notification.count_for_target},
-        :n_data => {
-          '#' => notification.id,     
-          t: notification.created_at.to_time.to_i, 
-          '?' => notification.type
-        }
-      }
-      payload[:n_data]['!'] = notification.params[:action_id] if notification.params[:action_id]
+    private
 
-      response = Urbanairship.push(payload)
-        if response.success?
-          Rails.logger.info "Push notification sent successfully."
-          return true
-        else
-          Rails.logger.info "Push notification failed."
-          return false
-        end    
+    # Calculates the bytes already used:
+    def used_space
+      used_space = SYMBOL_NAMES_SIZE + @notification.id.size + @notification.created_at.to_time.to_i.size +
+                    @notification.type.size
+
+      used_space += @notification.params[:action_id].size if @notification.params[:action_id]
+
+      used_space
     end
   end
 end
