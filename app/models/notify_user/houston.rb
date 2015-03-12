@@ -12,8 +12,12 @@ module NotifyUser
       APNConnection.new
     end
 
+    attr_accessor :push_options
+
     def initialize(notification, options)
       super(notification, options)
+
+      @push_options = setup_options
 
       device_method = @options[:device_method] || :devices
       begin
@@ -24,9 +28,15 @@ module NotifyUser
     end
 
     def push
+      send_notifications
+    end
+
+    private
+
+    def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
 
-      @push_options = {
+      push_options = {
         alert: @notification.mobile_message(space_allowance),
         badge: @notification.count_for_target,
         category: @notification.params[:category] || @notification.type,
@@ -35,13 +45,13 @@ module NotifyUser
       }
 
       if @options[:silent]
-        @push_options.merge!({
+        push_options.merge!({
           sound: '',
           content_available: true
         })
       end
 
-      send_notifications
+      push_options
     end
 
     def send_notifications
