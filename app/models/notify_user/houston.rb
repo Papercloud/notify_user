@@ -14,7 +14,12 @@ module NotifyUser
     def initialize(notification, options)
       super(notification, options)
 
-      @devices = @notification.target.devices.order(:id).reverse
+      device_method = @options[:device_method] || :devices
+      begin
+        @devices = @notification.target.send(device_method)
+      rescue
+        Rails.logger.info "Notification target, #{@notification.target.class}, does not respond to the method, #{device_method}."
+      end
     end
 
     def push
