@@ -35,7 +35,7 @@ channel :action_mailer,
 To enable APNS add this line to your app/notification/notification_type.rb
 ```
 channel :apns,
-	aggregate_per: false    
+	aggregate_per: false
 ```
 
 To run the tests:
@@ -48,6 +48,45 @@ To run the tests like Travis:
 ```
 gem install wwtd
 wwtd
+```
+
+## APNS providers
+By default, we use [Houston](https://github.com/nomad/houston/) to deliver push notifications via APNS from the server.
+
+The initialiser for `notify_user` contains the following configuration when delivering via Houston:
+```
+# Number of connections Houston will maintain to APNS:
+config.connection_pool_size = 3
+
+# Time in seconds Houston will wait for a free connection before failing:
+config.connection_pool_timeout = 300
+```
+
+We maintain persistent connections to APNS via background workers, and these values will allow you to configure how many connections the workers maintain, as well as the amount of time to wait for an idle connection before timing out.
+
+When delivering via Houston, we also need access to a model which has access to device tokens that is related to your notification target. i.e. Assuming your notification target is a User:
+
+```
+class User < ActiveRecord::Base
+  has_many :devices
+end
+
+class Device < ActiveRecord::Base
+  belongs_to :user
+
+  validates :token, presence:true # A string representation of your device's token, the only thing need to delivery push notifications.
+end
+```
+
+
+A gem that provides such a model is [arcade](https://github.com/Papercloud/arcade), a mountable Rails engine that lets you flag a model (e.g. `User`) as a device owner and provides a number of routes to allow device registration.
+
+By default, we assume the relation is named `:devices`, but this can be passed through when enabling APNS for a notification if you want to use something else:
+
+```
+channel :apns,
+  aggregate_per: false,
+  device_method: :some_other_method
 ```
 
 ##Web interface
@@ -69,7 +108,7 @@ config.action_mailer.default_url_options = { :host => "http://example.com" }
 ```
 
 ##Subscriptions
-Unsubscribing from a notification type, first add it to the notify_user.rb initilizer 
+Unsubscribing from a notification type, first add it to the notify_user.rb initilizer
 ```
 # Override the default notification type
 config.unsubscribable_notifications = ['NewPostNotification','NewSale']
@@ -90,19 +129,19 @@ Unsubscribe link helper - add this to your views/notify_user/layouts/action_mail
 ##Upgrading to JSON params data type
 Run json_update generator which generates the migrations to change the params datatype to json as well as convert the current data to json
 ```
-rails generate notify_user:json_update 
+rails generate notify_user:json_update
 rake db:migrate
 ```
 
 ##Changes
 Notification description and aggregates has changed syntax slighly from
 ```
-@@description = "please override this type description" 
+@@description = "please override this type description"
 @@aggregate_per = 10.minutes
 ```
-to 
+to
 ```
-self.description = "please override this type description" 
+self.description = "please override this type description"
 self.aggregate_per = 10.minutes
 ```
 
