@@ -28,10 +28,6 @@ module NotifyUser
   mattr_accessor :connection_pool_timeout
   @@connection_pool_timeout = nil
 
-  # Number of times Houston can fail to send via APNS:
-  mattr_accessor :failure_tolerance
-  @@failure_tolerance = nil
-
   # Used to set up NotifyUser from the initializer.
   def self.setup
     yield self
