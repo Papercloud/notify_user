@@ -64,6 +64,23 @@ config.connection_pool_timeout = 300
 
 We maintain persistent connections to APNS via background workers, and these values will allow you to configure how many connections the workers maintain, as well as the amount of time to wait for an idle connection before timing out.
 
+You also need to provide exported versions of your push notification certificate and key as .pem files, these instructions come from the [APN on Rails](https://github.com/PRX/apn_on_rails) project on how to do that:
+
+Once you have the certificate from Apple for your application, export your key
+and the apple certificate as p12 files. Here is a quick walkthrough on how to do this:
+
+1. Click the disclosure arrow next to your certificate in Keychain Access and select the certificate and the key.
+2. Right click and choose `Export 2 items…`.
+3. Choose the p12 format from the drop down and name it `cert.p12`.
+
+Now covert the p12 file to a pem file:
+
+    $ openssl pkcs12 -in cert.p12 -out apple_push_notification.pem -nodes -clcerts
+
+`notify_user` will look for your pem files within `"#{Rails.root}/config/keys/`, named `development_push.pem` and `production_push`, for the development and production APNS gateways respectively.
+
+## The Device model
+
 When delivering via Houston, we also need access to a model which has access to device tokens that is related to your notification target. i.e. Assuming your notification target is a User:
 
 ```
@@ -77,7 +94,6 @@ class Device < ActiveRecord::Base
   validates :token, presence:true # A string representation of your device's token, the only thing need to delivery push notifications.
 end
 ```
-
 
 A gem that provides such a model is [arcade](https://github.com/Papercloud/arcade), a mountable Rails engine that lets you flag a model (e.g. `User`) as a device owner and provides a number of routes to allow device registration.
 
