@@ -36,8 +36,11 @@ module NotifyUser
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
 
+      mobile_message = @notification.mobile_message(space_allowance)
+      mobile_message.gsub!('\n', "\n")
+
       push_options = {
-        alert: @notification.mobile_message(space_allowance),
+        alert: mobile_message,
         badge: @notification.count_for_target,
         category: @notification.params[:category] || @notification.type,
         custom_data: @notification.params,
