@@ -95,7 +95,7 @@ class Device < ActiveRecord::Base
 end
 ```
 
-A gem that provides such a model is [arcade](https://github.com/Papercloud/arcade), a mountable Rails engine that lets you flag a model (e.g. `User`) as a device owner and provides a number of routes to allow device registration.
+A gem that provides such a model is [dre](https://github.com/Papercloud/dre), a mountable Rails engine that lets you flag a model (e.g. `User`) as a device owner and provides a number of routes to allow device registration.
 
 By default, we assume the relation is named `:devices`, but this can be passed through when enabling APNS for a notification if you want to use something else:
 
