@@ -82,7 +82,7 @@ module NotifyUser
               Rails.logger.info "Error: #{status} with id: #{error_index}. Token: #{device.token}."
 
               # If we encounter the Invalid Token error from APNS, just remove the device:
-              if status == ERROR_INVALID_TOKEN
+              if status == INVALID_TOKEN_ERROR
                 Rails.logger.info "Invalid token encountered, removing device. Token: #{device.token}."
                 device.destroy
               end

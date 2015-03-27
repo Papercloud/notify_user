@@ -1,3 +1,3 @@
 module NotifyUser
-  VERSION = "0.0.30"
+  VERSION = "0.1.1"
 end
