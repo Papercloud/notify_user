@@ -21,7 +21,7 @@ module NotifyUser
 
       device_method = @options[:device_method] || :devices
       begin
-        @devices = @notification.target.send(device_method)
+        @devices = @notification.target.send(device_method).to_a
       rescue
         Rails.logger.info "Notification target, #{@notification.target.class}, does not respond to the method, #{device_method}."
       end
