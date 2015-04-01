@@ -77,18 +77,19 @@ module NotifyUser
     def message
       string = ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
-             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
-             :locals => { :params => self.params}, :layout => false)
-      return ::CGI.unescapeHTML("#{string}")        
+             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
+             :locals => { :params => self.params})
+
+      return ::CGI.unescapeHTML("#{string}")
     end
 
     def mobile_message(length=115)
       string = truncate(ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
-             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html], 
-             :locals => { :params => self.params}, :layout => false), :length => length)
+             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
+             :locals => { :params => self.params}), :length => length)
 
-      return ::CGI.unescapeHTML("#{string}") 
+      return ::CGI.unescapeHTML("#{string}")
     end
 
     ## Public Interface
@@ -175,7 +176,7 @@ module NotifyUser
         # if aggregation is false bypass aggregation completely
         self.channels.each do |channel_name, options|
           if(options[:aggregate_per] == false)
-            self.class.delay.deliver_notification_channel(self.id, channel_name)    
+            self.class.delay.deliver_notification_channel(self.id, channel_name)
           else
             # only notifies channels if no pending aggreagte notifications
             if not aggregation_pending?
@@ -186,7 +187,7 @@ module NotifyUser
       end
     end
 
-    # Sends immediately and without aggregation 
+    # Sends immediately and without aggregation
     def deliver!
       if pending_no_aggregation? and not user_has_unsubscribed?
         self.mark_as_sent!
@@ -242,7 +243,7 @@ module NotifyUser
 
       # Find any pending notifications with the same type and target, which can all be sent in one message.
       notifications = self.pending_aggregation_with(notification)
-      
+
       notifications.map(&:mark_as_sent)
       notifications.map(&:save)
 
@@ -257,21 +258,21 @@ module NotifyUser
     end
 
     private
-    
+
     def unsubscribed_validation
-      errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?   
+      errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?
     end
 
     def user_has_unsubscribed?
-      #return true if user has unsubscribed 
-      return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(self.target, self.type).empty?  
+      #return true if user has unsubscribed
+      return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(self.target, self.type).empty?
 
-      return false 
+      return false
     end
- 
+
     def self.unsubscribed_from_channel?(user, type)
-      #return true if user has unsubscribed 
-      return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?   
+      #return true if user has unsubscribed
+      return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?
     end
 
 
