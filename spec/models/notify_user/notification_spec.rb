@@ -5,7 +5,7 @@ module NotifyUser
 
     let(:user) { User.create({email: "user@example.com" })}
     let(:notification) { NewPostNotification.create({target: user}) }
-    Rails.application.routes.default_url_options[:host]= 'localhost:5000' 
+    Rails.application.routes.default_url_options[:host]= 'localhost:5000'
 
     before :each do
       BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
@@ -66,6 +66,12 @@ module NotifyUser
         notification.state.should eq "pending"
       end
 
+      it "notify(false) marks the notification as sent" do
+        notification = NewPostNotification.create({target: user})
+        notification.notify(false)
+        notification.state.should eq "sent"
+      end
+
       describe "#deliver" do
 
         describe "with aggregation enabled" do
@@ -92,7 +98,7 @@ module NotifyUser
 
           it "schedules notification to be sent through channels" do
             NewPostNotification.should_receive(:delay).and_call_original
-            notification.deliver        
+            notification.deliver
           end
         end
       end
@@ -106,14 +112,14 @@ module NotifyUser
         notification.state.should eq "pending_no_aggregation"
       end
 
-      describe ".deliver_notification_channel" do 
+      describe ".deliver_notification_channel" do
 
           before :each do
             @notification = NewPostNotification.create({target: user})
           end
 
           it "doesn't send if unsubscribed from channel" do
-            unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"}) 
+            unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"})
             ActionMailerChannel.should_not_receive(:deliver)
             BaseNotification.deliver_notification_channel(@notification.id, "action_mailer")
           end
@@ -130,12 +136,12 @@ module NotifyUser
           NewPostNotification.should_receive(:deliver_channels)
                               .with(notification.id)
                               .and_call_original
-          notification.deliver!            
+          notification.deliver!
         end
       end
 
       describe "#deliver_channels" do
-        
+
         it "delivers notification to channels" do
           ActionMailerChannel.should_receive(:deliver).once
           NewPostNotification.deliver_channels(notification.id)
