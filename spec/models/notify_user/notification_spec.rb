@@ -201,25 +201,30 @@ module NotifyUser
       end
 
       describe "delay_time" do
+
         it "first notification will return Time.now" do
           notification = NewPostNotification.create({target: user, params: {group_id: 1}})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.created_at + 1.minute
+          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq notification.created_at
         end
 
         it "notification received during first interval returns last time + x.minutes " do
-          n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
+          n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          n.mark_as_sent_as_aggregation_parent!
 
           notification = NewPostNotification.create({target: user, params: {group_id: 1}})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.created_at + 1.minute
+          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 1.minute
         end
 
         it "notification returned during third interval returns last time + x.minutes" do
-          NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
-          n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
+          NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"}).mark_as_sent_as_aggregation_parent!
+          n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          n.mark_as_sent_as_aggregation_parent!
 
           notification = NewPostNotification.create({target: user, params: {group_id: 1}})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.created_at + 4.minute
+          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 4.minute
         end
+
+        it "notification received after all intervals have ended just uses the last interval"
       end
 
       describe "the first notification" do
@@ -243,7 +248,7 @@ module NotifyUser
       describe "receive subsequent notifications" do
 
         describe "with no pending notifications" do
-          it "send immediately if time progressed >= than current interval.minute" do
+          it "delays notification" do
             n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
             notification = NewPostNotification.create({target: user, params: {group_id: 1}, created_at: n.created_at + 2.minutes})
 
@@ -251,15 +256,12 @@ module NotifyUser
               notification.deliver
             }.to change(Sidekiq::Extensions::DelayedClass.jobs, :size).by(1)
           end
-
-          it "delay for x.minutes if time progressed < than current interval.minute" do
-
-          end
         end
 
         describe "with pending notifications" do
           before :each do
             @other_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent"})
+            @notification = NewPostNotification.create({target: user})
           end
 
           it "dont delay anything" do

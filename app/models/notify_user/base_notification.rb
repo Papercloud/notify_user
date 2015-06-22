@@ -56,6 +56,10 @@ module NotifyUser
 
       event :mark_as_sent_as_aggregation_parent do
         transitions from: [:pending_as_aggregation_parent], to: :sent_as_aggregation_parent
+        after do
+          self.sent_time = Time.now
+          self.save
+        end
       end
 
       event :mark_as_pending_as_aggregation_parent do
@@ -141,7 +145,7 @@ module NotifyUser
       # last sent notification
       last_sent_parent = sent_aggregation_parents.first
       # Uses the time of the last notification sent otherwise will send it now.
-      delay_time = last_sent_parent ? last_sent_parent.created_at : created_at
+      delay_time = last_sent_parent ? last_sent_parent.sent_time : created_at
 
       # If this is the first notification the aggregate interval will return 0. Thus sending the notification now!
       return delay_time + a_interval.minutes

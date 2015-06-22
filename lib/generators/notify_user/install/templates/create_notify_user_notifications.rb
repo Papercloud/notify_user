@@ -6,6 +6,7 @@ class CreateNotifyUserNotifications < ActiveRecord::Migration
       t.string :target_type
       t.json :params
       t.string :state
+      t.datetime :sent_time
 
       t.timestamps
     end
