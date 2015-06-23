@@ -153,7 +153,7 @@ module NotifyUser
     end
 
     def sent_aggregation_parents
-      self.class
+      notifications = self.class
         .for_target(self.target)
         .where(state: :sent_as_aggregation_parent)
         .where("params->>'group_id' = ?", params[:group_id].to_s)
