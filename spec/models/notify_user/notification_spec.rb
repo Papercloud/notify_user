@@ -230,7 +230,16 @@ module NotifyUser
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 4.minute
         end
 
-        it "notification received after all intervals have ended just uses the last interval"
+        it "notification received after all intervals have ended just uses the last interval" do
+          10.times do
+            NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"}).mark_as_sent!
+          end
+          last_n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          last_n.mark_as_sent!
+
+          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq last_n.sent_time + 5.minute
+        end
       end
 
       describe "the first notification" do

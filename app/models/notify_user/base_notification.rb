@@ -139,6 +139,10 @@ module NotifyUser
 
     def delay_time(options)
       a_interval = options[:aggregate_per][aggregation_interval]
+
+      # uses the last interval by default once we deplete the intervals
+      a_interval = options[:aggregate_per].last if a_interval.nil?
+
       # last sent notification
       last_sent_parent = sent_aggregation_parents.first
       # Uses the time of the last notification sent otherwise will send it now.
@@ -228,7 +232,7 @@ module NotifyUser
               if options[:aggregate_per].kind_of?(Array)
                 self.class.delay_until(delay_time(options)).notify_aggregated_channel(self.id, channel_name)
               else
-                a_interval = options[:aggregate_per].minutes || self.aggregate_per
+                a_interval = options[:aggregate_per] ? options[:aggregate_per].minutes : self.aggregate_per
                 self.class.delay_for(a_interval).notify_aggregated_channel(self.id, channel_name)
               end
 
