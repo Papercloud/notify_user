@@ -59,11 +59,6 @@ module NotifyUser
         end
       end
 
-      event :mark_as_sent_as_aggregation_parent do
-        transitions from: [:pending_as_aggregation_parent], to: :sent_as_aggregation_parent
-
-      end
-
       event :mark_as_pending_as_aggregation_parent do
         transitions from: [:pending], to: :pending_as_aggregation_parent
       end
@@ -198,16 +193,22 @@ module NotifyUser
       .where(target_type: target.class.base_class)
     end
 
-    def self.pending_aggregation_with(notification)
+    def self.pending_aggregation_as_parent(notification)
       where(type: notification.type)
       .for_target(notification.target)
       .where(state: :pending_as_aggregation_parent)
     end
 
+    def self.pending_aggregation_with(notification)
+      where(type: notification.type)
+      .for_target(notification.target)
+      .where(state: [:pending, :pending_as_aggregation_parent])
+    end
+
     def aggregation_pending?
       # A notification of the same type, that would have an aggregation job associated with it,
       # already exists.
-      return (self.class.pending_aggregation_with(self).where('id != ?', id).count > 0)
+      return (self.class.pending_aggregation_as_parent(self).where('id != ?', id).count > 0)
     end
 
     # Aggregates appropriately
@@ -227,7 +228,7 @@ module NotifyUser
               if options[:aggregate_per].kind_of?(Array)
                 self.class.delay_until(delay_time(options)).notify_aggregated_channel(self.id, channel_name)
               else
-                a_interval = options[:aggregate_per] || self.aggregate_per
+                a_interval = options[:aggregate_per].minutes || self.aggregate_per
                 self.class.delay_for(a_interval).notify_aggregated_channel(self.id, channel_name)
               end
 

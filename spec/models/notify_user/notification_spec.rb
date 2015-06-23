@@ -77,7 +77,7 @@ module NotifyUser
           end
 
           it "doesn't schedule a job if a pending notification awaiting aggregation already exists" do
-            another_notification = NewPostNotification.create({target: user})
+            another_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent"})
             NewPostNotification.should_not_receive(:delay_for)
                             .with(notification.class.aggregate_per).and_call_original
 
@@ -214,17 +214,17 @@ module NotifyUser
         end
 
         it "notification received during first interval returns last time + x.minutes " do
-          n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
-          n.mark_as_sent_as_aggregation_parent!
+          n = NewPostNotification.create!({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          n.mark_as_sent!
 
-          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          notification = NewPostNotification.create!({target: user, params: {group_id: 1}})
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 1.minute
         end
 
         it "notification returned during third interval returns last time + x.minutes" do
-          NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"}).mark_as_sent_as_aggregation_parent!
+          NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"}).mark_as_sent!
           n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
-          n.mark_as_sent_as_aggregation_parent!
+          n.mark_as_sent!
 
           notification = NewPostNotification.create({target: user, params: {group_id: 1}})
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 4.minute
