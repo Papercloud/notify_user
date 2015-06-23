@@ -51,15 +51,17 @@ module NotifyUser
 
       # Record that we have sent message(s) to the user about this notification.
       event :mark_as_sent do
-        transitions from: [:pending, :pending_no_aggregation], to: :sent
-      end
-
-      event :mark_as_sent_as_aggregation_parent do
-        transitions from: [:pending_as_aggregation_parent], to: :sent_as_aggregation_parent
+        transitions from: [:pending_as_aggregation_parent], to: :sent_as_aggregation_parent, :if => :pending_as_aggregation_parent?
+        transitions from: [:pending, :pending_no_aggregation], to: :sent, :unless => :pending_as_aggregation_parent?
         after do
           self.sent_time = Time.now
           self.save
         end
+      end
+
+      event :mark_as_sent_as_aggregation_parent do
+        transitions from: [:pending_as_aggregation_parent], to: :sent_as_aggregation_parent
+
       end
 
       event :mark_as_pending_as_aggregation_parent do

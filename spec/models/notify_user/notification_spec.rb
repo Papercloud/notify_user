@@ -169,6 +169,12 @@ module NotifyUser
         end
       end
 
+      it "marking a pending_as_aggregation_parent as sent sets it to sent_as_aggregation_parent" do
+        notification = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+        notification.mark_as_sent!
+        expect(notification.reload.state).to eq "sent_as_aggregation_parent"
+      end
+
       describe "aggregate interval" do
         describe "first notification to be received after a notification was sent" do
           it "first notification returns interval 0" do
@@ -260,8 +266,8 @@ module NotifyUser
 
         describe "with pending notifications" do
           before :each do
-            @other_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent"})
-            @notification = NewPostNotification.create({target: user})
+            @other_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent", params: {group_id: 1}})
+            @notification = NewPostNotification.create({target: user, params: {group_id: 1}})
           end
 
           it "dont delay anything" do
