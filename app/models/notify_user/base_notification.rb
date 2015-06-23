@@ -197,28 +197,45 @@ module NotifyUser
       .where(target_type: target.class.base_class)
     end
 
+    # Used for aggregation when grouping isn't enabled
     def self.pending_aggregations_marked_as_parent(notification)
       where(type: notification.type)
       .for_target(notification.target)
       .where(state: :pending_as_aggregation_parent)
     end
 
+    # Used for aggregation when grouping based on group_id for target
+    def self.pending_aggregations_grouped_marked_as_parent(notification)
+      where(type: notification.type)
+      .for_target(notification.target)
+      .where(state: :pending_as_aggregation_parent)
+      .where("params->>'group_id' = ?", notification.params[:group_id].to_s)
+    end
+
+    # Used to find all pending notifications with aggregation enabled for target
     def self.pending_aggregation_by_group_with(notification)
       for_target(notification.target)
       .where(state: [:pending, :pending_as_aggregation_parent])
       .where("params->>'group_id' = ?", notification.params[:group_id].to_s)
     end
 
+    # Used to find all pending notifications for target
     def self.pending_aggregation_with(notification)
       where(type: notification.type)
       .for_target(notification.target)
       .where(state: [:pending, :pending_as_aggregation_parent])
     end
 
-    def aggregation_pending?
+    def aggregation_pending?(options={})
       # A notification of the same type, that would have an aggregation job associated with it,
       # already exists.
-      return (self.class.pending_aggregations_marked_as_parent(self).where('id != ?', id).count > 0)
+
+      # When group aggregation is enabled we provide a different scope
+      if options[:aggregate_grouping]
+        return (self.class.pending_aggregations_grouped_marked_as_parent(self).where('id != ?', id).count > 0)
+      else
+        return (self.class.pending_aggregations_marked_as_parent(self).where('id != ?', id).count > 0)
+      end
     end
 
     # Aggregates appropriately
@@ -232,7 +249,7 @@ module NotifyUser
             self.class.delay.deliver_notification_channel(self.id, channel_name)
           else
             # only notifies channels if no pending aggregate notifications
-            if not aggregation_pending?
+            if not aggregation_pending?(options)
               self.mark_as_pending_as_aggregation_parent!
               # adds fallback support for integer or array of integers
               if options[:aggregate_per].kind_of?(Array)
