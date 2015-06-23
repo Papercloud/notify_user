@@ -253,7 +253,7 @@ module NotifyUser
           }.to change(Sidekiq::Extensions::DelayedClass.jobs, :size).by(1)
         end
 
-        it "should change state to sent_as_aggregate_parent" do
+        it "should change state to pending_as_aggregation_parent" do
           expect{
             @notification.deliver
           }.to change(@notification, :state).to "pending_as_aggregation_parent"
@@ -271,6 +271,7 @@ module NotifyUser
               notification.deliver
             }.to change(Sidekiq::Extensions::DelayedClass.jobs, :size).by(1)
           end
+
         end
 
         describe "with pending notifications" do

@@ -29,7 +29,7 @@ module NotifyUser
     belongs_to :target, polymorphic: true
 
     validates_presence_of :target_id, :target_type, :target, :type, :state
-    validate :presence_of_target_id
+    validate :presence_of_group_id
 
     aasm column: :state do
 
@@ -71,7 +71,7 @@ module NotifyUser
       # A notification can go straight from pending to read if it's seen in a view before
       # sent in an email.
       event :mark_as_read do
-        transitions from: [:pending, :sent, :sent_as_aggregation_parent], to: :read
+        transitions from: [:pending, :sent, :pending_as_aggregation_parent, :sent_as_aggregation_parent], to: :read
       end
     end
 
@@ -197,7 +197,7 @@ module NotifyUser
       .where(target_type: target.class.base_class)
     end
 
-    def self.pending_aggregation_as_parent(notification)
+    def self.pending_aggregations_marked_as_parent(notification)
       where(type: notification.type)
       .for_target(notification.target)
       .where(state: :pending_as_aggregation_parent)
@@ -212,7 +212,7 @@ module NotifyUser
     def aggregation_pending?
       # A notification of the same type, that would have an aggregation job associated with it,
       # already exists.
-      return (self.class.pending_aggregation_as_parent(self).where('id != ?', id).count > 0)
+      return (self.class.pending_aggregations_marked_as_parent(self).where('id != ?', id).count > 0)
     end
 
     # Aggregates appropriately
@@ -314,7 +314,7 @@ module NotifyUser
 
     private
 
-    def presence_of_target_id
+    def presence_of_group_id
       self.channels.each do |channel_name, options|
         if options[:aggregate_grouping] && params[:group_id].blank?
           errors.add(:params, "requires group_id when aggregate_grouping is set to true")
