@@ -153,11 +153,11 @@ module NotifyUser
     end
 
     def sent_aggregation_parents
-      notifications = self.class
-        .for_target(self.target)
-        .where(state: :sent_as_aggregation_parent)
-        .where("params->>'group_id' = ?", params[:group_id].to_s)
-        .order(created_at: :desc)
+      self.class
+      .for_target(self.target)
+      .where(state: :sent_as_aggregation_parent)
+      .where("params->>'group_id' = ?", params[:group_id].to_s)
+      .order(created_at: :desc)
     end
 
     ## Notification description
@@ -201,6 +201,12 @@ module NotifyUser
       where(type: notification.type)
       .for_target(notification.target)
       .where(state: :pending_as_aggregation_parent)
+    end
+
+    def self.pending_aggregation_by_group_with(notification)
+      for_target(notification.target)
+      .where(state: [:pending, :pending_as_aggregation_parent])
+      .where("params->>'group_id' = ?", notification.params[:group_id].to_s)
     end
 
     def self.pending_aggregation_with(notification)
@@ -297,12 +303,18 @@ module NotifyUser
       notification = self.find(notification_id) # Raise an exception if not found.
 
       # Find any pending notifications with the same type and target, which can all be sent in one message.
-      notifications = self.pending_aggregation_with(notification)
+      if channels[channel_name][:aggregate_grouping]
+        notifications = self.pending_aggregation_by_group_with(notification)
+      else
+        notifications = self.pending_aggregation_with(notification)
+      end
 
       notifications.map(&:mark_as_sent)
       notifications.map(&:save)
 
-      return if notifications.empty?
+      # If the notification has been marked as read before it's sent we don't want to send it.
+      return if notification.read? || notifications.empty?
+
       if notifications.length == 1
         # Despite waiting for more to aggregate, we only got one in the end.
         self.deliver_notification_channel(notifications.first.id, channel_name)

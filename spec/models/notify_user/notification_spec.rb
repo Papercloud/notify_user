@@ -158,6 +158,30 @@ module NotifyUser
         NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
       end
 
+      it "if notification is marked_as_read don't deliver" do
+        notification = NewPostNotification.create({target: user, state: "read"})
+
+        NewPostNotification.should_not_receive(:deliver_notification_channel)
+        NewPostNotification.should_not_receive(:deliver_notifications_channel)
+
+        NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
+      end
+
+      describe "aggregate_grouping enabled" do
+        before :each do
+          NewPostNotification.class_eval do
+            channel :action_mailer, aggregate_grouping: true
+          end
+        end
+
+        it "should receive pending_aggregation_by_group_with" do
+          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          NewPostNotification.should_receive(:pending_aggregation_by_group_with).and_call_original
+
+          NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
+        end
+      end
+
     end
 
     describe "interval aggregation" do
