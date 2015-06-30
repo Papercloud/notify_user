@@ -255,7 +255,9 @@ module NotifyUser
             self.class.delay.deliver_notification_channel(self.id, channel_name)
           else
             #All notifications except the notification at interval 0 should have there parent_id set
-            update(parent_id: sent_aggregation_parents.last.id) unless aggregation_interval == 0
+            if self.aggregate_grouping
+              update(parent_id: sent_aggregation_parents.last.id) unless aggregation_interval == 0
+            end
 
             # only notifies channels if no pending aggregate notifications
             unless aggregation_pending?
