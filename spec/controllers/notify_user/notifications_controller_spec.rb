@@ -30,9 +30,21 @@ describe NotifyUser::NotificationsController do
       json[:notifications][0][:message].should include "New Post Notification happened with"
       json[:notifications][0][:message].should include notification.params[:name]
     end
+
+    it "returns notification without parent_id set" do
+      get :index, format: :json
+      expect(json[:notifications].count).to eq 1
+    end
+
+    it "doesn't return notifications with a parent_id set" do
+      NewPostNotification.create({target: user, parent_id: 1})
+
+      get :index, format: :json
+      expect(json[:notifications].count).to eq 1
+    end
   end
 
-  describe "GET web Index notifications" do 
+  describe "GET web Index notifications" do
     render_views
 
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
@@ -61,7 +73,7 @@ describe NotifyUser::NotificationsController do
     it "reading a notification twice doesn't throw an exception" do
       get :read, :id => notification.id
       get :read, :id => notification.id
-      
+
     end
 
     it "marks all unread messages as read" do
@@ -104,7 +116,7 @@ describe NotifyUser::NotificationsController do
         type: 'NewPostNotification',
         status: '0'
         }]
-      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should_not eq []        
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should_not eq []
     end
 
     it "endpoint for updating notification subscription statuses passing 1 does nothing" do
@@ -113,7 +125,7 @@ describe NotifyUser::NotificationsController do
         type: 'NewPostNotification',
         status: '1'
         }]
-      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []        
+      NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
     end
 
     it "unsubscribing from notification type" do
