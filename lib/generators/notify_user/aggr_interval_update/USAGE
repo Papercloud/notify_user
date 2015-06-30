@@ -2,4 +2,4 @@ Description:
     Add sent_time column to notifications
 
 Example:
-    rails generate notify_user:aggr_interval
+    rails generate notify_user:aggr_interval_update

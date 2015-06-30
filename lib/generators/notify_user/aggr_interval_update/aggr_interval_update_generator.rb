@@ -1,6 +1,6 @@
 require 'rails/generators/active_record'
 
-class NotifyUser::AggrIntervalGenerator < Rails::Generators::Base
+class NotifyUser::AggrIntervalUpdateGenerator < Rails::Generators::Base
   include Rails::Generators::Migration
 
   source_root File.expand_path('../templates', __FILE__)
