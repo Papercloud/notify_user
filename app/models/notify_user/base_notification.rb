@@ -152,14 +152,6 @@ module NotifyUser
       return delay_time + a_interval.minutes
     end
 
-    def sent_aggregation_parents
-      self.class
-      .for_target(self.target)
-      .where(state: :sent_as_aggregation_parent)
-      .where(group_id: group_id)
-      .order('created_at DESC')
-    end
-
     ## Notification description
     class_attribute :description
     self.description = ""
@@ -168,6 +160,16 @@ module NotifyUser
     class_attribute :channels
     self.channels = {
     }
+
+    ## Aggregation
+
+    class_attribute :aggregate_per
+    self.aggregate_per = 1.minute
+
+    ## True will implement a grouping/aggregation algorithm so that even though 10 notifications are delivered eg. Push Notifications
+    ## Only 1 notification will be displayed to the user within the notification.json payload
+    class_attribute :aggregate_grouping
+    self.aggregate_grouping = false
 
     # Not sure about this. The JSON and web feeds don't fit into channels, because nothing is broadcast through
     # them. Not sure if they really need another concept though, they could just be formats on the controller.
@@ -185,16 +187,20 @@ module NotifyUser
       self.channels = channels_clone
     end
 
-    ## Aggregation
-
-    class_attribute :aggregate_per
-    self.aggregate_per = 1.minute
-
     ## Sending
 
     def self.for_target(target)
       where(target_id: target.id)
       .where(target_type: target.class.base_class)
+    end
+
+    # Returns all parent notifications with a given group_id
+    def sent_aggregation_parents
+      self.class
+      .for_target(self.target)
+      .where(state: :sent_as_aggregation_parent)
+      .where(group_id: group_id)
+      .order('created_at DESC')
     end
 
     # Used for aggregation when grouping isn't enabled
@@ -226,12 +232,12 @@ module NotifyUser
       .where(state: [:pending, :pending_as_aggregation_parent])
     end
 
-    def aggregation_pending?(options={})
+    def aggregation_pending?
       # A notification of the same type, that would have an aggregation job associated with it,
       # already exists.
 
       # When group aggregation is enabled we provide a different scope
-      if options[:aggregate_grouping]
+      if self.aggregate_grouping
         return (self.class.pending_aggregations_grouped_marked_as_parent(self).where('id != ?', id).count > 0)
       else
         return (self.class.pending_aggregations_marked_as_parent(self).where('id != ?', id).count > 0)
@@ -248,8 +254,11 @@ module NotifyUser
             self.mark_as_sent!
             self.class.delay.deliver_notification_channel(self.id, channel_name)
           else
+            #All notifications except the notification at interval 0 should have there parent_id set
+            update(parent_id: sent_aggregation_parents.last.id) unless aggregation_interval == 0
+
             # only notifies channels if no pending aggregate notifications
-            if not aggregation_pending?(options)
+            unless aggregation_pending?
               self.mark_as_pending_as_aggregation_parent!
               # adds fallback support for integer or array of integers
               if options[:aggregate_per].kind_of?(Array)
@@ -258,7 +267,6 @@ module NotifyUser
                 a_interval = options[:aggregate_per] ? options[:aggregate_per].minutes : self.aggregate_per
                 self.class.delay_for(a_interval).notify_aggregated_channel(self.id, channel_name)
               end
-
             end
           end
         end
@@ -320,7 +328,7 @@ module NotifyUser
       notification = self.find(notification_id) # Raise an exception if not found.
 
       # Find any pending notifications with the same type and target, which can all be sent in one message.
-      if channels[channel_name][:aggregate_grouping]
+      if self.aggregate_grouping
         notifications = self.pending_aggregation_by_group_with(notification)
       else
         notifications = self.pending_aggregation_with(notification)
@@ -344,10 +352,8 @@ module NotifyUser
     private
 
     def presence_of_group_id
-      self.channels.each do |channel_name, options|
-        if options[:aggregate_grouping] && group_id.blank?
-          errors.add(:group_id, "required when aggregate_grouping is set to true")
-        end
+      if self.aggregate_grouping && group_id.blank?
+        errors.add(:group_id, "required when aggregate_grouping is set to true")
       end
     end
 

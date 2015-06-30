@@ -16,6 +16,10 @@ module NotifyUser
 
       BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
       # BaseNotification.channel(:apns, {aggregate_per: false})
+      NewPostNotification.class_eval do
+        channel :action_mailer
+        self.aggregate_grouping = false
+      end
     end
 
     describe "notification count" do
@@ -176,7 +180,8 @@ module NotifyUser
       describe "aggregate_grouping enabled" do
         before :each do
           NewPostNotification.class_eval do
-            channel :action_mailer, aggregate_grouping: true
+            channel :action_mailer
+            self.aggregate_grouping = true
           end
         end
 
@@ -195,7 +200,9 @@ module NotifyUser
         Sidekiq::Testing.fake!
         @aggregate_per = [0, 1, 4, 5]
         NewPostNotification.class_eval do
-          channel :action_mailer, aggrregate_per: @aggregate_per, aggregate_grouping: true
+          channel :action_mailer, aggrregate_per: @aggregate_per
+
+          self.aggregate_grouping = true
         end
       end
 
@@ -287,24 +294,39 @@ module NotifyUser
             @notification.deliver
           }.to change(@notification, :state).to "pending_as_aggregation_parent"
         end
+
+        it "parent_id should be nil" do
+          @notification.deliver
+          expect(@notification.reload.parent_id).to eq nil
+        end
       end
 
       describe "receive subsequent notifications" do
 
         describe "with no pending notifications" do
+          before :each do
+            @n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
+          end
+
           it "delays notification" do
-            n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
-            notification = NewPostNotification.create({target: user, group_id: 1, created_at: n.created_at + 2.minutes})
+            notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
 
             expect{
               notification.deliver
             }.to change(Sidekiq::Extensions::DelayedClass.jobs, :size).by(1)
           end
 
+          it "parent_id gets set to notification at interval 0" do
+            notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
+            notification.deliver
+            expect(notification.reload.parent_id).to eq @n.id
+          end
+
         end
 
         describe "with pending notifications" do
           before :each do
+            @n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
             @other_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent", group_id: 1})
             @notification = NewPostNotification.create({target: user, group_id: 1})
           end
@@ -319,6 +341,13 @@ module NotifyUser
             @notification.deliver
             expect(@notification.reload.pending?).to eq true
           end
+
+          it "parent_id gets set to notification at interval 0" do
+            notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
+            notification.deliver
+            expect(notification.reload.parent_id).to eq @n.id
+          end
+
         end
       end
       #we need a way to identify which notification was the one that was delayed conceptually labeled "head" or a special state
@@ -333,7 +362,7 @@ module NotifyUser
           end
         end
 
-        it "doesn't require a params_target_id" do
+        it "doesn't require a group_id" do
           notification = NewPostNotification.new({target: user})
           expect(notification).to be_valid
         end
@@ -342,7 +371,8 @@ module NotifyUser
       describe "aggregate_grouping true" do
         before :each do
           NewPostNotification.class_eval do
-            channel :action_mailer, aggrregate_per: [1, 4, 5], aggregate_grouping: true
+            channel :action_mailer, aggrregate_per: [1, 4, 5]
+            self.aggregate_grouping = true
           end
         end
 
