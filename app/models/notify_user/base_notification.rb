@@ -11,7 +11,7 @@ module NotifyUser
     after_commit :deliver, on: :create
 
     if ActiveRecord::VERSION::MAJOR < 4
-      attr_accessible :params, :target, :type, :state, :group_id
+      attr_accessible :params, :target, :type, :state, :group_id, :parent_id
     end
 
     # Override point in case of collisions, plus keeps the table name tidy.
@@ -256,7 +256,7 @@ module NotifyUser
           else
             #All notifications except the notification at interval 0 should have there parent_id set
             if self.aggregate_grouping
-              update(parent_id: sent_aggregation_parents.last.id) unless aggregation_interval == 0
+              update_attributes(parent_id: sent_aggregation_parents.last.id) unless aggregation_interval == 0
             end
 
             # only notifies channels if no pending aggregate notifications

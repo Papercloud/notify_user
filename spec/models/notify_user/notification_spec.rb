@@ -10,7 +10,7 @@ module NotifyUser
     before :each do
       BaseNotification.class_eval do
         if ActiveRecord::VERSION::MAJOR < 4
-          attr_accessible :params, :target, :type, :state, :group_id, :created_at
+          attr_accessible :params, :target, :type, :state, :group_id, :created_at, :parent_id
         end
       end
 
