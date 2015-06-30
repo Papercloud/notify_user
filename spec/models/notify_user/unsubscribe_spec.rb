@@ -10,12 +10,11 @@ module NotifyUser
 
     describe "unsubscribed" do
       before :each do
-        unsubscribe.save
+        unsubscribe
       end
 
       it "doesn't create notification object if unsubscribed" do
-        notification.save
-        notification.errors[:target].first.should eq " has unsubscribed from this type"
+        expect(notification).to_not be_valid
       end
 
       it "doesn't queue an aggregation background worker if unsubscribed" do
@@ -31,10 +30,10 @@ module NotifyUser
     end
 
     describe "subscribed" do
-      it "creates notification if subscribed" do
-        notification.save
-        notification.errors.count.should eq 0
+      it "valid if unsubscribe is not present" do
+        expect(notification).to be_valid
       end
     end
+
   end
 end

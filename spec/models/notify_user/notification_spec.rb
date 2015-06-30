@@ -8,6 +8,12 @@ module NotifyUser
     Rails.application.routes.default_url_options[:host]= 'localhost:5000'
 
     before :each do
+      BaseNotification.class_eval do
+        if ActiveRecord::VERSION::MAJOR < 4
+          attr_accessible :params, :target, :type, :state, :group_id, :created_at
+        end
+      end
+
       BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
       # BaseNotification.channel(:apns, {aggregate_per: false})
     end
@@ -234,7 +240,7 @@ module NotifyUser
 
         it "first notification will return Time.now" do
           notification = NewPostNotification.create({target: user, group_id: 1})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq notification.created_at
+          expect(notification.delay_time({aggregate_per: @aggregate_per}).to_s).to eq notification.created_at.to_s
         end
 
         it "notification received during first interval returns last time + x.minutes " do
@@ -242,7 +248,7 @@ module NotifyUser
           n.mark_as_sent!
 
           notification = NewPostNotification.create!({target: user, group_id: 1})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 1.minute
+          expect(notification.delay_time({aggregate_per: @aggregate_per}).to_s).to eq (n.sent_time + 1.minute).to_s
         end
 
         it "notification returned during third interval returns last time + x.minutes" do
@@ -251,7 +257,7 @@ module NotifyUser
           n.mark_as_sent!
 
           notification = NewPostNotification.create({target: user, group_id: 1})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 4.minute
+          expect(notification.delay_time({aggregate_per: @aggregate_per}).to_s).to eq (n.sent_time + 4.minute).to_s
         end
 
         it "notification received after all intervals have ended just uses the last interval" do
@@ -262,10 +268,9 @@ module NotifyUser
           last_n.mark_as_sent!
 
           notification = NewPostNotification.create({target: user, group_id: 1})
-          expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq last_n.sent_time + 5.minute
+          expect(notification.delay_time({aggregate_per: @aggregate_per}).to_s).to eq (last_n.sent_time + 5.minute).to_s
         end
       end
-
       describe "the first notification" do
         before :each do
           @notification = NewPostNotification.create({target: user, group_id: 1})

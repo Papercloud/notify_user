@@ -11,7 +11,7 @@ module NotifyUser
     after_commit :deliver, on: :create
 
     if ActiveRecord::VERSION::MAJOR < 4
-      attr_accessible :params, :target, :type, :state
+      attr_accessible :params, :target, :type, :state, :group_id
     end
 
     # Override point in case of collisions, plus keeps the table name tidy.
@@ -157,7 +157,7 @@ module NotifyUser
       .for_target(self.target)
       .where(state: :sent_as_aggregation_parent)
       .where(group_id: group_id)
-      .order(created_at: :desc)
+      .order('created_at DESC')
     end
 
     ## Notification description
