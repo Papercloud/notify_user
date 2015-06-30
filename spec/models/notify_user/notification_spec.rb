@@ -175,7 +175,7 @@ module NotifyUser
         end
 
         it "should receive pending_aggregation_by_group_with" do
-          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          notification = NewPostNotification.create({target: user, group_id: 2})
           NewPostNotification.should_receive(:pending_aggregation_by_group_with).and_call_original
 
           NewPostNotification.notify_aggregated_channel(notification.id, :action_mailer)
@@ -194,7 +194,7 @@ module NotifyUser
       end
 
       it "marking a pending_as_aggregation_parent as sent sets it to sent_as_aggregation_parent" do
-        notification = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+        notification = NewPostNotification.create({target: user, group_id: 1, state: "pending_as_aggregation_parent"})
         notification.mark_as_sent!
         expect(notification.reload.state).to eq "sent_as_aggregation_parent"
       end
@@ -202,29 +202,29 @@ module NotifyUser
       describe "aggregate interval" do
         describe "first notification to be received after a notification was sent" do
           it "first notification returns interval 0" do
-            notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+            notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 0
           end
 
           it "second notification returns internal 1" do
-            NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
-            notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+            NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
+            notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 1
           end
 
           it "third notification returns interval 2" do
-            NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
-            NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
+            NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
+            NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
 
-            notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+            notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 2
           end
 
           it "doesn't include sent notifications from another target_id" do
-            NewPostNotification.create({target: user, params: {group_id: 3}, state: "sent_as_aggregation_parent"})
-            NewPostNotification.create({target: user, params: {group_id: 0}, state: "sent_as_aggregation_parent"})
+            NewPostNotification.create({target: user, group_id: 3, state: "sent_as_aggregation_parent"})
+            NewPostNotification.create({target: user, group_id: 0, state: "sent_as_aggregation_parent"})
 
-            notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+            notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 0
           end
         end
@@ -233,42 +233,42 @@ module NotifyUser
       describe "delay_time" do
 
         it "first notification will return Time.now" do
-          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          notification = NewPostNotification.create({target: user, group_id: 1})
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq notification.created_at
         end
 
         it "notification received during first interval returns last time + x.minutes " do
-          n = NewPostNotification.create!({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          n = NewPostNotification.create!({target: user, group_id: 1, state: "pending_as_aggregation_parent"})
           n.mark_as_sent!
 
-          notification = NewPostNotification.create!({target: user, params: {group_id: 1}})
+          notification = NewPostNotification.create!({target: user, group_id: 1})
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 1.minute
         end
 
         it "notification returned during third interval returns last time + x.minutes" do
-          NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"}).mark_as_sent!
-          n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          NewPostNotification.create({target: user, group_id: 1, state: "pending_as_aggregation_parent"}).mark_as_sent!
+          n = NewPostNotification.create({target: user, group_id: 1, state: "pending_as_aggregation_parent"})
           n.mark_as_sent!
 
-          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          notification = NewPostNotification.create({target: user, group_id: 1})
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq n.sent_time + 4.minute
         end
 
         it "notification received after all intervals have ended just uses the last interval" do
           10.times do
-            NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"}).mark_as_sent!
+            NewPostNotification.create({target: user, group_id: 1, state: "pending_as_aggregation_parent"}).mark_as_sent!
           end
-          last_n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "pending_as_aggregation_parent"})
+          last_n = NewPostNotification.create({target: user, group_id: 1, state: "pending_as_aggregation_parent"})
           last_n.mark_as_sent!
 
-          notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          notification = NewPostNotification.create({target: user, group_id: 1})
           expect(notification.delay_time({aggregate_per: @aggregate_per})).to eq last_n.sent_time + 5.minute
         end
       end
 
       describe "the first notification" do
         before :each do
-          @notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+          @notification = NewPostNotification.create({target: user, group_id: 1})
         end
 
         it "should send immediately" do
@@ -288,8 +288,8 @@ module NotifyUser
 
         describe "with no pending notifications" do
           it "delays notification" do
-            n = NewPostNotification.create({target: user, params: {group_id: 1}, state: "sent_as_aggregation_parent"})
-            notification = NewPostNotification.create({target: user, params: {group_id: 1}, created_at: n.created_at + 2.minutes})
+            n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
+            notification = NewPostNotification.create({target: user, group_id: 1, created_at: n.created_at + 2.minutes})
 
             expect{
               notification.deliver
@@ -300,8 +300,8 @@ module NotifyUser
 
         describe "with pending notifications" do
           before :each do
-            @other_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent", params: {group_id: 1}})
-            @notification = NewPostNotification.create({target: user, params: {group_id: 1}})
+            @other_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent", group_id: 1})
+            @notification = NewPostNotification.create({target: user, group_id: 1})
           end
 
           it "dont delay anything" do
@@ -342,10 +342,10 @@ module NotifyUser
         end
 
         it "if group_id present be valid" do
-          notification = NewPostNotification.new({target: user, params: {group_id: 0}})
+          notification = NewPostNotification.new({target: user, group_id: 1})
           expect(notification).to be_valid
         end
-        it "if aggregate_grouping is true require a params_group_id" do
+        it "if aggregate_grouping is true require a group_id" do
           notification = NewPostNotification.new({target: user})
           expect(notification).to_not be_valid
         end

@@ -156,7 +156,7 @@ module NotifyUser
       self.class
       .for_target(self.target)
       .where(state: :sent_as_aggregation_parent)
-      .where("params->>'group_id' = ?", params[:group_id].to_s)
+      .where(group_id: group_id)
       .order(created_at: :desc)
     end
 
@@ -209,14 +209,14 @@ module NotifyUser
       where(type: notification.type)
       .for_target(notification.target)
       .where(state: :pending_as_aggregation_parent)
-      .where("params->>'group_id' = ?", notification.params[:group_id].to_s)
+      .where(group_id: notification.group_id)
     end
 
     # Used to find all pending notifications with aggregation enabled for target
     def self.pending_aggregation_by_group_with(notification)
       for_target(notification.target)
       .where(state: [:pending, :pending_as_aggregation_parent])
-      .where("params->>'group_id' = ?", notification.params[:group_id].to_s)
+      .where(group_id: notification.group_id)
     end
 
     # Used to find all pending notifications for target
@@ -345,8 +345,8 @@ module NotifyUser
 
     def presence_of_group_id
       self.channels.each do |channel_name, options|
-        if options[:aggregate_grouping] && params[:group_id].blank?
-          errors.add(:params, "requires group_id when aggregate_grouping is set to true")
+        if options[:aggregate_grouping] && group_id.blank?
+          errors.add(:group_id, "required when aggregate_grouping is set to true")
         end
       end
     end
