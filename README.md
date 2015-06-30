@@ -142,6 +142,13 @@ Unsubscribe link helper - add this to your views/notify_user/layouts/action_mail
 <% end %>
 ```
 
+##Upgrade v0.1.4 to v0.2
+Run aggregate_interval generator which generates the migrations to add a sent_time field to notifications
+```
+rails generate notify_user:aggr_interval
+rake db:migrate
+```
+
 ##Upgrading to JSON params data type
 Run json_update generator which generates the migrations to change the params datatype to json as well as convert the current data to json
 ```
