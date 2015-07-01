@@ -85,8 +85,15 @@ describe NotifyUser::NotificationsController do
   end
 
   describe "PUT notifications/unsubscribe_from_object" do
-    it "returns 200" do
-      put :unsubscribe_from_object, format: :json, unsubscribe: {type: "NewPostNotification", group_id: 1}
+    it "unsubscribe returns 201" do
+      expect(NotifyUser::Unsubscribe).to receive(:unsubscribe)
+      put :unsubscribe_from_object, format: :json, subscription: {type: "NewPostNotification", group_id: 1, unsubscribe: true}
+      expect(response.response_code).to eq 201
+    end
+
+    it "subscribe returns 201" do
+      expect(NotifyUser::Unsubscribe).to receive(:subscribe)
+      put :unsubscribe_from_object, format: :json, subscription: {type: "NewPostNotification", group_id: 1, unsubscribe: false}
       expect(response.response_code).to eq 201
     end
   end

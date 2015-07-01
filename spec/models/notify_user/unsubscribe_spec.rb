@@ -8,11 +8,17 @@ module NotifyUser
     let(:unsubscribe) { Unsubscribe.create({target: user, type: "NewPostNotification"}) }
 
     describe "self.unsubscribe" do
+      it "creates unsubscribe object if it doesn't exist"
+
+      it "doesn't create if already exists"
+    end
+
+    describe "self.subscribe" do
       it "removes unsubscribe if exists for type" do
         Unsubscribe.create({target: user, type: "NewPostNotification"})
 
         expect{
-          Unsubscribe.unsubscribe(user, "NewPostNotification")
+          Unsubscribe.subscribe(user, "NewPostNotification")
         }.to change(Unsubscribe, :count).by(-1)
       end
 
@@ -20,21 +26,21 @@ module NotifyUser
         Unsubscribe.create({target: user, type: "AnotherPostNotification"})
 
         expect{
-          Unsubscribe.unsubscribe(user, "NewPostNotification")
+          Unsubscribe.subscribe(user, "NewPostNotification")
         }.to change(Unsubscribe, :count).by(0)
       end
 
       it "removes unsubscribe object if exists for type and group_id" do
         Unsubscribe.create({target: user, type: "NewPostNotification", group_id: 1})
         expect{
-          Unsubscribe.unsubscribe(user, "NewPostNotification", 1)
+          Unsubscribe.subscribe(user, "NewPostNotification", 1)
         }.to change(Unsubscribe, :count).by(-1)
       end
 
       it "doesn't remove unsubscribe object for another group_id" do
         Unsubscribe.create({target: user, type: "NewPostNotification", group_id: 1})
         expect{
-          Unsubscribe.unsubscribe(user, "NewPostNotification", 2)
+          Unsubscribe.subscribe(user, "NewPostNotification", 2)
         }.to change(Unsubscribe, :count).by(0)
       end
     end

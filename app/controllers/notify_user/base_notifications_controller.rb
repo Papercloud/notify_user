@@ -43,7 +43,15 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def unsubscribe_from_object
-    Unsubscribe.unsubscribe(@user, params[:unsubscribe][:type], params[:unsubscribe][:group_id])
+    case params[:subscription][:unsubscribe]
+    when true
+      NotifyUser::Unsubscribe.unsubscribe(@user, params[:subscription][:type], params[:subscription][:group_id])
+    when false
+      NotifyUser::Unsubscribe.subscribe(@user, params[:subscription][:type], params[:subscription][:group_id])
+    else
+      raise "unsubscribe field required"
+    end
+
     render json: {status: "OK"}, status: 201
   end
 

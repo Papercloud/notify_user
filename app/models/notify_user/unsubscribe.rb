@@ -29,6 +29,10 @@ module NotifyUser
     end
 
     def self.unsubscribe(target, type, group_id=nil)
+      raise "Implement"
+    end
+
+    def self.subscribe(target, type, group_id=nil)
       #deletes unsubscribe object in essence subscribing a user
       where(target_id: target.id)
       .where(target_type: target.class.base_class)
