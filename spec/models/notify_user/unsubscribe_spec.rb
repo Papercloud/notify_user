@@ -5,7 +5,39 @@ module NotifyUser
 
     let(:user) { User.create({email: "user@example.com" })}
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
-    let(:unsubscribe) { NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) }
+    let(:unsubscribe) { Unsubscribe.create({target: user, type: "NewPostNotification"}) }
+
+    describe "self.unsubscribe" do
+      it "removes unsubscribe if exists for type" do
+        Unsubscribe.create({target: user, type: "NewPostNotification"})
+
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification")
+        }.to change(Unsubscribe, :count).by(-1)
+      end
+
+      it "doesn't remove unsubscribe for another type" do
+        Unsubscribe.create({target: user, type: "AnotherPostNotification"})
+
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification")
+        }.to change(Unsubscribe, :count).by(0)
+      end
+
+      it "removes unsubscribe object if exists for type and group_id" do
+        Unsubscribe.create({target: user, type: "NewPostNotification", group_id: 1})
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification", 1)
+        }.to change(Unsubscribe, :count).by(-1)
+      end
+
+      it "doesn't remove unsubscribe object for another group_id" do
+        Unsubscribe.create({target: user, type: "NewPostNotification", group_id: 1})
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification", 2)
+        }.to change(Unsubscribe, :count).by(0)
+      end
+    end
 
 
     describe "unsubscribed" do

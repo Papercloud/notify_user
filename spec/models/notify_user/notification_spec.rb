@@ -12,14 +12,11 @@ module NotifyUser
         if ActiveRecord::VERSION::MAJOR < 4
           attr_accessible :params, :target, :type, :state, :group_id, :created_at, :parent_id
         end
-      end
-
-      BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
-      # BaseNotification.channel(:apns, {aggregate_per: false})
-      NewPostNotification.class_eval do
         channel :action_mailer
         self.aggregate_grouping = false
       end
+
+      BaseNotification.any_instance.stub(:mobile_message).and_return("New Notification")
     end
 
     describe "notification count" do

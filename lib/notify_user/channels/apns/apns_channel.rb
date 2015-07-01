@@ -30,7 +30,10 @@ class ApnsChannel
         end
       end
     end
+  end
 
+  def deliver_aggregated(notifications, options={})
+    raise "Not implemented"
   end
 
 end
