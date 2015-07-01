@@ -385,7 +385,103 @@ module NotifyUser
           expect(notification).to_not be_valid
         end
       end
+    end
 
+    describe "user_has_unsubscribed?" do
+      it "true if unsubscribed from type" do
+        notification = NewPostNotification.create({target: user})
+        Unsubscribe.create({target: notification.target, type: "NewPostNotification"})
+
+        expect(notification.user_has_unsubscribed?).to eq true
+      end
+
+      it "false if haven't unsubscribed from type" do
+        notification = NewPostNotification.create({target: user})
+        expect(notification.user_has_unsubscribed?).to eq false
+      end
+
+      it "true if unsubscribed from channel" do
+        notification = NewPostNotification.create({target: user})
+        Unsubscribe.create({target: notification.target, type: "action_mailer"})
+
+        expect(notification.user_has_unsubscribed?(:action_mailer)).to eq true
+      end
+
+      it "false if haven't unsubscribed from channel" do
+        notification = NewPostNotification.create({target: user})
+
+        expect(notification.user_has_unsubscribed?(:action_mailer)).to eq false
+      end
+
+      it "true if unsubscribed from type and group_id" do
+        Unsubscribe.create({target: notification.target, type: "NewPostNotification", group_id: 1})
+        notification.update(group_id: 1)
+
+        expect(notification.user_has_unsubscribed?).to eq true
+      end
+
+      it "true if unsubcribed from type but pass in group_id" do
+        Unsubscribe.create({target: notification.target, type: "NewPostNotification"})
+        notification.update(group_id: 1)
+
+        expect(notification.user_has_unsubscribed?).to eq true
+      end
+
+      it "false if havent unsubscribed from type and group_id" do
+        notification.update(group_id: 1)
+        expect(notification.user_has_unsubscribed?).to eq false
+      end
+    end
+
+    describe "unsubscribing" do
+
+      describe "deliver_notification_channel" do
+        it "subscribed to type receives deliver" do
+          expect(ActionMailerChannel).to receive(:deliver)
+          NewPostNotification.deliver_notification_channel(notification.id, :action_mailer)
+        end
+
+        it "unsubscribed from type doesn't receive deliver" do
+          expect(ActionMailerChannel).to_not receive(:deliver)
+
+          Unsubscribe.create({target: notification.target, type: "action_mailer"})
+          NewPostNotification.deliver_notification_channel(notification.id, :action_mailer)
+        end
+
+        it "unsubscribed from type and group_id doesn't receive deliver " do
+          expect(ActionMailerChannel).to_not receive(:deliver)
+          Unsubscribe.create({target: notification.target, type: "NewPostNotification", group_id: 1})
+
+          notification.update(group_id: 1)
+
+          NewPostNotification.deliver_notification_channel(notification.id, :action_mailer)
+        end
+
+      end
+
+      describe "deliver_notifications_channel" do
+
+        it "subscribed to type receives deliver_aggregated" do
+          expect(ActionMailerChannel).to receive(:deliver_aggregated)
+          NewPostNotification.deliver_notifications_channel([notification], :action_mailer)
+        end
+
+        it "unsubscribed from type doesn't receive deliver_aggregated" do
+          expect(ActionMailerChannel).to_not receive(:deliver_aggregated)
+
+          Unsubscribe.create({target: notification.target, type: "action_mailer"})
+          NewPostNotification.deliver_notifications_channel([notification], :action_mailer)
+        end
+
+        it "unsubscribed from type and group_id doesn't receive deliver_aggregated " do
+          expect(ActionMailerChannel).to_not receive(:deliver_aggregated)
+
+          Unsubscribe.create({target: notification.target, type: "NewPostNotification", group_id: 1})
+          notification.update(group_id: 1)
+
+          NewPostNotification.deliver_notifications_channel([notification], :action_mailer)
+        end
+      end
     end
 
 

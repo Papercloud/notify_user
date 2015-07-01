@@ -309,7 +309,7 @@ module NotifyUser
       channel_options = channels[channel_name.to_sym]
       channel = (channel_name.to_s + "_channel").camelize.constantize
 
-      unless self.unsubscribed_from_channel?(notification.target, channel_name)
+      unless notification.user_has_unsubscribed?(channel_name)
         channel.deliver(notification, channel_options)
       end
     end
@@ -320,7 +320,7 @@ module NotifyUser
       channel = (channel_name.to_s + "_channel").camelize.constantize
 
       #check if user unsubsribed from channel type
-      unless self.unsubscribed_from_channel?(notifications.first.target, channel_name)
+      unless notifications.first.user_has_unsubscribed?(channel_name)
         channel.deliver_aggregated(notifications, channel_options)
       end
     end
@@ -351,6 +351,11 @@ module NotifyUser
       end
     end
 
+    def user_has_unsubscribed?(channel_name=nil)
+      #return true if user has unsubscribed
+      return Unsubscribe.has_unsubscribed_from?(self.target, self.type, self.group_id, channel_name)
+    end
+
     private
 
     def presence_of_group_id
@@ -363,12 +368,6 @@ module NotifyUser
       errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?
     end
 
-    def user_has_unsubscribed?
-      #return true if user has unsubscribed
-      return true unless NotifyUser::Unsubscribe.has_unsubscribed_from(self.target, self.type).empty?
-
-      return false
-    end
 
     def self.unsubscribed_from_channel?(user, type)
       #return true if user has unsubscribed
