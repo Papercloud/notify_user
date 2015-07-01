@@ -84,6 +84,13 @@ describe NotifyUser::NotificationsController do
 
   end
 
+  describe "PUT notifications/unsubscribe_from_object" do
+    it "returns 200" do
+      put :unsubscribe_from_object, format: :json, unsubscribe: {type: "NewPostNotification", group_id: 1}
+      expect(response.response_code).to eq 201
+    end
+  end
+
   describe "PUT notifications/mark_read.json" do
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
 

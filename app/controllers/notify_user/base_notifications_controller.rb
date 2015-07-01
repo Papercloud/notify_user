@@ -42,6 +42,11 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render json: {:count => @notifications.count}
   end
 
+  def unsubscribe_from_object
+    Unsubscribe.unsubscribe(@user, params[:unsubscribe][:type], params[:unsubscribe][:group_id])
+    render json: {status: "OK"}, status: 201
+  end
+
   #get
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
