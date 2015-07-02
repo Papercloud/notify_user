@@ -3,7 +3,7 @@ module NotifyUser
     helper NotifyUser::ApplicationHelper
 
     layout "notify_user/layouts/action_mailer"
-  
+
     def notification_email(notification, options)
       @notification = notification
 

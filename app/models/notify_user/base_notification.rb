@@ -88,6 +88,15 @@ module NotifyUser
       NotifyUser::BaseNotification.for_target(target).where('state IN (?)', ["sent", "pending"]).count
     end
 
+    def self.aggregate_message(notifications)
+      string = ActionView::Base.new(
+             Rails.configuration.paths["app/views"]).render(
+             :template => self.class.views[:mobile_sdk][:aggregate_path].call(self), :formats => [:html],
+             :locals => { :notifications => notifications})
+
+      return ::CGI.unescapeHTML("#{string}")
+    end
+
     def message
       string = ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
@@ -176,7 +185,8 @@ module NotifyUser
     class_attribute :views
     self.views = {
       mobile_sdk: {
-        template_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/mobile_sdk/notification" }
+        template_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/mobile_sdk/notification" },
+        aggregate_path: Proc.new {|n| "notify_user/#{n.class.name.underscore}/mobile_sdk/aggregate_notifications" }
       }
     }
 

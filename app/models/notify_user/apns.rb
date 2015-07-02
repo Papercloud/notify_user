@@ -3,8 +3,9 @@ module NotifyUser
     SYMBOL_NAMES_SIZE = 10
     PAYLOAD_LIMIT = 255
 
-    def initialize(notification, options)
-      @notification = notification
+    def initialize(notifications, options)
+      @notifications = notifications
+      @notification = notifications.first
       @options = options
     end
 
