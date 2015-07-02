@@ -8,9 +8,18 @@ module NotifyUser
     let(:unsubscribe) { Unsubscribe.create({target: user, type: "NewPostNotification"}) }
 
     describe "self.unsubscribe" do
-      it "creates unsubscribe object if it doesn't exist"
+      it "creates unsubscribe object if it doesn't exist" do
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification")
+          }.to change(Unsubscribe, :count).by(1)
+      end
 
-      it "doesn't create if already exists"
+      it "doesn't create if already exists" do
+        Unsubscribe.unsubscribe(user, "NewPostNotification")
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification")
+          }.to change(Unsubscribe, :count).by(0)
+      end
     end
 
     describe "self.subscribe" do
@@ -45,7 +54,6 @@ module NotifyUser
       end
     end
 
-
     describe "unsubscribed" do
       before :each do
         unsubscribe
@@ -63,7 +71,7 @@ module NotifyUser
       it "toggles the status of a subscription" do
         unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"})
         NotifyUser::Unsubscribe.toggle_status(user, "NewPostNotification")
-        NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+        NotifyUser::Unsubscribe.has_unsubscribed_from?(user, 'NewPostNotification').should eq false
       end
     end
 

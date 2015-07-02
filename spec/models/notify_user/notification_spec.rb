@@ -12,6 +12,9 @@ module NotifyUser
         if ActiveRecord::VERSION::MAJOR < 4
           attr_accessible :params, :target, :type, :state, :group_id, :created_at, :parent_id
         end
+      end
+
+      NewPostNotification.class_eval do
         channel :action_mailer
         self.aggregate_grouping = false
       end
@@ -412,20 +415,20 @@ module NotifyUser
 
       it "true if unsubscribed from type and group_id" do
         Unsubscribe.create({target: notification.target, type: "NewPostNotification", group_id: 1})
-        notification.update(group_id: 1)
+        notification.update_attributes(group_id: 1)
 
         expect(notification.user_has_unsubscribed?).to eq true
       end
 
       it "true if unsubcribed from type but pass in group_id" do
         Unsubscribe.create({target: notification.target, type: "NewPostNotification"})
-        notification.update(group_id: 1)
+        notification.update_attributes(group_id: 1)
 
         expect(notification.user_has_unsubscribed?).to eq true
       end
 
       it "false if havent unsubscribed from type and group_id" do
-        notification.update(group_id: 1)
+        notification.update_attributes(group_id: 1)
         expect(notification.user_has_unsubscribed?).to eq false
       end
     end
@@ -449,7 +452,7 @@ module NotifyUser
           expect(ActionMailerChannel).to_not receive(:deliver)
           Unsubscribe.create({target: notification.target, type: "NewPostNotification", group_id: 1})
 
-          notification.update(group_id: 1)
+          notification.update_attributes(group_id: 1)
 
           NewPostNotification.deliver_notification_channel(notification.id, :action_mailer)
         end
@@ -474,7 +477,7 @@ module NotifyUser
           expect(ActionMailerChannel).to_not receive(:deliver_aggregated)
 
           Unsubscribe.create({target: notification.target, type: "NewPostNotification", group_id: 1})
-          notification.update(group_id: 1)
+          notification.update_attributes(group_id: 1)
 
           NewPostNotification.deliver_notifications_channel([notification], :action_mailer)
         end
