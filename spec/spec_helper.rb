@@ -23,7 +23,7 @@ require 'sidekiq'
 require File.expand_path("#{ENV['RAILS_ROOT']}/config/environment.rb",  __FILE__)
 
 puts "Testing with Rails #{Rails::VERSION::STRING} and Ruby #{RUBY_VERSION}"
-
+require 'pry'
 require 'rspec/rails'
 require 'capybara/rails'
 require 'factory_girl_rails'
