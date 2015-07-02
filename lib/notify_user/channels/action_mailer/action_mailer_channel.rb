@@ -11,7 +11,7 @@ class ActionMailerChannel
         description: "Email Notifications"
       }
     end
-    
+
     def deliver(notification, options={})
       NotifyUser::NotificationMailer.notification_email(notification, default_options.deep_merge(options)).deliver
     end

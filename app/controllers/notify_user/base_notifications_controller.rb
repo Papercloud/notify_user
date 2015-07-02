@@ -42,6 +42,19 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render json: {:count => @notifications.count}
   end
 
+  def unsubscribe_from_object
+    case params[:subscription][:unsubscribe]
+    when true
+      NotifyUser::Unsubscribe.unsubscribe(@user, params[:subscription][:type], params[:subscription][:group_id])
+    when false
+      NotifyUser::Unsubscribe.subscribe(@user, params[:subscription][:type], params[:subscription][:group_id])
+    else
+      raise "unsubscribe field required"
+    end
+
+    render json: {status: "OK"}, status: 201
+  end
+
   #get
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
@@ -58,7 +71,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
 
   def unsubscribe
     if params[:type]
-      unsubscribe_from(params[:type])
+      NotifyUser::Unsubscribe.unsubscribe(@user, params[:type])
       redirect_to notify_user_notifications_unsubscribe_path
     end
     @types = build_notification_types
@@ -96,12 +109,9 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     types.each do |type|
       unsubscribe = NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type[:type])
       if type[:status] == '0'
-        if unsubscribe.empty?
-          #if unsubscribe doesn't exist create it
-          unsubscribe = NotifyUser::Unsubscribe.create(target: @user, type: type[:type])
-        end
+        NotifyUser::Unsubscribe.unsubscribe(@user, type[:type])
       else
-        subscribe_to(type[:type])
+        NotifyUser::Unsubscribe.subscribe(@user, type[:type])
       end
     end
   end
@@ -122,7 +132,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def subscribe
-    subscribe_to(params[:type]) if params[:type]
+    NotifyUser::Unsubscribe.subscribe(@user, params[:type]) if params[:type]
     redirect_to notify_user_notifications_unsubscribe_path
   end
 
@@ -141,6 +151,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   private
+
   def build_notification_types()
     #dirty way to build a json hash with pagination
     types = {:subscriptions => []}
@@ -151,28 +162,15 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     NotifyUser::BaseNotification.channels.each do |type, options|
         channel = (type.to_s + "_channel").camelize.constantize
         types[:subscriptions] << {type: type, description: channel.default_options[:description],
-          status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
+          status: NotifyUser::Unsubscribe.has_unsubscribed_from?(@user, type)}
     end
 
     #iterates over type
     notification_types.each do |type|
         types[:subscriptions] << {type: type, description: type.constantize.description,
-          status: NotifyUser::Unsubscribe.has_unsubscribed_from(@user, type).empty?}
+          status: NotifyUser::Unsubscribe.has_unsubscribed_from?(@user, type)}
     end
     return types
   end
 
-  def unsubscribe_from(type)
-      unsubscribe = NotifyUser::Unsubscribe.new(target: @user, type: type)
-      if unsubscribe.save
-        flash[:message] = "successfully unsubscribed from #{type} notifications"
-      else
-        flash[:message] = "Please try again"
-      end
-  end
-
-  def subscribe_to(type)
-    NotifyUser::Unsubscribe.unsubscribe(@user,type)
-    flash[:message] = "successfully subscribed to #{type} notifications"
-  end
 end

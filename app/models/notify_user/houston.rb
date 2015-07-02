@@ -14,8 +14,8 @@ module NotifyUser
 
     attr_accessor :push_options
 
-    def initialize(notification, options)
-      super(notification, options)
+    def initialize(notifications, options)
+      super(notifications, options)
 
       @push_options = setup_options
 
@@ -36,7 +36,12 @@ module NotifyUser
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
 
-      mobile_message = @notification.mobile_message(space_allowance)
+      if @notifications.count > 1
+        mobile_message = NotifyUser::BaseNotification.aggregate_message(@notifications)
+      else
+        mobile_message = @notification.mobile_message(space_allowance)
+      end
+
       mobile_message.gsub!('\n', "\n")
 
       push_options = {

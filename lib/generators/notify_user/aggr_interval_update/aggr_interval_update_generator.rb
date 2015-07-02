@@ -7,6 +7,7 @@ class NotifyUser::AggrIntervalUpdateGenerator < Rails::Generators::Base
 
   def copy_migrations
     copy_migration "add_sent_time_to_notifications"
+    copy_migration "update_unsubscribes"
 
     puts "Update successful. You can now run:"
     puts "  rake db:migrate"

@@ -5,8 +5,54 @@ module NotifyUser
 
     let(:user) { User.create({email: "user@example.com" })}
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: "Mr. Blobby") }
-    let(:unsubscribe) { NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"}) }
+    let(:unsubscribe) { Unsubscribe.create({target: user, type: "NewPostNotification"}) }
 
+    describe "self.unsubscribe" do
+      it "creates unsubscribe object if it doesn't exist" do
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification")
+          }.to change(Unsubscribe, :count).by(1)
+      end
+
+      it "doesn't create if already exists" do
+        Unsubscribe.unsubscribe(user, "NewPostNotification")
+        expect{
+          Unsubscribe.unsubscribe(user, "NewPostNotification")
+          }.to change(Unsubscribe, :count).by(0)
+      end
+    end
+
+    describe "self.subscribe" do
+      it "removes unsubscribe if exists for type" do
+        Unsubscribe.create({target: user, type: "NewPostNotification"})
+
+        expect{
+          Unsubscribe.subscribe(user, "NewPostNotification")
+        }.to change(Unsubscribe, :count).by(-1)
+      end
+
+      it "doesn't remove unsubscribe for another type" do
+        Unsubscribe.create({target: user, type: "AnotherPostNotification"})
+
+        expect{
+          Unsubscribe.subscribe(user, "NewPostNotification")
+        }.to change(Unsubscribe, :count).by(0)
+      end
+
+      it "removes unsubscribe object if exists for type and group_id" do
+        Unsubscribe.create({target: user, type: "NewPostNotification", group_id: 1})
+        expect{
+          Unsubscribe.subscribe(user, "NewPostNotification", 1)
+        }.to change(Unsubscribe, :count).by(-1)
+      end
+
+      it "doesn't remove unsubscribe object for another group_id" do
+        Unsubscribe.create({target: user, type: "NewPostNotification", group_id: 1})
+        expect{
+          Unsubscribe.subscribe(user, "NewPostNotification", 2)
+        }.to change(Unsubscribe, :count).by(0)
+      end
+    end
 
     describe "unsubscribed" do
       before :each do
@@ -25,7 +71,7 @@ module NotifyUser
       it "toggles the status of a subscription" do
         unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "NewPostNotification"})
         NotifyUser::Unsubscribe.toggle_status(user, "NewPostNotification")
-        NotifyUser::Unsubscribe.has_unsubscribed_from(user, 'NewPostNotification').should eq []
+        NotifyUser::Unsubscribe.has_unsubscribed_from?(user, 'NewPostNotification').should eq false
       end
     end
 

@@ -11,6 +11,6 @@ Rails.application.routes.draw do
     get 'notifications/subscriptions' => 'notifications#subscriptions'
     put 'notifications/subscriptions' => 'notifications#subscriptions'
     put 'notifications/mass_subscriptions' => 'notifications#mass_subscriptions'
-
+    put 'notification/unsubscribe_from_object' => 'notifications#unsubscribe_from_object'
   end
 end
