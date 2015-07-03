@@ -126,6 +126,11 @@ module NotifyUser
       self
     end
 
+    def grouped_by_id(group_id)
+      self.group_id = group_id
+      self
+    end
+
     def notify!
       # Bang version of 'notify' ignores aggregation
       dont_aggregate!
@@ -135,6 +140,11 @@ module NotifyUser
     def notify
       # Sends with aggregation if enabled
       save
+
+      #All notifications except the notification at interval 0 should have there parent_id set
+      if self.aggregate_grouping
+        update_attributes(parent_id: pending_and_sent_aggregation_parents.last.id) unless aggregation_interval == 0
+      end
     end
 
     def generate_unsubscribe_hash
@@ -143,7 +153,7 @@ module NotifyUser
     end
 
     def aggregation_interval
-      sent_aggregation_parents.count
+      pending_and_sent_aggregation_parents.count
     end
 
     def delay_time(options)
@@ -205,11 +215,23 @@ module NotifyUser
     end
 
     # Returns all parent notifications with a given group_id
-    def sent_aggregation_parents
+
+    def aggregation_parents
       self.class
       .for_target(self.target)
-      .where(state: :sent_as_aggregation_parent)
       .where(group_id: group_id)
+      .where('id != ?', id)
+    end
+
+    def sent_aggregation_parents
+      aggregation_parents
+      .where(state: :sent_as_aggregation_parent)
+      .order('created_at DESC')
+    end
+
+    def pending_and_sent_aggregation_parents
+      aggregation_parents
+      .where(state: [:sent_as_aggregation_parent, :pending_as_aggregation_parent])
       .order('created_at DESC')
     end
 
@@ -257,21 +279,16 @@ module NotifyUser
     # Aggregates appropriately
     def deliver
       if pending? and not user_has_unsubscribed?
-
         # if aggregation is false bypass aggregation completely
         self.channels.each do |channel_name, options|
           if(options[:aggregate_per] == false)
             self.mark_as_sent!
             self.class.delay.deliver_notification_channel(self.id, channel_name)
           else
-            #All notifications except the notification at interval 0 should have there parent_id set
-            if self.aggregate_grouping
-              update_attributes(parent_id: sent_aggregation_parents.last.id) unless aggregation_interval == 0
-            end
-
             # only notifies channels if no pending aggregate notifications
             unless aggregation_pending?
               self.mark_as_pending_as_aggregation_parent!
+
               # adds fallback support for integer or array of integers
               if options[:aggregate_per].kind_of?(Array)
                 self.class.delay_until(delay_time(options)).notify_aggregated_channel(self.id, channel_name)

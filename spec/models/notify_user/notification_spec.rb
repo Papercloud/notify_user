@@ -240,6 +240,14 @@ module NotifyUser
             notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 0
           end
+
+          it "agregation interval should include pending as parent states as well" do
+            NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent"})
+            NewPostNotification.create({target: user, group_id: 1, state: "pending_as_aggregation_parent"})
+
+            notification = NewPostNotification.create({target: user, group_id: 1})
+            expect(notification.aggregation_interval).to eq 2
+          end
         end
       end
 
@@ -318,7 +326,7 @@ module NotifyUser
 
           it "parent_id gets set to notification at interval 0" do
             notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
-            notification.deliver
+            notification.notify
             expect(notification.reload.parent_id).to eq @n.id
           end
 
@@ -340,12 +348,6 @@ module NotifyUser
           it "state remains as pending" do
             @notification.deliver
             expect(@notification.reload.pending?).to eq true
-          end
-
-          it "parent_id gets set to notification at interval 0" do
-            notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
-            notification.deliver
-            expect(notification.reload.parent_id).to eq @n.id
           end
 
         end
