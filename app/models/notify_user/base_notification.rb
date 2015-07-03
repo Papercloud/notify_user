@@ -101,7 +101,7 @@ module NotifyUser
       string = ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
-             :locals => { :params => self.params})
+             :locals => { :params, => self.params, notification: self})
 
       return ::CGI.unescapeHTML("#{string}")
     end
@@ -110,7 +110,7 @@ module NotifyUser
       string = truncate(ActionView::Base.new(
              Rails.configuration.paths["app/views"]).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
-             :locals => { :params => self.params}), :length => length)
+             :locals => { :params => self.params, notification: self}), :length => length)
 
       return ::CGI.unescapeHTML("#{string}")
     end
