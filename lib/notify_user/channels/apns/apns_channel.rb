@@ -30,10 +30,10 @@ class ApnsChannel
         end
       end
     end
-  end
 
-  def deliver_aggregated(notifications, options={})
-    raise "Not implemented"
+    def deliver_aggregated(notifications, options={})
+      NotifyUser::Houston.new(notifications, options).push
+    end
   end
 
 end
