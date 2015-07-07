@@ -137,13 +137,21 @@ module NotifyUser
     end
 
     # Send any Emails/SMS/APNS
-    def notify
+    def notify(deliver=true)
       # Sends with aggregation if enabled
       save
 
+      ## if deliver == false don't perform deliver log but still perform aggregation logic
+      ## notification then gets marked as sent
+      mark_as_sent! unless deliver
+
       #All notifications except the notification at interval 0 should have there parent_id set
       if self.aggregate_grouping
-        update_attributes(parent_id: pending_and_sent_aggregation_parents.last.id) unless aggregation_interval == 0
+        parents = aggregation_parents.where(parent_id: nil).where('created_at >= ?', 24.hours.ago).order('created_at DESC')
+
+        if parents.any?
+          update_attributes(parent_id: parents.first.id)
+        end
       end
     end
 
