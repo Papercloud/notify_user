@@ -141,7 +141,7 @@ Unsubscribe link helper - add this to your views/notify_user/layouts/action_mail
 	</p>
 <% end %>
 ```
-
+##Unsubscribing/Subscribing to a specific group_id or resource
 Unsubscribing from a specific `group_id` eg. specific resource.
 `put /notify_user/notifications/unsubscribe_from_object.json`
 expects
