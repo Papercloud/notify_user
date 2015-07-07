@@ -142,6 +142,15 @@ Unsubscribe link helper - add this to your views/notify_user/layouts/action_mail
 <% end %>
 ```
 
+Unsubscribing from a specific `group_id` eg. specific resource.
+`put /notify_user/notifications/unsubscribe_from_object.json`
+expects
+```
+subscription: {type: "NotificationType", group_id: 1, unsubscribe: true|false}
+```
+returns
+`response_code 201`
+
 ##Upgrade v0.1.4 to v0.2
 Run aggregate_interval generator which generates the migrations to add a sent_time field to notifications
 ```
