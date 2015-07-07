@@ -137,9 +137,13 @@ module NotifyUser
     end
 
     # Send any Emails/SMS/APNS
-    def notify
+    def notify(deliver=true)
       # Sends with aggregation if enabled
       save
+
+      ## if deliver == false don't perform deliver log but still perform aggregation logic
+      ## notification then gets marked as sent
+      mark_as_sent! unless deliver
 
       #All notifications except the notification at interval 0 should have there parent_id set
       if self.aggregate_grouping

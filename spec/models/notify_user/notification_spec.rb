@@ -76,6 +76,12 @@ module NotifyUser
         notification.state.should eq "pending"
       end
 
+      it "passing false marks the notification as sent" do
+        notification = NewPostNotification.create({target: user})
+        notification.notify(false)
+        notification.state.should eq "sent"
+      end
+
       describe "#deliver" do
 
         describe "with aggregation enabled" do
