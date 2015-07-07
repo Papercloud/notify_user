@@ -214,6 +214,9 @@ module NotifyUser
 
       describe "aggregate interval" do
         describe "first notification to be received after a notification was sent" do
+          it "includes notifications within 24hours from first notification" do
+          end
+
           it "first notification returns interval 0" do
             notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 0
@@ -248,6 +251,34 @@ module NotifyUser
             notification = NewPostNotification.create({target: user, group_id: 1})
             expect(notification.aggregation_interval).to eq 2
           end
+        end
+      end
+
+      describe "parent_id" do
+        it "doesn't get set if the time between the previous parent_id is greater than 24hours" do
+          n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent", parent_id: nil, created_at: 10.hours.ago})
+          notification = NewPostNotification.create({target: user, group_id: 1})
+          notification.notify
+
+          expect(notification.parent_id).to eq n.id
+        end
+
+        it "sets parent_id if time time between previous parent_id is less than 24 hours" do
+          n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent", parent_id: nil, created_at: 25.hours.ago})
+          notification = NewPostNotification.create({target: user, group_id: 1})
+          notification.notify
+
+          expect(notification.parent_id).to eq nil
+        end
+
+        it "parent_id gets set to the latest id of the latest parents" do
+          NewPostNotification.create({target: user, group_id: 1, parent_id: nil, created_at: 25.hours.ago})
+          n = NewPostNotification.create({target: user, group_id: 1, parent_id: nil, created_at: 10.hours.ago})
+
+          notification = NewPostNotification.create({target: user, group_id: 1})
+          notification.notify
+
+          expect(notification.parent_id).to eq n.id
         end
       end
 
@@ -286,6 +317,7 @@ module NotifyUser
           expect(notification.delay_time({aggregate_per: @aggregate_per}).to_s).to eq (last_n.sent_time + 5.minute).to_s
         end
       end
+
       describe "the first notification" do
         before :each do
           @notification = NewPostNotification.create({target: user, group_id: 1})
