@@ -143,7 +143,7 @@ module NotifyUser
 
       #All notifications except the notification at interval 0 should have there parent_id set
       if self.aggregate_grouping
-        parents = aggregation_parents.where(parent_id: nil).where('created_at >= ?', 24.hours.ago).order(created_at: :desc)
+        parents = aggregation_parents.where(parent_id: nil).where('created_at >= ?', 24.hours.ago).order('created_at DESC')
 
         if parents.any?
           update_attributes(parent_id: parents.first.id)
