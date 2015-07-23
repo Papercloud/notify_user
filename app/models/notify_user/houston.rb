@@ -62,8 +62,16 @@ module NotifyUser
       push_options
     end
 
+    def valid?(payload)
+      payload.to_json.bytesize <= PAYLOAD_LIMIT
+    end
+
     def send_notifications
       APN_POOL.with do |connection|
+        unless valid?(@push_options)
+          Rails.logger.info "Error: Payload exceeds size limit."
+        end
+
         if connection.connection.closed?
           connection = APNConnection.new
         end
@@ -76,12 +84,20 @@ module NotifyUser
           connection.write(notification.message)
         end
 
-        read_socket, write_socket = IO.select([ssl], [ssl], [ssl], nil)
+        Rails.logger.info "READING ERRORS"
+        Rails.logger.info "----"
+        read_socket, write_socket = IO.select([ssl], [], [ssl], 1)
+        Rails.logger.info "#{ssl}"
+
         if (read_socket && read_socket[0])
-          if error = connection.connection.read(6)
+          error = connection.connection.read(6)
+
+          Rails.logger.info "#{error}"
+
+          if error
             command, status, error_index = error.unpack("ccN")
 
-            Rails.logger.info "Error: #{status} with id: #{error_index}. Token: #{device.token}."
+            Rails.logger.info "Error: #{status} with id: #{error_index}."
 
             # Remove all the devices prior to the error (we assume they were successful), and close the current connection:
             if error_index != NO_ERROR
