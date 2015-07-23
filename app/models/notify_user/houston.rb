@@ -64,7 +64,7 @@ module NotifyUser
 
     def send_notifications
       APN_POOL.with do |connection|
-        if !connection.connection.open?
+        if connection.connection.closed?
           connection = APNConnection.new
         end
 
@@ -76,15 +76,16 @@ module NotifyUser
           connection.write(notification.message)
         end
 
-        read_socket, write_socket = IO.select([ssl], [], [ssl], 1)
+        read_socket, write_socket = IO.select([ssl], [ssl], [ssl], nil)
         if (read_socket && read_socket[0])
           if error = connection.connection.read(6)
             command, status, error_index = error.unpack("ccN")
 
+            Rails.logger.info "Error: #{status} with id: #{error_index}. Token: #{device.token}."
+
             # Remove all the devices prior to the error (we assume they were successful), and close the current connection:
             if error_index != NO_ERROR
               device = @devices.at(error_index)
-              Rails.logger.info "Error: #{status} with id: #{error_index}. Token: #{device.token}."
 
               # If we encounter the Invalid Token error from APNS, just remove the device:
               if status == INVALID_TOKEN_ERROR
