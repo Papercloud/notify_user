@@ -38,8 +38,11 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   end
 
   def notifications_count
-    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state IN (?)', ["sent_as_aggregation_parent", "sent", "pending"])
-    render json: {:count => @notifications.count}
+    @notifications = NotifyUser::BaseNotification.for_target(@user)
+      .where('parent_id IS NULL')
+      .where('state IN (?)', ["sent_as_aggregation_parent", "sent", "pending"])
+
+    render json: { :count => @notifications.count }
   end
 
   def unsubscribe_from_object
