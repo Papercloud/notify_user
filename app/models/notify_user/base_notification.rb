@@ -140,7 +140,7 @@ module NotifyUser
     def notify(deliver=true)
       #All notifications except the notification at interval 0 should have there parent_id set
       if self.aggregate_grouping
-        parents = aggregation_parents.where(parent_id: nil).where('created_at >= ?', 24.hours.ago).order('created_at DESC')
+        parents = current_parents.where('created_at >= ?', 24.hours.ago).order('created_at DESC')
 
         if parents.any?
           self.parent_id = parents.first.id
@@ -223,11 +223,14 @@ module NotifyUser
     end
 
     # Returns all parent notifications with a given group_id
-
-    def aggregation_parents
+    def current_parents
       self.class
       .for_target(self.target)
       .where(group_id: group_id)
+    end
+
+    def aggregation_parents
+      current_parents
       .where('id != ?', id)
     end
 
