@@ -68,6 +68,10 @@ module NotifyUser
 
     def send_notifications
       APN_POOL.with do |connection|
+        Rails.logger.info "PAYLOAD"
+        Rails.logger.info "----"
+        Rails.logger.info "#{@push_options}"
+
         unless valid?(@push_options)
           Rails.logger.info "Error: Payload exceeds size limit."
         end
