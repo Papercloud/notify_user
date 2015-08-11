@@ -122,9 +122,9 @@ module NotifyUser
       # Resend all notifications after the once that produced the error:
       send_notifications if error_index != NO_ERROR
     rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT => e
-      # Rails.loggere, "[##{connection.object_id}] Exception occurred: #{e.inspect}, connection state: #{connection.inspect}")
+      Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}, connection state: #{connection.inspect}"
       reset_connection
-      # APN.log(:debug, "[##{connection.object_id}] Socket reestablished, connection state: #{connection.inspect}")
+      Rails.logger.debug "[##{connection.object_id}] Socket reestablished, connection state: #{connection.inspect}"
       retry
     end
   end
