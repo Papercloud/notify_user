@@ -59,6 +59,7 @@ module NotifyUser
 
       if @options[:silent]
         push_options.merge!({
+          alert: '',
           sound: '',
           content_available: true
         })
