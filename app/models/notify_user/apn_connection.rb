@@ -29,6 +29,8 @@ module NotifyUser
     end
 
     def setup_connection
+      return if Rails.env.test?
+
       @uri, @certificate = if Rails.env.development? || apn_environment == :development
         Rails.logger.info "Using development gateway. Rails env: #{Rails.env}, APN_ENVIRONMENT: #{apn_environment}"
         [
