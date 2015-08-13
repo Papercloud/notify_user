@@ -6,6 +6,7 @@ module NotifyUser
 
     NO_ERROR = -42
     INVALID_TOKEN_ERROR = 8
+    CONNECTION = APNConnection.new
 
     attr_accessor :push_options
 
@@ -29,13 +30,11 @@ module NotifyUser
     private
 
     def connection
-      @connection ||= APNConnection.new
+      CONNECTION.connection
     end
 
     def reset_connection
-      @connection.connection.close if @connection
-      @connection = nil
-      connection
+      CONNECTION.reset
     end
 
     def setup_options
@@ -73,6 +72,8 @@ module NotifyUser
     end
 
     def send_notifications
+      connection.open if connection.closed?
+
       Rails.logger.info "PAYLOAD"
       Rails.logger.info "----"
       Rails.logger.info "#{@push_options}"
@@ -81,7 +82,7 @@ module NotifyUser
         Rails.logger.info "Error: Payload exceeds size limit."
       end
 
-      ssl = connection.connection.ssl
+      ssl = connection.ssl
       error_index = NO_ERROR
 
       @devices.each_with_index do |device, index|
@@ -95,7 +96,7 @@ module NotifyUser
       Rails.logger.info "#{ssl}"
 
       if (read_socket && read_socket[0])
-        error = connection.connection.read(6)
+        error = connection.read(6)
 
         Rails.logger.info "#{error}"
 
@@ -123,9 +124,9 @@ module NotifyUser
       # Resend all notifications after the once that produced the error:
       send_notifications if error_index != NO_ERROR
     rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT => e
-      Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}, connection state: #{connection.inspect}"
+      Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}."
       reset_connection
-      Rails.logger.debug "[##{connection.object_id}] Socket reestablished, connection state: #{connection.inspect}"
+      Rails.logger.debug "[##{connection.object_id}] Socket reestablished."
       retry
     end
   end
