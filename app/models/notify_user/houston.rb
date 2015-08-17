@@ -40,9 +40,9 @@ module NotifyUser
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
 
-      parent = @notification.class.find(@notification.parent_id)
       mobile_message = ''
-      if parent
+      if @notification.parent_id
+        parent = @notification.class.find(@notification.parent_id)
         mobile_message = parent.mobile_message(space_allowance)
       else
         mobile_message = @notification.mobile_message(space_allowance)
