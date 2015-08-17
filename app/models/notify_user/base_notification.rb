@@ -415,6 +415,5 @@ module NotifyUser
       return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?
     end
 
-
   end
 end
