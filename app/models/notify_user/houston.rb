@@ -40,12 +40,13 @@ module NotifyUser
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
 
-      if @notifications.count > 1
-        mobile_message = NotifyUser::BaseNotification.aggregate_message(@notifications)
+      parent = @notification.class.find(@notification.parent_id)
+      mobile_message = ''
+      if parent
+        mobile_message = parent.mobile_message(space_allowance)
       else
         mobile_message = @notification.mobile_message(space_allowance)
       end
-
       mobile_message.gsub!('\n', "\n")
 
       push_options = {
