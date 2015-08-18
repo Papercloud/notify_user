@@ -54,7 +54,7 @@ module NotifyUser
         badge: @notification.count_for_target,
         category: @notification.params[:category] || @notification.type,
         custom_data: @notification.params,
-        sound: 'default'
+        sound: @options[:sound] || 'default'
       }
 
       if @options[:silent]

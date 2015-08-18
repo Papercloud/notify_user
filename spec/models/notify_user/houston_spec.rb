@@ -22,10 +22,16 @@ module NotifyUser
         expect(@houston.push_options[:sound]).to eq 'default'
       end
 
-      it "should access the notification targets list of devices" do
+      it 'should access the notification targets list of devices' do
         expect(user).to receive(:devices)
 
         @houston = NotifyUser::Houston.new([notification], {})
+      end
+
+      it 'should use the sound specified in the options' do
+        @houston = NotifyUser::Houston.new([notification], { sound: 'special.wav' })
+
+        expect(@houston.push_options[:sound]).to eq 'special.wav'
       end
 
       xit "should initialize with many notifications" do
