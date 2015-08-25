@@ -34,7 +34,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def mark_all
     @notifications = NotifyUser::BaseNotification.for_target(@user).where('state != ?', 'read')
     @notifications.update_all(state: :read)
-    redirect_to notify_user_notifications_path
+    render json: @notifications
   end
 
   def notifications_count
