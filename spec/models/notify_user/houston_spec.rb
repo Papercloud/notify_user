@@ -34,6 +34,12 @@ module NotifyUser
         expect(@houston.push_options[:sound]).to eq 'special.wav'
       end
 
+      it 'should remove the badge key for silent notifications' do
+        @houston = NotifyUser::Houston.new([notification], { silent: true })
+
+        expect(@houston.push_options).not_to have_key(:badge)
+      end
+
       xit "should initialize with many notifications" do
         expect(NotifyUser::BaseNotification).to receive(:aggregate_message).and_return("New Notification")
         notifications = NewPostNotification.create([{target: user}, {target: user}, {target: user}])

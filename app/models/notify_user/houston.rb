@@ -62,7 +62,7 @@ module NotifyUser
           alert: '',
           sound: '',
           content_available: true
-        })
+        }).delete(:badge)
       end
 
       push_options
