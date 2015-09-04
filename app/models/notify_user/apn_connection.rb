@@ -1,13 +1,36 @@
 module NotifyUser
   class APNConnection
 
-    attr_accessor :connection
-
     def initialize
-      setup
+      connection
     end
 
-    def setup
+    def connection
+      @connection ||= setup_connection
+    end
+
+    def write(data)
+      raise "Connection is closed" unless @connection.open?
+      @connection.write(data)
+    end
+
+    def reset
+      @connection.close if @connection
+      @connection = nil
+      connection
+    end
+
+    private
+
+    def apn_environment
+      return nil unless ENV['APN_ENVIRONMENT']
+
+      ENV['APN_ENVIRONMENT'].downcase.to_sym
+    end
+
+    def setup_connection
+      return if Rails.env.test?
+
       @uri, @certificate = if Rails.env.development? || apn_environment == :development
         Rails.logger.info "Using development gateway. Rails env: #{Rails.env}, APN_ENVIRONMENT: #{apn_environment}"
         [
@@ -23,20 +46,6 @@ module NotifyUser
       end
 
       @connection = ::Houston::Connection.new(@uri, @certificate, nil)
-      @connection.open
-    end
-
-    def write(data)
-      raise "Connection is closed" unless @connection.open?
-      @connection.write(data)
-    end
-
-    private
-
-    def apn_environment
-      return nil unless ENV['APN_ENVIRONMENT']
-
-      ENV['APN_ENVIRONMENT'].downcase.to_sym
     end
 
   end

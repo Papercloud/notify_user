@@ -4,7 +4,7 @@ Rails.application.routes.draw do
     put 'notifications/mark_read' => 'notifications#mark_read'
     get 'notifications/notifications_count' => 'notifications#notifications_count'
     get 'notifications/:id/read' => 'notifications#read'
-    get 'notifications/mark_all' => 'notifications#mark_all'
+    put 'notifications/mark_all' => 'notifications#mark_all'
     get 'notifications/unsubscribe' => 'notifications#unsubscribe'
     get 'notifications/subscribe' => 'notifications#subscribe'
     get 'notifications/unauth_unsubscribe' => 'notifications#unauth_unsubscribe'

@@ -263,7 +263,7 @@ module NotifyUser
       describe "parent_id" do
         it "doesn't get set if the time between the previous parent_id is greater than 24hours" do
           n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent", parent_id: nil, created_at: 10.hours.ago})
-          notification = NewPostNotification.create({target: user, group_id: 1})
+          notification = NewPostNotification.new({target: user, group_id: 1})
           notification.notify
 
           expect(notification.parent_id).to eq n.id
@@ -271,7 +271,7 @@ module NotifyUser
 
         it "sets parent_id if time time between previous parent_id is less than 24 hours" do
           n = NewPostNotification.create({target: user, group_id: 1, state: "sent_as_aggregation_parent", parent_id: nil, created_at: 25.hours.ago})
-          notification = NewPostNotification.create({target: user, group_id: 1})
+          notification = NewPostNotification.new({target: user, group_id: 1})
           notification.notify
 
           expect(notification.parent_id).to eq nil
@@ -279,9 +279,9 @@ module NotifyUser
 
         it "parent_id gets set to the latest id of the latest parents" do
           NewPostNotification.create({target: user, group_id: 1, parent_id: nil, created_at: 25.hours.ago})
-          n = NewPostNotification.create({target: user, group_id: 1, parent_id: nil, created_at: 10.hours.ago})
+          n = NewPostNotification.new({target: user, group_id: 1, parent_id: nil, created_at: 10.hours.ago})
 
-          notification = NewPostNotification.create({target: user, group_id: 1})
+          notification = NewPostNotification.new({target: user, group_id: 1})
           notification.notify
 
           expect(notification.parent_id).to eq n.id
@@ -363,7 +363,7 @@ module NotifyUser
           end
 
           it "parent_id gets set to notification at interval 0" do
-            notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
+            notification = NewPostNotification.new({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
             notification.notify
             expect(notification.reload.parent_id).to eq @n.id
           end

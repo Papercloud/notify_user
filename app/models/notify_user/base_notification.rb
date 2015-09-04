@@ -85,7 +85,10 @@ module NotifyUser
 
     # returns the global unread notification count for a user
     def count_for_target
-      NotifyUser::BaseNotification.for_target(target).where('state IN (?)', ["sent", "pending"]).count
+      NotifyUser::BaseNotification.for_target(target)
+        .where('parent_id IS NULL')
+        .where('state IN (?)', ["sent_as_aggregation_parent", "sent", "pending"])
+        .count
     end
 
     def self.aggregate_message(notifications)
@@ -411,7 +414,6 @@ module NotifyUser
       #return true if user has unsubscribed
       return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?
     end
-
 
   end
 end
