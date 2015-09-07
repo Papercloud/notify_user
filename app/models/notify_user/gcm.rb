@@ -17,17 +17,7 @@ module NotifyUser
     end
 
     def client
-      if Rails.env.development? || environment == :development
-        @client ||= GCM.new(ENV['GCM_DEBUG_KEY'])
-      else
-        @client ||= GCM.new(ENV['GCM_RELEASE_KEY'])
-      end
-    end
-
-    def environment
-      return nil unless ENV['GCM_ENVIRONMENT']
-
-      ENV['GCM_ENVIRONMENT'].downcase.to_sym
+      @client ||= GCM.new(ENV['GCM_API_KEY'])
     end
 
     def valid?(payload)
