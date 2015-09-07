@@ -20,12 +20,6 @@ describe NotifyUser::Apns do
       expect(@apns.push_options[:sound]).to eq 'default'
     end
 
-    it 'should access the notification targets list of devices' do
-      expect(user).to receive(:devices)
-
-      @apns = NotifyUser::Apns.new([notification], [], {})
-    end
-
     it 'should use the sound specified in the options' do
       @apns = NotifyUser::Apns.new([notification], [], { sound: 'special.wav' })
 
