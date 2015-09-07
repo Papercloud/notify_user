@@ -26,11 +26,11 @@ class ApnsChannel
 
     def fetch_devices(notification)
       device_method = options[:device_method] || :devices
-      devices = @notification.target.send(device_method)
+      devices = notification.target.send(device_method)
 
       { ios: devices.ios, android: devices.android }
     rescue
-      Rails.logger.info "Notification target, #{@notification.target.class}, does not respond to the method, #{device_method}."
+      Rails.logger.info "Notification target, #{notification.target.class}, does not respond to the method, #{device_method}."
     end
   end
 end
