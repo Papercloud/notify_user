@@ -49,8 +49,6 @@ module NotifyUser
     end
 
     def send_notifications
-      @key = create_notification_key
-
       client.send(device_tokens, @push_options)
     end
   end

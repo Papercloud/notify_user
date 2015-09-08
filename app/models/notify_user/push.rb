@@ -18,6 +18,8 @@ module NotifyUser
 
     private
 
+    attr_accessor :device_tokens
+
     def device_tokens
       @device_tokens = @devices.pluck(:token)
     end
