@@ -27,7 +27,7 @@ class ApnsChannel
       device_method ||= :devices
       devices = notification.target.send(device_method)
 
-      { ios: devices.ios, android: devices.android }
+      { ios: devices.ios.to_a, android: devices.android.to_a }
     rescue
       Rails.logger.info "Notification target, #{notification.target.class}, does not respond to the method, #{device_method}."
       { ios: [], android: [] }
