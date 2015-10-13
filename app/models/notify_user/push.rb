@@ -21,7 +21,7 @@ module NotifyUser
     attr_accessor :device_tokens
 
     def device_tokens
-      @device_tokens = @devices.pluck(:token)
+      @device_tokens = @devices.map(&:token)
     end
 
     # Calculates the bytes already used:
