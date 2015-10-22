@@ -1,3 +1,5 @@
+ENV['RAILS_ENV'] ||= 'test'
+
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH << File.expand_path('../support', __FILE__)
 
@@ -9,9 +11,7 @@ require "bundler"
 Bundler.setup
 
 ENV['RAILS_ENV'] = 'test'
-ENV['RAILS_ROOT'] = File.expand_path("../dummy/rails-#{ENV['RAILS_VERSION']}", __FILE__)
-
-
+ENV['RAILS_ROOT'] = File.expand_path("../dummy/rails-4.1.0", __FILE__)
 
 # Create the test app if it doesn't exists
 unless File.exists?(ENV['RAILS_ROOT'])
@@ -28,13 +28,16 @@ require 'rspec/rails'
 require 'capybara/rails'
 require 'factory_girl_rails'
 require 'sidekiq/testing'
-require "awesome_print"
+require 'awesome_print'
 
 Sidekiq::Testing.inline!
 
 RSpec.configure do |config|
-  config.infer_base_class_for_anonymous_controllers = false
   config.use_transactional_fixtures = true
+  config.infer_spec_type_from_file_location!
+
+  # Use FactoryGirl shortcuts
+  config.include FactoryGirl::Syntax::Methods
 
   def mailer_should_render_template(mailer, template)
     original_method = mailer.method(:_render_template)

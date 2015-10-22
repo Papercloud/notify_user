@@ -1,7 +1,6 @@
 require 'spec_helper'
 
-
-describe NotifyUser::NotificationsController do
+describe NotifyUser::NotificationsController, type: :controller do
 
   let(:user) { User.create({email: "user@example.com" })}
 

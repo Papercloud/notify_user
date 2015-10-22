@@ -33,6 +33,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "awesome_print"
   s.add_development_dependency "test_after_commit"
   s.add_development_dependency "pry"
+  s.add_development_dependency "appraisal"
 
   s.test_files = Dir["spec/**/*"]
 end

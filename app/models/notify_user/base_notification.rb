@@ -409,11 +409,9 @@ module NotifyUser
       errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?
     end
 
-
     def self.unsubscribed_from_channel?(user, type)
       #return true if user has unsubscribed
       return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?
     end
-
   end
 end
