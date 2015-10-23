@@ -15,7 +15,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    aasm (4.2.0)
+    aasm (4.3.0)
     actionmailer (3.2.17)
       actionpack (= 3.2.17)
       mail (~> 2.5.4)
@@ -115,13 +115,13 @@ GEM
     gcm (0.1.0)
       httparty
       json
-    highline (1.7.3)
+    highline (1.7.8)
     hike (1.2.3)
     hitimes (1.2.2)
     houston (2.2.3)
       commander (~> 4.1)
       json
-    httparty (0.13.5)
+    httparty (0.13.7)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
@@ -148,7 +148,7 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    pubnub (3.7.7)
+    pubnub (3.7.9)
       eventmachine (~> 1.0)
       json (~> 1.8)
       net-http-persistent (~> 2.9)
@@ -245,6 +245,3 @@ DEPENDENCIES
   rspec-rails
   rspec-sidekiq
   test_after_commit
-
-BUNDLED WITH
-   1.10.6
