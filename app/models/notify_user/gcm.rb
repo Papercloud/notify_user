@@ -49,6 +49,7 @@ module NotifyUser
     end
 
     def send_notifications
+      return unless device_tokens.any?
       client.send(device_tokens, @push_options)
     end
   end
