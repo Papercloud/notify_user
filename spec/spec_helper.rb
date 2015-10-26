@@ -52,4 +52,10 @@ RSpec.configure do |config|
     JSON.parse(response.body).with_indifferent_access
   end
 
+  def create_device_double(options={})
+    device = instance_double('Device')
+    token = options[:token] || 'token'
+    allow(device).to receive(:token) { token }
+    return device
+  end
 end
