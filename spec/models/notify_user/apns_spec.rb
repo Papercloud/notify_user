@@ -31,12 +31,5 @@ describe NotifyUser::Apns do
 
       expect(@apns.push_options).not_to have_key(:badge)
     end
-
-    xit "should initialize with many notifications" do
-      expect(NotifyUser::BaseNotification).to receive(:aggregate_message).and_return("New Notification")
-      notifications = NewPostNotification.create([{target: user}, {target: user}, {target: user}])
-
-      NotifyUser::Apns.new(notifications, [], {})
-    end
   end
 end

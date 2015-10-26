@@ -23,13 +23,6 @@ module NotifyUser
           custom_data: {},
         })
       end
-
-      xit "should initialize with many notifications" do
-        expect(NotifyUser::BaseNotification).to receive(:aggregate_message).and_return("New Notification")
-        notifications = NewPostNotification.create([{target: user}, {target: user}, {target: user}])
-
-        NotifyUser::Gcm.new(notifications, [], {})
-      end
     end
 
     describe 'push' do
