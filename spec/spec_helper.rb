@@ -11,7 +11,7 @@ require "bundler"
 Bundler.setup
 
 ENV['RAILS_ENV'] = 'test'
-ENV['RAILS_ROOT'] = File.expand_path("../dummy/rails-4.1.0", __FILE__)
+ENV['RAILS_ROOT'] = File.expand_path("../dummy/rails-#{ENV['RAILS_VERSION']}", __FILE__)
 
 # Create the test app if it doesn't exists
 unless File.exists?(ENV['RAILS_ROOT'])
@@ -29,6 +29,7 @@ require 'capybara/rails'
 require 'factory_girl_rails'
 require 'sidekiq/testing'
 require 'awesome_print'
+require 'timecop'
 
 Sidekiq::Testing.inline!
 

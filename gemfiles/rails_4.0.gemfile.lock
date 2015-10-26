@@ -10,7 +10,7 @@ PATH
       kaminari
       pubnub
       rails (>= 3.2)
-      sidekiq
+      sidekiq (= 3.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -55,55 +55,38 @@ GEM
       rack (>= 1.0.0)
       rack-test (>= 0.5.4)
       xpath (~> 2.0)
-    celluloid (0.17.1.2)
-      bundler
+    celluloid (0.17.2)
       celluloid-essentials
       celluloid-extras
       celluloid-fsm
       celluloid-pool
       celluloid-supervision
-      dotenv
-      nenv
-      rspec-logsplit (>= 0.1.2)
       timers (>= 4.1.1)
-    celluloid-essentials (0.20.2.1)
-      bundler
-      dotenv
-      nenv
-      rspec-logsplit (>= 0.1.2)
+    celluloid-essentials (0.20.5)
       timers (>= 4.1.1)
-    celluloid-extras (0.20.1)
-      bundler
-      dotenv
-      nenv
-      rspec-logsplit (>= 0.1.2)
+    celluloid-extras (0.20.5)
       timers (>= 4.1.1)
-    celluloid-fsm (0.20.1)
-      bundler
-      dotenv
-      nenv
-      rspec-logsplit (>= 0.1.2)
+    celluloid-fsm (0.20.5)
       timers (>= 4.1.1)
-    celluloid-pool (0.20.1)
-      bundler
-      dotenv
-      nenv
-      rspec-logsplit (>= 0.1.2)
+    celluloid-pool (0.20.5)
       timers (>= 4.1.1)
-    celluloid-supervision (0.20.1.1)
-      bundler
-      dotenv
-      nenv
-      rspec-logsplit (>= 0.1.2)
+    celluloid-supervision (0.20.5)
       timers (>= 4.1.1)
     coderay (1.1.0)
+    coffee-rails (4.1.0)
+      coffee-script (>= 2.2.0)
+      railties (>= 4.0.0, < 5.0)
+    coffee-script (2.4.1)
+      coffee-script-source
+      execjs
+    coffee-script-source (1.9.1.1)
     commander (4.3.5)
       highline (~> 1.7.2)
     connection_pool (2.2.0)
     diff-lcs (1.2.5)
-    dotenv (2.0.2)
     erubis (2.7.0)
     eventmachine (1.0.8)
+    execjs (2.6.0)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.5.0)
@@ -113,7 +96,7 @@ GEM
       httparty
       json
     highline (1.7.8)
-    hitimes (1.2.2)
+    hitimes (1.2.3)
     houston (2.2.3)
       commander (~> 4.1)
       json
@@ -121,6 +104,9 @@ GEM
       json (~> 1.8)
       multi_xml (>= 0.5.2)
     i18n (0.7.0)
+    jquery-rails (3.1.4)
+      railties (>= 3.0, < 5.0)
+      thor (>= 0.14, < 2.0)
     json (1.8.3)
     kaminari (0.16.3)
       actionpack (>= 3.0.0)
@@ -128,17 +114,16 @@ GEM
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
     method_source (0.8.2)
-    mime-types (2.6.1)
+    mime-types (2.6.2)
     mini_portile (0.6.2)
     minitest (4.7.5)
     multi_json (1.11.2)
     multi_xml (0.5.5)
-    nenv (0.2.0)
     net-http-persistent (2.9.4)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     pg (0.18.3)
-    pry (0.10.1)
+    pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
@@ -175,7 +160,6 @@ GEM
     rspec-expectations (3.3.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
-    rspec-logsplit (0.1.3)
     rspec-mocks (3.3.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
@@ -191,16 +175,16 @@ GEM
       rspec (~> 3.0, >= 3.0.0)
       sidekiq (>= 2.4.0)
     rspec-support (3.3.0)
-    sidekiq (3.5.0)
-      celluloid (~> 0.17.0)
-      connection_pool (~> 2.2, >= 2.2.0)
-      json (~> 1.0)
-      redis (~> 3.2, >= 3.2.1)
-      redis-namespace (~> 1.5, >= 1.5.2)
+    sidekiq (3.0.0)
+      celluloid (>= 0.15.2)
+      connection_pool (>= 2.0.0)
+      json
+      redis (>= 3.0.6)
+      redis-namespace (>= 1.3.1)
     slop (3.6.0)
-    sprockets (3.3.4)
-      rack (~> 1.0)
-    sprockets-rails (2.3.2)
+    sprockets (3.4.0)
+      rack (> 1, < 3)
+    sprockets-rails (2.3.3)
       actionpack (>= 3.0)
       activesupport (>= 3.0)
       sprockets (>= 2.8, < 4.0)
@@ -208,9 +192,12 @@ GEM
       activerecord (>= 3.2)
     thor (0.19.1)
     thread_safe (0.3.5)
+    timecop (0.7.4)
     timers (4.1.1)
       hitimes
-    tzinfo (0.3.42)
+    turbolinks (2.5.3)
+      coffee-rails
+    tzinfo (0.3.45)
     xpath (2.0.0)
       nokogiri (~> 1.3)
 
@@ -222,6 +209,7 @@ DEPENDENCIES
   awesome_print
   capybara
   factory_girl_rails
+  jquery-rails
   notify_user!
   pg
   pry
@@ -229,3 +217,5 @@ DEPENDENCIES
   rspec-rails
   rspec-sidekiq
   test_after_commit
+  timecop
+  turbolinks

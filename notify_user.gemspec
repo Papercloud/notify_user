@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ">= 3.2"
   s.add_dependency "aasm"
-  s.add_dependency "sidekiq"
+  s.add_dependency "sidekiq", "3.0.0"
   s.add_dependency "kaminari"
   s.add_dependency "active_model_serializers"
   s.add_dependency "pubnub"
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "test_after_commit"
   s.add_development_dependency "pry"
   s.add_development_dependency "appraisal"
+  s.add_development_dependency "timecop"
 
   s.test_files = Dir["spec/**/*"]
 end
