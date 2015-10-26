@@ -13,5 +13,4 @@ describe "setup initializer" do
   it "sets a current user method" do
     NotifyUser.current_user_method.should eq :current_user
   end
-
 end

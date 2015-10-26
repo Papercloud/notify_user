@@ -50,7 +50,9 @@ module NotifyUser
 
     def send_notifications
       return unless device_tokens.any?
-      client.send(device_tokens, @push_options)
+      response = client.send(device_tokens, @push_options)
+      # should be checking for errors in the response here
+      return true
     end
   end
 end
