@@ -1,10 +1,3 @@
-appraise 'rails-3.2' do
-  ENV['RAILS_VERSION'] = "3.2.22"
-
-  gem 'rails', '~> 3.2.22'
-  gem 'test-unit'
-end
-
 appraise 'rails-4.0' do
   ENV['RAILS_VERSION'] = "4.0.4"
 
