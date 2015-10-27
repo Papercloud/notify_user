@@ -8,17 +8,17 @@ class ApnsChannel
   	end
 
     def deliver(notification, options={})
-      @devices = fetch_devices(notification, options[:device_method])
+      devices = fetch_devices(notification, options[:device_method])
 
-      NotifyUser::Apns.new([notification], @devices[:ios], options).push if @devices[:ios].any?
-      NotifyUser::Gcm.new([notification], @devices[:android], options).push if @devices[:android].any?
+      NotifyUser::Apns.new([notification], devices[:ios], options).push if devices[:ios].any?
+      NotifyUser::Gcm.new([notification], devices[:android], options).push if devices[:android].any?
     end
 
     def deliver_aggregated(notifications, options={})
-      @devices = fetch_devices(notifications.first, options[:device_method])
+      devices = fetch_devices(notifications.first, options[:device_method])
 
-      NotifyUser::Apns.new(notifications, @devices[:ios], options).push if @devices[:ios].any?
-      NotifyUser::Gcm.new(notifications, @devices[:android], options).push if @devices[:android].any?
+      NotifyUser::Apns.new(notifications, devices[:ios], options).push if devices[:ios].any?
+      NotifyUser::Gcm.new(notifications, devices[:android], options).push if devices[:android].any?
     end
 
     private

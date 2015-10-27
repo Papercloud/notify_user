@@ -1,4 +1,10 @@
-require "bundler"
+begin
+  require 'bundler/setup'
+  require 'appraisal'
+rescue LoadError
+  puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
+end
+
 require 'rake'
 Bundler.setup
 Bundler::GemHelper.install_tasks

@@ -13,6 +13,7 @@ module NotifyUser
       super(notifications, devices, options)
 
       @push_options = setup_options
+      @devices = devices
     end
 
     def push
@@ -20,6 +21,8 @@ module NotifyUser
     end
 
     private
+
+    attr_accessor :devices
 
     def connection
       CONNECTION.connection
@@ -75,13 +78,29 @@ module NotifyUser
         Rails.logger.info "Error: Payload exceeds size limit."
       end
 
-      ssl = connection.ssl
-      error_index = NO_ERROR
-
-      @devices.each_with_index do |device, index|
+      devices.each_with_index do |device, index|
         notification = ::Houston::Notification.new(@push_options.dup.merge({ token: device.token, id: index }))
         connection.write(notification.message)
       end
+
+      error_index = io_errors
+
+      if error_index == NO_ERROR
+        return true
+      else
+        # Resend all notifications after the once that produced the error:
+        send_notifications
+      end
+    rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT => e
+      Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}."
+      reset_connection
+      Rails.logger.debug "[##{connection.object_id}] Socket reestablished."
+      retry
+    end
+
+    def io_errors
+      error_index = NO_ERROR
+      ssl = connection.ssl
 
       Rails.logger.info "READING ERRORS"
       Rails.logger.info "----"
@@ -100,7 +119,7 @@ module NotifyUser
 
           # Remove all the devices prior to the error (we assume they were successful), and close the current connection:
           if error_index != NO_ERROR
-            device = @devices.at(error_index)
+            device = devices.at(error_index)
 
             # If we encounter the Invalid Token error from APNS, just remove the device:
             if status == INVALID_TOKEN_ERROR
@@ -108,19 +127,12 @@ module NotifyUser
               device.destroy
             end
 
-            @devices.slice!(0..error_index)
+            devices.slice!(0..error_index)
             reset_connection
           end
         end
       end
-
-      # Resend all notifications after the once that produced the error:
-      send_notifications if error_index != NO_ERROR
-    rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT => e
-      Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}."
-      reset_connection
-      Rails.logger.debug "[##{connection.object_id}] Socket reestablished."
-      retry
+      return error_index
     end
   end
 end
