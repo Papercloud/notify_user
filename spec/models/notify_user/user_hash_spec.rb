@@ -2,34 +2,31 @@ require 'spec_helper'
 
 module NotifyUser
   describe UserHash do
+    let(:user) { create(:user) }
+    let(:user_hash) { UserHash.create(target: user, type: 'NewPostNotification') }
 
-    let(:user) { User.create({email: "user@example.com" })}
-    let(:user_hash) { NotifyUser::UserHash.create({target: user, type: "NewPostNotification"})}
-
-    describe "check hash" do
+    describe 'check hash' do
       before :each do
         user_hash.save
       end
-      
+
       it "returns true if hash hasn't be used before" do
-        NotifyUser::UserHash.confirm_hash(user_hash.token,"NewPostNotification").should eq true
+        expect(UserHash.confirm_hash(user_hash.token, 'NewPostNotification')).to eq true
       end
 
-      it "returns false if hash has been used before" do
+      it 'returns false if hash has been used before' do
         user_hash.deactivate
-        NotifyUser::UserHash.confirm_hash(user_hash.token,"NewPostNotification").should eq false
+        expect(UserHash.confirm_hash(user_hash.token, 'NewPostNotification')).to eq false
       end
 
-      it "deactivates hash setting active to false" do
+      it 'deactivates hash setting active to false' do
         user_hash.deactivate
-        user_hash.active.should eq false
+        expect(user_hash.active).to eq false
       end
 
-      it "generates a 44 character hash on create" do
-        user_hash.token.length.should eq 44
+      it 'generates a 44 character hash on create' do
+        expect(user_hash.token.length).to eq 44
       end
-
     end
-
   end
 end

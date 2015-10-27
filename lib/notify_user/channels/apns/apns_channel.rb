@@ -1,5 +1,4 @@
 class ApnsChannel
-
   class << self
 
   	def default_options
@@ -9,31 +8,29 @@ class ApnsChannel
   	end
 
     def deliver(notification, options={})
-      case NotifyUser.apns_provider
-      when :houston
-        NotifyUser::Houston.new([notification], options).push
-      when :urban_airship
-        # Check for the existence of development api keys and resend for development:
-        if !ENV['DEV_UA_APPLICATION_KEY'].nil? && !ENV['DEV_UA_APPLICATION_SECRET'].nil? && !ENV['DEV_UA_MASTER_SECRET'].nil?
+      devices = fetch_devices(notification, options[:device_method])
 
-          Urbanairship.application_key = ENV['DEV_UA_APPLICATION_KEY']
-          Urbanairship.application_secret = ENV['DEV_UA_APPLICATION_SECRET']
-          Urbanairship.master_secret = ENV['DEV_UA_MASTER_SECRET']
-
-          NotifyUser::UrbanAirship.new(notification).push
-
-          # Sets the api keys back to their original state:
-
-          Urbanairship.application_key = ENV['UA_APPLICATION_KEY']
-          Urbanairship.application_secret = ENV['UA_APPLICATION_SECRET']
-          Urbanairship.master_secret = ENV['UA_MASTER_SECRET']
-        end
-      end
+      NotifyUser::Apns.new([notification], devices[:ios], options).push if devices[:ios].any?
+      NotifyUser::Gcm.new([notification], devices[:android], options).push if devices[:android].any?
     end
 
     def deliver_aggregated(notifications, options={})
-      NotifyUser::Houston.new(notifications, options).push
+      devices = fetch_devices(notifications.first, options[:device_method])
+
+      NotifyUser::Apns.new(notifications, devices[:ios], options).push if devices[:ios].any?
+      NotifyUser::Gcm.new(notifications, devices[:android], options).push if devices[:android].any?
+    end
+
+    private
+
+    def fetch_devices(notification, device_method = nil)
+      device_method ||= :devices
+      devices = notification.target.send(device_method)
+
+      { ios: devices.ios.to_a, android: devices.android.to_a }
+    rescue
+      Rails.logger.info "Notification target, #{notification.target.class}, does not respond to the method, #{device_method}."
+      { ios: [], android: [] }
     end
   end
-
 end

@@ -93,7 +93,7 @@ module NotifyUser
 
     def self.aggregate_message(notifications)
       string = ActionView::Base.new(
-             Rails.configuration.paths["app/views"]).render(
+             ActionController::Base.view_paths).render(
              :template => self.class.views[:mobile_sdk][:aggregate_path].call(self), :formats => [:html],
              :locals => { :notifications => notifications})
 
@@ -102,7 +102,7 @@ module NotifyUser
 
     def message
       string = ActionView::Base.new(
-             Rails.configuration.paths["app/views"]).render(
+             ActionController::Base.view_paths).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
              :locals => { :params => self.params, :notification => self})
 
@@ -111,7 +111,7 @@ module NotifyUser
 
     def mobile_message(length=115)
       string = truncate(ActionView::Base.new(
-             Rails.configuration.paths["app/views"]).render(
+             ActionController::Base.view_paths).render(
              :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
              :locals => { :params => self.params, :notification => self}), :length => length)
 
@@ -409,11 +409,9 @@ module NotifyUser
       errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?
     end
 
-
     def self.unsubscribed_from_channel?(user, type)
       #return true if user has unsubscribed
       return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?
     end
-
   end
 end

@@ -1,5 +1,5 @@
 module NotifyUser
-  class UrbanAirship < Apns
+  class UrbanAirship < Push
 
     def push
       space_allowance = PAYLOAD_LIMIT - used_space
