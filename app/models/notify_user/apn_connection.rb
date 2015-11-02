@@ -35,18 +35,27 @@ module NotifyUser
         Rails.logger.info "Using development gateway. Rails env: #{Rails.env}, APN_ENVIRONMENT: #{apn_environment}"
         [
           ::Houston::APPLE_DEVELOPMENT_GATEWAY_URI,
-          File.read("#{Rails.root}/config/keys/development_push.pem")
+          File.read(development_certificate)
         ]
       else
         Rails.logger.info "Using production gateway. Rails env: #{Rails.env}, APN_ENVIRONMENT: #{apn_environment}"
         [
           ::Houston::APPLE_PRODUCTION_GATEWAY_URI,
-          File.read("#{Rails.root}/config/keys/production_push.pem")
+          File.read(production_certificate)
         ]
       end
 
       @connection = ::Houston::Connection.new(@uri, @certificate, nil)
     end
 
+    def development_certificate
+      file_path = ENV['APN_DEVELOPMENT_PATH'] || 'config/keys/development_push.pem'
+      "#{Rails.root}/#{file_path}"
+    end
+
+    def production_certificate
+      file_path = ENV['APN_PRODUCTION_PATH'] || "config/keys/production_push.pem"
+      "#{Rails.root}/#{file_path}"
+    end
   end
 end
