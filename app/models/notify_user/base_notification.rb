@@ -314,6 +314,8 @@ module NotifyUser
           end
         end
       end
+    rescue AASM::InvalidTransition => e
+      false
     end
 
     # Sends immediately and without aggregation
