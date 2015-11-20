@@ -296,12 +296,12 @@ module NotifyUser
         # if aggregation is false bypass aggregation completely
         self.channels.each do |channel_name, options|
           if(options[:aggregate_per] == false)
-            self.mark_as_sent!
+            self.mark_as_sent! if self.pending?
             self.class.delay.deliver_notification_channel(self.id, channel_name)
           else
             # only notifies channels if no pending aggregate notifications
             unless aggregation_pending?
-              self.mark_as_pending_as_aggregation_parent!
+              self.mark_as_pending_as_aggregation_parent if self.pending?
 
               # adds fallback support for integer or array of integers
               if options[:aggregate_per].kind_of?(Array)
@@ -314,8 +314,6 @@ module NotifyUser
           end
         end
       end
-    rescue AASM::InvalidTransition => e
-      false
     end
 
     # Sends immediately and without aggregation
