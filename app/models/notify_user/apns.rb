@@ -16,8 +16,8 @@ module NotifyUser
     end
 
     def push
-      APNConnection::POOL.with do |apn_connection|
-        @apn_connection = apn_connection
+      APNConnection::POOL.with do |apn_conn|
+        @apn_connection = apn_conn
         send_notifications
       end
     end
