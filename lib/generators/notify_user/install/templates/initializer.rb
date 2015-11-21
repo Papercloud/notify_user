@@ -14,11 +14,4 @@ NotifyUser.setup do |config|
 
   # Provider for APNS:
   config.apns_provider = :houston
-
-  # Number of connections Houston will maintain to APNS:
-  config.connection_pool_size = 3
-
-  # Time in seconds Houston will wait for a free connection before failing:
-  config.connection_pool_timeout = 300
-
 end

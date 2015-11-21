@@ -53,17 +53,6 @@ wwtd
 ## APNS providers
 By default, we use [Houston](https://github.com/nomad/houston/) to deliver push notifications via APNS from the server.
 
-The initialiser for `notify_user` contains the following configuration when delivering via Houston:
-```
-# Number of connections Houston will maintain to APNS:
-config.connection_pool_size = 3
-
-# Time in seconds Houston will wait for a free connection before failing:
-config.connection_pool_timeout = 300
-```
-
-We maintain persistent connections to APNS via background workers, and these values will allow you to configure how many connections the workers maintain, as well as the amount of time to wait for an idle connection before timing out.
-
 You also need to provide exported versions of your push notification certificate and key as .pem files, these instructions come from the [APN on Rails](https://github.com/PRX/apn_on_rails) project on how to do that:
 
 Once you have the certificate from Apple for your application, export your key

@@ -6,7 +6,7 @@ module NotifyUser
     NO_ERROR = -42
     INVALID_TOKEN_ERROR = 8
 
-    attr_accessor :push_options
+    attr_accessor :push_options, :apn_connection
 
     def initialize(notifications, devices, options)
       super(notifications, devices, options)
@@ -16,14 +16,23 @@ module NotifyUser
     end
 
     def push
-      APNConnection::POOL.with do |apn_connection| 
-        send_notifications(apn_connection)
+      APNConnection::POOL.with do |apn_connection|
+        @apn_connection = apn_connection
+        send_notifications
       end
     end
 
     private
 
     attr_accessor :devices
+
+    def connection
+      apn_connection.connection
+    end
+
+    def reset_connection
+      apn_connection.reset
+    end
 
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
@@ -60,8 +69,7 @@ module NotifyUser
       payload.to_json.bytesize <= PAYLOAD_LIMIT
     end
 
-    def send_notifications(apn_connection)
-      connection = apn_connection.connection
+    def send_notifications
       connection.open if connection.closed?
 
       Rails.logger.info "PAYLOAD"
@@ -77,23 +85,22 @@ module NotifyUser
         connection.write(notification.message)
       end
 
-      error_index = io_errors(apn_connection)
+      error_index = io_errors
 
       if error_index == NO_ERROR
         return true
       else
         # Resend all notifications after the once that produced the error:
-        send_notifications(apn_connection)
+        send_notifications
       end
     rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT => e
       Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}."
-      apn_connection.reset
+      reset_connection
       Rails.logger.debug "[##{connection.object_id}] Socket reestablished."
       retry
     end
 
-    def io_errors(apn_connection)
-      connection = apn_connection.connection
+    def io_errors
       error_index = NO_ERROR
       ssl = connection.ssl
 
@@ -123,7 +130,7 @@ module NotifyUser
             end
 
             devices.slice!(0..error_index)
-            apn_connection.reset
+            reset_connection
           end
         end
       end
