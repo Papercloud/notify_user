@@ -5,7 +5,6 @@ module NotifyUser
   class Apns < Push
     NO_ERROR = -42
     INVALID_TOKEN_ERROR = 8
-    CONNECTION = APNConnection.new
 
     attr_accessor :push_options
 
@@ -17,20 +16,14 @@ module NotifyUser
     end
 
     def push
-      send_notifications
+      APNConnection::POOL.with do |apn_connection| 
+        send_notifications(apn_connection)
+      end
     end
 
     private
 
     attr_accessor :devices
-
-    def connection
-      CONNECTION.connection
-    end
-
-    def reset_connection
-      CONNECTION.reset
-    end
 
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
@@ -67,7 +60,8 @@ module NotifyUser
       payload.to_json.bytesize <= PAYLOAD_LIMIT
     end
 
-    def send_notifications
+    def send_notifications(apn_connection)
+      connection = apn_connection.connection
       connection.open if connection.closed?
 
       Rails.logger.info "PAYLOAD"
@@ -83,22 +77,23 @@ module NotifyUser
         connection.write(notification.message)
       end
 
-      error_index = io_errors
+      error_index = io_errors(apn_connection)
 
       if error_index == NO_ERROR
         return true
       else
         # Resend all notifications after the once that produced the error:
-        send_notifications
+        send_notifications(apn_connection)
       end
     rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT => e
       Rails.logger.error "[##{connection.object_id}] Exception occurred: #{e.inspect}."
-      reset_connection
+      apn_connection.reset
       Rails.logger.debug "[##{connection.object_id}] Socket reestablished."
       retry
     end
 
-    def io_errors
+    def io_errors(apn_connection)
+      connection = apn_connection.connection
       error_index = NO_ERROR
       ssl = connection.ssl
 
@@ -128,7 +123,7 @@ module NotifyUser
             end
 
             devices.slice!(0..error_index)
-            reset_connection
+            apn_connection.reset
           end
         end
       end
