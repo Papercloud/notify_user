@@ -5,9 +5,8 @@ module NotifyUser
   class Apns < Push
     NO_ERROR = -42
     INVALID_TOKEN_ERROR = 8
-    CONNECTION = APNConnection.new
 
-    attr_accessor :push_options
+    attr_accessor :push_options, :apn_connection
 
     def initialize(notifications, devices, options)
       super(notifications, devices, options)
@@ -17,7 +16,10 @@ module NotifyUser
     end
 
     def push
-      send_notifications
+      APNConnection::POOL.with do |apn_conn|
+        @apn_connection = apn_conn
+        send_notifications
+      end
     end
 
     private
@@ -25,11 +27,11 @@ module NotifyUser
     attr_accessor :devices
 
     def connection
-      CONNECTION.connection
+      apn_connection.connection
     end
 
     def reset_connection
-      CONNECTION.reset
+      apn_connection.reset
     end
 
     def setup_options

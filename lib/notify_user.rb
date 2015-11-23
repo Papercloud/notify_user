@@ -20,14 +20,6 @@ module NotifyUser
   mattr_accessor :apns_provider
   @@apns_provider = nil
 
-  # Number of connections Houston will maintain to APNS:
-  mattr_accessor :connection_pool_size
-  @@connection_pool_size = nil
-
-  # Time in seconds Houston will wait for a free connection before failing:
-  mattr_accessor :connection_pool_timeout
-  @@connection_pool_timeout = nil
-
   # Used to set up NotifyUser from the initializer.
   def self.setup
     yield self
