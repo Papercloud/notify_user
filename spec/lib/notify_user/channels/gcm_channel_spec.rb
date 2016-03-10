@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ApnsChannel do
+describe GcmChannel do
   let(:user) { User.create({email: 'user@example.com' })}
   let(:notification) { NewPostNotification.create({target: user}) }
 
@@ -21,15 +21,15 @@ describe ApnsChannel do
         allow_any_instance_of(User).to receive(:devices) { devices }
       end
 
-      it 'routes the notifications via apns' do
-        @apns = NotifyUser::Apns.new([notification], [@ios], {})
-        expect(NotifyUser::Apns).to receive(:new) { @apns }
+      it 'routes the notifications via gcm' do
+        @gcm = NotifyUser::Gcm.new([notification], [@android], {})
+        expect(NotifyUser::Gcm).to receive(:new) { @gcm }
 
         described_class.deliver(notification)
       end
 
       it 'doesnt make use of apns' do
-        expect(NotifyUser::Gcm).not_to receive(:new)
+        expect(NotifyUser::Apns).not_to receive(:new)
         described_class.deliver(notification)
       end
     end
