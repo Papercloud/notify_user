@@ -125,6 +125,63 @@ module NotifyUser
         end
       end
 
+      context 'with TestNotification' do
+        class TestNotification < BaseNotification
+          channel :action_mailer
+        end
+
+        subject do
+          TestNotification.create({target: user})
+        end
+
+        before :each do
+          # Effectively testing Sidekiq inline
+          allow(TestNotification).to receive(:delay_for).and_call_original
+        end
+
+        let(:deliver) { subject.deliver }
+
+        it 'notifies aggregated channel' do
+          expect(TestNotification).to receive(:notify_aggregated_channel)
+
+          deliver
+        end
+
+        it 'notifies multiple channels' do
+          TestNotification.class_eval do
+            channel :apns
+          end
+
+          expect(TestNotification).to receive(:notify_aggregated_channel).exactly(2).times
+
+          deliver
+        end
+
+        it 'does not notify if the user has unsubscribed' do
+          allow(Unsubscribe).to receive(:has_unsubscribed_from?) { true }
+
+          expect(TestNotification).not_to receive(:notify_aggregated_channel)
+
+          deliver
+        end
+
+        it 'does not notify if the notification is already sent' do
+          subject.mark_as_sent!
+
+          expect(TestNotification).not_to receive(:notify_aggregated_channel)
+
+          deliver
+        end
+
+        it 'does not notify if the notification is marked as pending' do
+          subject.mark_as_pending_as_aggregation_parent!
+
+          expect(TestNotification).not_to receive(:notify_aggregated_channel)
+
+          deliver
+        end
+      end
+
       context "with aggregation disabled" do
         before :each do
           NewPostNotification.channel(:action_mailer, {aggregate_per: false})

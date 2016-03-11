@@ -1,7 +1,7 @@
 PATH
   remote: ../
   specs:
-    notify_user (0.3.0)
+    notify_user (0.3.2)
       aasm
       active_model_serializers
       connection_pool

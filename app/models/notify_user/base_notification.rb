@@ -292,28 +292,14 @@ module NotifyUser
 
     # Aggregates appropriately
     def deliver
-      if pending? and not user_has_unsubscribed?
-        # if aggregation is false bypass aggregation completely
-        self.channels.each do |channel_name, options|
-          if(options[:aggregate_per] == false)
-            self.mark_as_sent!
-            self.class.delay.deliver_notification_channel(self.id, channel_name)
-          else
-            # only notifies channels if no pending aggregate notifications
-            unless aggregation_pending?
-              self.mark_as_pending_as_aggregation_parent!
+      return unless should_deliver?
 
-              # adds fallback support for integer or array of integers
-              if options[:aggregate_per].kind_of?(Array)
-                self.class.delay_until(delay_time(options)).notify_aggregated_channel(self.id, channel_name)
-              else
-                a_interval = options[:aggregate_per] ? options[:aggregate_per].minutes : self.aggregate_per
-                self.class.delay_for(a_interval).notify_aggregated_channel(self.id, channel_name)
-              end
-            end
-          end
-        end
-      end
+      # only notifies channels if no pending aggregate notifications
+      return if aggregation_pending?
+
+      raise RuntimeError unless channel_aggregations_match?(channels)
+
+      send_to_channels!(channels)
     end
 
     # Sends immediately and without aggregation
@@ -407,6 +393,60 @@ module NotifyUser
 
     def unsubscribed_validation
       errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?
+    end
+
+    private
+
+    def should_deliver?
+      pending? and not user_has_unsubscribed?
+    end
+
+    def channel_aggregations_match?(channels)
+      options = channels.map { |channel_name, options| options }
+      options.all? { |channel_option| options.first[:aggregate_per] == channel_option[:aggregate_per] }
+    end
+
+    def send_to_channels!(channels, aggregate = true)
+      aggregate_per = channels.first[1][:aggregate_per]
+
+      if (aggregate_per == false)
+        send_to_channels_without_aggregation!(channels)
+      else
+        send_to_channels_with_aggregation!(channels)
+      end
+    end
+
+    def send_to_channels_without_aggregation!(channels)
+      channels.each do |channel_name, options|
+        send_without_aggregation!(channel_name)
+      end
+
+      mark_as_sent!
+    end
+
+    def send_to_channels_with_aggregation!(channels)
+      mark_as_pending_as_aggregation_parent!
+
+      channels.each do |channel_name, options|
+        send_with_aggregation!(channel_name, options)
+      end
+    end
+
+    def send_with_aggregation!(channel_name, options = {})
+      self.class.delay_for(aggregate_delay_interval(options))
+        .notify_aggregated_channel(id, channel_name)
+    end
+
+    def send_without_aggregation!(channel_name)
+      self.class.delay.deliver_notification_channel(id, channel_name)
+    end
+
+    def aggregate_delay_interval(options)
+      if options[:aggregate_per].kind_of?(Array)
+        delay_time(options)
+      else
+        options[:aggregate_per] ? options[:aggregate_per].minutes : aggregate_per
+      end
     end
 
     def self.unsubscribed_from_channel?(user, type)
