@@ -299,7 +299,9 @@ module NotifyUser
 
       raise RuntimeError unless channel_aggregations_match?(channels)
 
-      send_to_channels!(channels)
+      if channels.any?
+        send_to_channels!(channels)
+      end
     end
 
     # Sends immediately and without aggregation
