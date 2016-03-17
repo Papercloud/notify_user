@@ -147,14 +147,34 @@ module NotifyUser
           deliver
         end
 
-        it 'notifies multiple channels' do
-          TestNotification.class_eval do
-            channel :apns
+        context 'with multiple channels' do
+          before :each do
+            TestNotification.class_eval do
+              channel :apns
+            end
           end
 
-          expect(TestNotification).to receive(:notify_aggregated_channel).exactly(2).times
+          it 'notifies multiple channels' do
+            expect(TestNotification).to receive(:notify_aggregated_channel).exactly(2).times
 
-          deliver
+            deliver
+          end
+
+          it 'delivers to multiple channels' do
+            expect(ApnsChannel).to receive(:deliver).exactly(1).times
+            expect(ActionMailerChannel).to receive(:deliver).exactly(1).times
+
+            deliver
+          end
+
+          it 'gets marked as sent' do
+            allow(ActionMailerChannel).to receive(:deliver)
+            allow(ApnsChannel).to receive(:deliver)
+
+            deliver
+
+            expect(subject.reload.state).to eq "sent_as_aggregation_parent"
+          end
         end
 
         it 'does not notify if the user has unsubscribed' do

@@ -365,9 +365,6 @@ module NotifyUser
         notifications = self.pending_aggregation_with(notification)
       end
 
-      notifications.map(&:mark_as_sent)
-      notifications.map(&:save)
-
       # If the notification has been marked as read before it's sent we don't want to send it.
       return if notification.read? || notifications.empty?
 
@@ -432,6 +429,14 @@ module NotifyUser
       channels.each do |channel_name, options|
         send_with_aggregation!(channel_name, options)
       end
+
+      mark_all_as_sent!
+    end
+
+    def mark_all_as_sent!
+      notifications = self.class.pending_aggregation_by_group_with(self)
+
+      notifications.map(&:mark_as_sent!)
     end
 
     def send_with_aggregation!(channel_name, options = {})
