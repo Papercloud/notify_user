@@ -397,16 +397,6 @@ module NotifyUser
       related_notifications.each(&:mark_as_sent!)
     end
 
-    def self.mutli_deliver(notifications, channel_class)
-      return if notifications.empty? || notifications.first.user_has_unsubscribed?(channel_class.name)
-
-      if notifications.length == 1
-        channel_class.delay.deliver(notifications.first.id)
-      else
-        channel_class.delay.deliver_aggregated(notifications.map(&:id))
-      end
-    end
-
     def user_has_unsubscribed?(channel_name=nil)
       #return true if user has unsubscribed
       return Unsubscribe.has_unsubscribed_from?(target, type, group_id, channel_name)
@@ -423,8 +413,6 @@ module NotifyUser
     def unsubscribed_validation
       errors.add(:target, (" has unsubscribed from this type")) if user_has_unsubscribed?
     end
-
-    private
 
     def should_deliver?
       pending? and not user_has_unsubscribed?
@@ -456,9 +444,8 @@ module NotifyUser
     def send_to_channels_with_aggregation!(channels)
       mark_as_pending_as_aggregation_parent!
 
-      channels.each do |channel_name, options|
-        send_with_aggregation!(channel_name, options)
-      end
+      # Need to delay for a certain length of time
+      self.class.delay.notify_aggregated_channels!(self.id, channels)
     end
 
     def send_with_aggregation!(channel_name, options = {})
@@ -481,6 +468,16 @@ module NotifyUser
     def self.unsubscribed_from_channel?(user, type)
       #return true if user has unsubscribed
       return !NotifyUser::Unsubscribe.has_unsubscribed_from(user, type).empty?
+    end
+
+    def self.mutli_deliver(notifications, channel_class)
+      return if notifications.empty? || notifications.first.user_has_unsubscribed?(channel_class.name)
+
+      if notifications.length == 1
+        channel_class.delay.deliver(notifications.first.id)
+      else
+        channel_class.delay.deliver_aggregated(notifications.map(&:id))
+      end
     end
   end
 end
