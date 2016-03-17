@@ -104,6 +104,135 @@ module NotifyUser
       end
     end
 
+    class TestNotification < BaseNotification; end
+    class ::Service1Channel ; end
+    class ::Service2Channel ; end
+
+    describe '.notify_aggregated_channels' do
+      before :each do
+        allow(Service1Channel).to receive(:deliver)
+        allow(Service1Channel).to receive(:deliver_aggregated)
+        allow(Service2Channel).to receive(:deliver)
+        allow(Service2Channel).to receive(:deliver_aggregated)
+
+        allow(TestNotification).to receive(:channels) { { service_1: {}, service_2: {} } }
+      end
+
+      around :each do |example|
+        Sidekiq::Testing.inline! do
+          example.run
+        end
+      end
+
+      let(:perform) { TestNotification.notify_aggregated_channels!(@notification.id, TestNotification.channels) }
+      let(:notification) { fail }
+
+      context 'with aggregate_grouping' do
+        TestNotification.class_eval do
+          self.aggregate_grouping = true
+        end
+
+        before :each do
+          @notification = TestNotification.create(target: user, group_id: 123)
+          @notification.mark_as_pending_as_aggregation_parent!
+        end
+
+        it 'delivers to each channel' do
+          expect(Service1Channel).to receive(:deliver).with(@notification.id).exactly(1).times
+          expect(Service2Channel).to receive(:deliver).with(@notification.id).exactly(1).times
+
+          perform
+        end
+
+        it 'marks notification as sent' do
+          perform
+
+          expect(@notification.reload.state).to eq 'sent_as_aggregation_parent'
+        end
+
+        it 'does not deliver if notification is read' do
+          @notification.mark_as_read!
+
+          expect(Service1Channel).not_to receive(:deliver)
+          expect(Service2Channel).not_to receive(:deliver)
+
+          perform
+        end
+
+        it 'does not deliver if user has unsubscribed from notification type' do
+          allow(Unsubscribe).to receive(:has_unsubscribed_from?) { true }
+
+          expect(Service1Channel).not_to receive(:deliver)
+          expect(Service2Channel).not_to receive(:deliver)
+
+          perform
+        end
+
+        context 'with other notifications' do
+          before :each do
+            @other_notifications = 2.times.map { TestNotification.create(target: user, group_id: 123) }
+          end
+
+          it 'marks other pending notifications for same group_id as sent' do
+            expect(@other_notifications.map(&:state)).to all eq 'pending'
+
+            perform
+
+            expect(@other_notifications.map {|n| n.reload.state}).to all eq 'sent'
+          end
+
+          it 'does not mark other pending notifications for a different group_id as sent' do
+            new_notification = TestNotification.create(target: user, group_id: 456)
+
+            perform
+
+            expect(new_notification.reload.state).to eq 'pending'
+          end
+
+          it 'delivers aggregated notifications for same group_id' do
+            notification_ids = [@notification.id] + @other_notifications.map(&:id)
+
+            expect(Service1Channel).to receive(:deliver_aggregated).with(notification_ids).exactly(1).times
+            expect(Service2Channel).to receive(:deliver_aggregated).with(notification_ids).exactly(1).times
+
+            perform
+          end
+
+          it 'does not deliver if notification is read' do
+            @notification.mark_as_read!
+
+            expect(Service1Channel).not_to receive(:deliver_aggregated)
+            expect(Service2Channel).not_to receive(:deliver_aggregated)
+
+            perform
+          end
+        end
+      end
+
+      context 'without aggregate_grouping' do
+        TestNotification.class_eval do
+          self.aggregate_grouping = false
+        end
+
+        before :each do
+          @notification = TestNotification.create(target: user)
+          @notification.mark_as_pending_as_aggregation_parent!
+        end
+
+
+        it 'marks other pending notifications for same group_id as sent' do
+          other_notification = TestNotification.create(target: user)
+
+          expect(other_notification.reload.state).to eq 'pending'
+
+          perform
+
+          expect(@notification.reload.state).to eq 'sent_as_aggregation_parent'
+          expect(other_notification.reload.state).to eq 'sent'
+        end
+      end
+    end
+
     describe "#deliver" do
       context "with aggregation enabled" do
         it "schedules a job to wait for more notifications to aggregate if there is not one already" do
@@ -126,61 +255,42 @@ module NotifyUser
       end
 
       context 'with TestNotification' do
-        class TestNotification < BaseNotification
-          channel :action_mailer
-        end
-
         subject do
           TestNotification.create({target: user})
         end
 
         before :each do
-          # Effectively testing Sidekiq inline
           allow(TestNotification).to receive(:delay_for).and_call_original
+
+          allow(ActionMailerChannel).to receive(:deliver)
         end
 
         let(:deliver) { subject.deliver }
 
         it 'notifies aggregated channel' do
-          expect(TestNotification).to receive(:notify_aggregated_channel)
+          allow(TestNotification).to receive(:channels) { { service_1: {} } }
+
+          expect(TestNotification).to receive(:notify_aggregated_channels!).with(subject.id, { service_1: {} })
 
           deliver
         end
 
         context 'with multiple channels' do
           before :each do
-            TestNotification.class_eval do
-              channel :apns
-            end
+            allow(TestNotification).to receive(:channels) { { service_1: {}, service_2: {} } }
           end
 
           it 'notifies multiple channels' do
-            expect(TestNotification).to receive(:notify_aggregated_channel).exactly(2).times
+            expect(TestNotification).to receive(:notify_aggregated_channels!).with(subject.id, { service_1: {}, service_2: {} })
 
             deliver
-          end
-
-          it 'delivers to multiple channels' do
-            expect(ApnsChannel).to receive(:deliver).exactly(1).times
-            expect(ActionMailerChannel).to receive(:deliver).exactly(1).times
-
-            deliver
-          end
-
-          it 'gets marked as sent' do
-            allow(ActionMailerChannel).to receive(:deliver)
-            allow(ApnsChannel).to receive(:deliver)
-
-            deliver
-
-            expect(subject.reload.state).to eq "sent_as_aggregation_parent"
           end
         end
 
         it 'does not notify if the user has unsubscribed' do
           allow(Unsubscribe).to receive(:has_unsubscribed_from?) { true }
 
-          expect(TestNotification).not_to receive(:notify_aggregated_channel)
+          expect(TestNotification).not_to receive(:notify_aggregated_channels!)
 
           deliver
         end
@@ -188,7 +298,7 @@ module NotifyUser
         it 'does not notify if the notification is already sent' do
           subject.mark_as_sent!
 
-          expect(TestNotification).not_to receive(:notify_aggregated_channel)
+          expect(TestNotification).not_to receive(:notify_aggregated_channels!)
 
           deliver
         end
@@ -196,7 +306,7 @@ module NotifyUser
         it 'does not notify if the notification is marked as pending' do
           subject.mark_as_pending_as_aggregation_parent!
 
-          expect(TestNotification).not_to receive(:notify_aggregated_channel)
+          expect(TestNotification).not_to receive(:notify_aggregated_channels!)
 
           deliver
         end

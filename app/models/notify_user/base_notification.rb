@@ -377,9 +377,39 @@ module NotifyUser
       end
     end
 
+    def self.notify_aggregated_channels!(notification_id, channel_params)
+      notification = find(notification_id)
+
+      return if notification.read?
+
+      related_notifications = if aggregate_grouping
+        pending_aggregation_by_group_with(notification)
+      else
+        pending_aggregation_with(notification)
+      end
+
+      channel_params.each do |channel_name, options|
+        channel_class = (channel_name.to_s + "_channel").camelize.constantize
+
+        mutli_deliver(related_notifications, channel_class)
+      end
+
+      related_notifications.each(&:mark_as_sent!)
+    end
+
+    def self.mutli_deliver(notifications, channel_class)
+      return if notifications.empty? || notifications.first.user_has_unsubscribed?(channel_class.name)
+
+      if notifications.length == 1
+        channel_class.delay.deliver(notifications.first.id)
+      else
+        channel_class.delay.deliver_aggregated(notifications.map(&:id))
+      end
+    end
+
     def user_has_unsubscribed?(channel_name=nil)
       #return true if user has unsubscribed
-      return Unsubscribe.has_unsubscribed_from?(self.target, self.type, self.group_id, channel_name)
+      return Unsubscribe.has_unsubscribed_from?(target, type, group_id, channel_name)
     end
 
     private
@@ -429,14 +459,6 @@ module NotifyUser
       channels.each do |channel_name, options|
         send_with_aggregation!(channel_name, options)
       end
-
-      mark_all_as_sent!
-    end
-
-    def mark_all_as_sent!
-      notifications = self.class.pending_aggregation_by_group_with(self)
-
-      notifications.map(&:mark_as_sent!)
     end
 
     def send_with_aggregation!(channel_name, options = {})
