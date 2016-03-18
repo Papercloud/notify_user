@@ -402,8 +402,13 @@ module NotifyUser
     end
 
     describe "interval aggregation" do
+      around :each do |example|
+        Sidekiq::Testing.fake! do
+          example.run
+        end
+      end
+
       before :each do
-        Sidekiq::Testing.fake!
         @aggregate_per = [0, 1, 4, 5]
         NewPostNotification.class_eval do
           channel :action_mailer, aggrregate_per: @aggregate_per
@@ -685,10 +690,10 @@ module NotifyUser
     end
 
     describe "unsubscribing" do
-
       describe "deliver_notification_channel" do
         it "subscribed to type receives deliver" do
           expect(ActionMailerChannel).to receive(:deliver)
+
           NewPostNotification.deliver_notification_channel(notification.id, :action_mailer)
         end
 
@@ -711,7 +716,6 @@ module NotifyUser
       end
 
       describe "deliver_notifications_channel" do
-
         it "subscribed to type receives deliver_aggregated" do
           expect(ActionMailerChannel).to receive(:deliver_aggregated)
           NewPostNotification.deliver_notifications_channel([notification], :action_mailer)
