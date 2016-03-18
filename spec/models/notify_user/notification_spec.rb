@@ -2,6 +2,9 @@ require 'spec_helper'
 
 module NotifyUser
   describe BaseNotification do
+    class TestNotification < BaseNotification; end
+    class ::Service1Channel ; end
+    class ::Service2Channel ; end
 
     let(:user) { User.create({email: "user@example.com" })}
     let(:notification) { NewPostNotification.create({target: user}) }
@@ -104,10 +107,6 @@ module NotifyUser
       end
     end
 
-    class TestNotification < BaseNotification; end
-    class ::Service1Channel ; end
-    class ::Service2Channel ; end
-
     describe '.notify_aggregated_channels' do
       before :each do
         allow(Service1Channel).to receive(:deliver)
@@ -128,11 +127,9 @@ module NotifyUser
       let(:notification) { fail }
 
       context 'with aggregate_grouping' do
-        TestNotification.class_eval do
-          self.aggregate_grouping = true
-        end
-
         before :each do
+          allow(TestNotification).to receive(:aggregate_grouping) { true }
+
           @notification = TestNotification.create(target: user, group_id: 123)
           @notification.mark_as_pending_as_aggregation_parent!
         end
@@ -210,11 +207,9 @@ module NotifyUser
       end
 
       context 'without aggregate_grouping' do
-        TestNotification.class_eval do
-          self.aggregate_grouping = false
-        end
-
         before :each do
+          allow(TestNotification).to receive(:aggregate_grouping) { false }
+
           @notification = TestNotification.create(target: user)
           @notification.mark_as_pending_as_aggregation_parent!
         end
