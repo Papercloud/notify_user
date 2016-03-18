@@ -230,7 +230,7 @@ module NotifyUser
 
     describe "#deliver" do
       context "with aggregation enabled" do
-        it "schedules a job to wait for more notifications to aggregate if there is not one already" do
+        xit "schedules a job to wait for more notifications to aggregate if there is not one already" do
           expect(NewPostNotification).to(
             receive(:delay_for).with(notification.class.aggregate_per)
           ).and_call_original
