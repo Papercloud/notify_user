@@ -444,8 +444,7 @@ module NotifyUser
     def send_to_channels_with_aggregation!(channels)
       mark_as_pending_as_aggregation_parent!
 
-      # Need to delay for a certain length of time
-      self.class.delay.notify_aggregated_channels!(self.id, channels)
+      self.class.delay_for(0).notify_aggregated_channels!(self.id, channels)
     end
 
     def send_with_aggregation!(channel_name, options = {})

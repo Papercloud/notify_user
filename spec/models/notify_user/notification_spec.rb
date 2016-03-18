@@ -256,8 +256,6 @@ module NotifyUser
 
         before :each do
           allow(TestNotification).to receive(:delay_for).and_call_original
-
-          allow(ActionMailerChannel).to receive(:deliver)
         end
 
         let(:deliver) { subject.deliver }
@@ -304,6 +302,32 @@ module NotifyUser
           expect(TestNotification).not_to receive(:notify_aggregated_channels!)
 
           deliver
+        end
+      end
+
+      describe 'delaying deliver' do
+        around :each do |example|
+          Sidekiq::Testing.fake! do
+            example.run
+          end
+        end
+
+        subject do
+          TestNotification.create({target: user})
+        end
+
+        before :each do
+          @channels = { service_1: {aggregate_per: [0, 3, 10, 30, 60]} }
+          allow(TestNotification).to receive(:channels) { @channels }
+        end
+
+        let(:deliver) { subject.deliver }
+
+        it 'sends the first notification straight away' do
+          deliver
+
+          expect(TestNotification.method :notify_aggregated_channels!)
+            .to be_delayed(subject.id, @channels).for 0.seconds
         end
       end
 
