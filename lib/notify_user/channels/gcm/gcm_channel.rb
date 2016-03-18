@@ -24,7 +24,7 @@ class GcmChannel
         raise RuntimeError, "Must pass notification ids, not the notifications themselves"
       end
 
-      notifications = notification_ids.map { |id| NotifyUser::BaseNotification.find id }
+      notifications = NotifyUser::BaseNotification.where(id: notification_ids)
 
       devices = fetch_devices(notifications.first, options[:device_method])
 

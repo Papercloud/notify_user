@@ -27,7 +27,7 @@ class ActionMailerChannel
         raise RuntimeError, "Must pass notification ids, not the notifications themselves"
       end
 
-      notifications = notification_ids.map { |id| NotifyUser::BaseNotification.find id }
+      notifications = NotifyUser::BaseNotification.where(id: notification_ids)
 
       NotifyUser::NotificationMailer.aggregate_notifications_email(notifications, default_options.deep_merge(options)).deliver
     end
