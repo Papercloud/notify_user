@@ -7,13 +7,25 @@ class GcmChannel
   	  }
   	end
 
-    def deliver(notification, options={})
+    def deliver(notification_id, options={})
+      if notification_id.is_a? NotifyUser::BaseNotification
+        raise RuntimeError, "Must pass notification ids, not the notification itself"
+      end
+
+      notification = NotifyUser::BaseNotification.find(notification_id)
+
       devices = fetch_devices(notification, options[:device_method])
 
       NotifyUser::Gcm.new([notification], devices, options).push if devices.any?
     end
 
-    def deliver_aggregated(notifications, options={})
+    def deliver_aggregated(notification_ids, options={})
+      if notification_ids.first.is_a? NotifyUser::BaseNotification
+        raise RuntimeError, "Must pass notification ids, not the notifications themselves"
+      end
+
+      notifications = notification_ids.map { |id| NotifyUser::BaseNotification.find id }
+
       devices = fetch_devices(notifications.first, options[:device_method])
 
       NotifyUser::Gcm.new(notifications, devices, options).push if devices.any?
