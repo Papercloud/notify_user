@@ -324,7 +324,7 @@ module NotifyUser
       self.channels.each do |channel_name, options|
           if options[:aggregate_per] != false && !unsubscribed_from_channel?(notifications.first.target, channel_name)
             channel = (channel_name.to_s + "_channel").camelize.constantize
-            channel.deliver_aggregated(notifications, options)
+            channel.deliver_aggregated(notifications.map(&:id), options)
           end
       end
     end
@@ -339,7 +339,7 @@ module NotifyUser
       channel = (channel_name.to_s + "_channel").camelize.constantize
 
       unless notification.user_has_unsubscribed?(channel_name)
-        channel.deliver(notification, channel_options)
+        channel.deliver(notification.id, channel_options)
       end
     end
 
@@ -350,7 +350,7 @@ module NotifyUser
 
       #check if user unsubsribed from channel type
       unless notifications.first.user_has_unsubscribed?(channel_name)
-        channel.deliver_aggregated(notifications, channel_options)
+        channel.deliver_aggregated(notifications.map(&:id), channel_options)
       end
     end
 
