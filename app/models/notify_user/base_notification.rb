@@ -168,7 +168,7 @@ module NotifyUser
     end
 
     def delay_time(options)
-      return Time.now.utc unless channel_delay_intervals = options[:aggregate_per]
+      return integer_delay_time unless channel_delay_intervals = options[:aggregate_per]
 
       delay_minutes = channel_delay_intervals[aggregation_interval] || channel_delay_intervals.last
 
@@ -176,6 +176,10 @@ module NotifyUser
       previous_sending_time = last_sent_parent ? last_sent_parent.sent_time : Time.now.utc
 
       return previous_sending_time + delay_minutes.minutes
+    end
+
+    def integer_delay_time
+      Time.now.utc + self.class.aggregate_per
     end
 
     ## Notification description

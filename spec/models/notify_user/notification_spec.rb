@@ -237,19 +237,21 @@ module NotifyUser
 
     describe "#deliver" do
       context "with aggregation enabled" do
-        xit "schedules a job to wait for more notifications to aggregate if there is not one already" do
-          expect(NewPostNotification).to(
-            receive(:delay_for).with(notification.class.aggregate_per)
-          ).and_call_original
+        it "schedules a job to wait for more notifications to aggregate if there is not one already" do
+          Timecop.freeze do
+            expect(NewPostNotification).to(
+              receive(:delay_until).with(Time.now.utc + notification.class.aggregate_per)
+            ).and_call_original
 
-          notification.deliver
+            notification.deliver
+          end
         end
 
         it "doesn't schedule a job if a pending notification awaiting aggregation already exists" do
           another_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent"})
 
           expect(NewPostNotification).not_to(
-            receive(:delay_for).with(notification.class.aggregate_per)
+            receive(:delay_for)
           )
 
           notification.deliver
