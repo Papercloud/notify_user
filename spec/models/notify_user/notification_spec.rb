@@ -6,6 +6,13 @@ module NotifyUser
     class ::Service1Channel ; end
     class ::Service2Channel ; end
 
+    def send_parent(target)
+      parent = TestNotification.create({target: target})
+      parent.mark_as_pending_as_aggregation_parent!
+      parent.mark_as_sent!
+      parent
+    end
+
     let(:user) { User.create({email: "user@example.com" })}
     let(:notification) { NewPostNotification.create({target: user}) }
     Rails.application.routes.default_url_options[:host]= 'localhost:5000'
@@ -316,18 +323,98 @@ module NotifyUser
           TestNotification.create({target: user})
         end
 
-        before :each do
-          @channels = { service_1: {aggregate_per: [0, 3, 10, 30, 60]} }
-          allow(TestNotification).to receive(:channels) { @channels }
-        end
-
         let(:deliver) { subject.deliver }
 
-        it 'sends the first notification straight away' do
-          deliver
+        context 'aggregate_per as Array' do
+          before :each do
+            @time_intervals = [0, 3, 10, 30]
+            @channels = { service_1: {aggregate_per: @time_intervals} }
+            allow(TestNotification).to receive(:channels) { @channels }
+          end
 
-          expect(TestNotification.method :notify_aggregated_channels!)
-            .to be_delayed(subject.id, @channels).for 0.seconds
+          context 'with time frozen' do
+            around :each do |example|
+              Timecop.freeze do
+                example.run
+              end
+            end
+
+            it 'sends the first notification straight away' do
+              deliver
+
+              expect(TestNotification.method :notify_aggregated_channels!)
+                .to be_delayed(subject.id, @channels).until Time.now.utc.to_f
+            end
+
+            it 'delays a notifcation with one sent aggregation parent for the first interval time' do
+              parent = send_parent(subject.target)
+
+              expect(parent.state).to eq "sent_as_aggregation_parent"
+
+              deliver
+
+              expect(TestNotification.method :notify_aggregated_channels!)
+                .to be_delayed(subject.id, @channels).until (Time.now.utc + @time_intervals[1].minutes)
+            end
+
+            it 'delays for the third interval time if 3 sent parents' do
+              parents = 3.times.map { send_parent(subject.target) }
+
+              deliver
+
+              expect(TestNotification.method :notify_aggregated_channels!)
+                .to be_delayed(subject.id, @channels).until (Time.now.utc + @time_intervals[3].minutes)
+            end
+
+            it 'uses the last interval for numbers of parents greater than number of intervals' do
+              parents = 5.times.map { send_parent(subject.target) }
+
+              deliver
+
+              expect(TestNotification.method :notify_aggregated_channels!)
+                .to be_delayed(subject.id, @channels).until (Time.now.utc + @time_intervals[3].minutes)
+            end
+          end
+
+          context 'delaying after a sent time' do
+            before :each do
+              @t_0 = Time.now.utc
+              # T = 0 send a notification
+              Timecop.freeze(@t_0)
+              parent = send_parent(subject.target)
+            end
+
+            after :each do
+              Timecop.return
+            end
+
+            it 'sends the second notification the correct number of minutes after the first one was sent' do
+              t_1 = @t_0 + 1.minute
+
+              # 1 minute after sending the first, a second is delivered
+              Timecop.freeze(t_1)
+              deliver
+
+              expect(TestNotification.method :notify_aggregated_channels!)
+                .to be_delayed(subject.id, @channels).until (Time.now.utc + 2.minutes)
+            end
+
+            it 'stacks the intervals after each other' do
+              t_1 = @t_0 + 3.minutes
+              Timecop.freeze(t_1)
+              send_parent(subject.target)
+
+              t_2 = t_1 + 1.minute
+              Timecop.freeze(t_2)
+
+              deliver
+
+              # Delivering 1 minute after sending the second parent, so need to
+              # check we're delivering two intervals after t = 0
+              expect(TestNotification.method :notify_aggregated_channels!)
+                .to be_delayed(subject.id, @channels).until (@t_0 + (3 + 10).minutes)
+            end
+          end
         end
       end
 

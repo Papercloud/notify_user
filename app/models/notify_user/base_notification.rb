@@ -168,18 +168,14 @@ module NotifyUser
     end
 
     def delay_time(options)
-      a_interval = options[:aggregate_per][aggregation_interval]
+      return Time.now.utc unless channel_delay_intervals = options[:aggregate_per]
 
-      # uses the last interval by default once we deplete the intervals
-      a_interval = options[:aggregate_per].last if a_interval.nil?
+      delay_minutes = channel_delay_intervals[aggregation_interval] || channel_delay_intervals.last
 
-      # last sent notification
       last_sent_parent = sent_aggregation_parents.first
-      # Uses the time of the last notification sent otherwise will send it now.
-      delay_time = last_sent_parent ? last_sent_parent.sent_time : created_at
+      previous_sending_time = last_sent_parent ? last_sent_parent.sent_time : Time.now.utc
 
-      # If this is the first notification the aggregate interval will return 0. Thus sending the notification now!
-      return delay_time + a_interval.minutes
+      return previous_sending_time + delay_minutes.minutes
     end
 
     ## Notification description
@@ -441,15 +437,14 @@ module NotifyUser
       mark_as_sent!
     end
 
-    def send_to_channels_with_aggregation!(channels)
+    def send_to_channels_with_aggregation!(channel_params)
       mark_as_pending_as_aggregation_parent!
 
-      self.class.delay_for(0).notify_aggregated_channels!(self.id, channels)
-    end
+      channels = channel_params.keys
+      options  = channel_params.values
 
-    def send_with_aggregation!(channel_name, options = {})
-      self.class.delay_for(aggregate_delay_interval(options))
-        .notify_aggregated_channel(id, channel_name)
+      self.class.delay_until(delay_time(options[0]))
+        .notify_aggregated_channels!(self.id, channel_params)
     end
 
     def send_without_aggregation!(channel_name)
