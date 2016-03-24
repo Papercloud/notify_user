@@ -1,7 +1,7 @@
 module NotifyUser
   class APNConnection
 
-    POOL = ConnectionPool.new(size: ENV['APNS_CONNECTION_POOL_SIZE'] || 1, timeout: ENV['APNS_CONNECTION_TIMEOUT'] || 30) {
+    POOL = ConnectionPool.new(size: ENV['APNS_CONNECTION_POOL_SIZE'].to_i || 1, timeout: ENV['APNS_CONNECTION_TIMEOUT'].to_i || 30) {
       APNConnection.new
     }
 
