@@ -873,5 +873,53 @@ module NotifyUser
         expect(another_hash.token).not_to eq user_hash.token
       end
     end
+
+    describe '.sendable_attributes' do
+      it 'has a default of an empty array' do
+        class TestNotificationWithoutSendableAttributes < BaseNotification; end
+
+        expect(TestNotificationWithoutSendableAttributes.sendable_attributes).to eq []
+      end
+
+      it 'can have configurable attributes' do
+        class TestNotificationWithSendableAttributes < BaseNotification
+          allow_sendable_attributes \
+            :id,
+            :foo
+        end
+
+        expect(TestNotificationWithSendableAttributes.sendable_attributes).to eq [:id, :foo]
+      end
+    end
+
+    describe '#sendable_params' do
+      subject do
+        TestNotification.create(
+          target: user,
+          params: {
+            'foo' => 'bar',
+            'bar' => 'baz',
+            'quux' => 'quuz'
+          }
+        )
+      end
+
+      it 'falls back to params' do
+        expect(subject.sendable_params).to eq ({
+          'foo' => 'bar',
+          'bar' => 'baz',
+          'quux' => 'quuz'
+        })
+      end
+
+      it 'filters to whitelisted attributes' do
+        allow(TestNotification).to receive(:sendable_attributes) { [:foo, :bar] }
+
+        expect(subject.sendable_params).to eq({
+          'foo' => 'bar',
+          'bar' => 'baz'
+        })
+      end
+    end
   end
 end

@@ -43,7 +43,7 @@ module NotifyUser
           message: mobile_message,
           type: @options[:category] || @notification.type,
           unread_count: @notification.count_for_target,
-          custom_data: @notification.params,
+          custom_data: @notification.sendable_params,
         }
       }
     end

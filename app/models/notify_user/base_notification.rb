@@ -83,6 +83,12 @@ module NotifyUser
       end
     end
 
+    def sendable_params
+      return params unless self.class.sendable_attributes.any?
+
+      params.slice(*self.class.sendable_attributes.map(&:to_s))
+    end
+
     # returns the global unread notification count for a user
     def count_for_target
       NotifyUser::BaseNotification.for_target(target)
@@ -195,6 +201,13 @@ module NotifyUser
 
     class_attribute :aggregate_per
     self.aggregate_per = 1.minute
+
+    class_attribute :sendable_attributes
+    self.sendable_attributes = []
+
+    def self.allow_sendable_attributes(*args)
+      self.sendable_attributes = *args
+    end
 
     ## True will implement a grouping/aggregation algorithm so that even though 10 notifications are delivered eg. Push Notifications
     ## Only 1 notification will be displayed to the user within the notification.json payload
