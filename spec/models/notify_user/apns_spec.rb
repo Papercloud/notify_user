@@ -25,7 +25,7 @@ module NotifyUser
         end
 
         it 'sets the custom data with params' do
-          expect(@apns.push_options[:custom_data]).to eq notification.params
+          expect(@apns.push_options[:custom_data]).to eq notification.sendable_params
         end
 
         it 'has a default sound' do

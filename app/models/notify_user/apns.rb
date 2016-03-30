@@ -50,7 +50,7 @@ module NotifyUser
         alert: mobile_message,
         badge: @notification.count_for_target,
         category: @notification.params[:category] || @notification.type,
-        custom_data: @notification.params,
+        custom_data: @notification.sendable_params,
         sound: @options[:sound] || 'default'
       }
 

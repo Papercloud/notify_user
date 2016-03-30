@@ -23,7 +23,7 @@ module NotifyUser
             message: notification.mobile_message,
             type: notification.class.name,
             unread_count: 1,
-            custom_data: notification.params
+            custom_data: notification.sendable_params
           }
         )
       end
