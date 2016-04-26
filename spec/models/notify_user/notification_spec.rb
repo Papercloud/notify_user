@@ -121,7 +121,7 @@ module NotifyUser
         allow(Service2Channel).to receive(:deliver)
         allow(Service2Channel).to receive(:deliver_aggregated)
 
-        allow(TestNotification).to receive(:channels) { { service_1: {}, service_2: {} } }
+        allow(TestNotification).to receive(:channels) { { service1: {}, service2: {} } }
       end
 
       around :each do |example|
@@ -142,8 +142,21 @@ module NotifyUser
         end
 
         it 'delivers to each channel' do
-          expect(Service1Channel).to receive(:deliver).with(@notification.id).exactly(1).times
-          expect(Service2Channel).to receive(:deliver).with(@notification.id).exactly(1).times
+          expect(Service1Channel).to receive(:deliver).with(@notification.id, kind_of(Hash)).exactly(1).times
+          expect(Service2Channel).to receive(:deliver).with(@notification.id, kind_of(Hash)).exactly(1).times
+
+          perform
+        end
+
+        it 'sends the channel options' do
+          allow(TestNotification).to receive(:channels) do
+            { service1: { sound: 'custom_sound.wav' }, service2: { sound: 'custom_sound.wav' } }
+          end
+
+          expect(Service1Channel).to receive(:deliver)
+            .with(@notification.id, hash_including(sound: 'custom_sound.wav'))
+          expect(Service2Channel).to receive(:deliver)
+            .with(@notification.id, hash_including(sound: 'custom_sound.wav'))
 
           perform
         end
@@ -185,6 +198,19 @@ module NotifyUser
             expect(@other_notifications.map {|n| n.reload.state}).to all eq 'sent'
           end
 
+          it 'sends the channel options' do
+            allow(TestNotification).to receive(:channels) do
+              { service1: { sound: 'custom_sound.wav' }, service2: { sound: 'custom_sound.wav' } }
+            end
+
+            expect(Service1Channel).to receive(:deliver_aggregated)
+              .with(kind_of(Array), hash_including(sound: 'custom_sound.wav'))
+            expect(Service2Channel).to receive(:deliver_aggregated)
+              .with(kind_of(Array), hash_including(sound: 'custom_sound.wav'))
+
+            perform
+          end
+
           it 'does not mark other pending notifications for a different group_id as sent' do
             new_notification = TestNotification.create(target: user, group_id: 456)
 
@@ -196,8 +222,8 @@ module NotifyUser
           it 'delivers aggregated notifications for same group_id' do
             notification_ids = [@notification.id] + @other_notifications.map(&:id)
 
-            expect(Service1Channel).to receive(:deliver_aggregated).with(notification_ids).exactly(1).times
-            expect(Service2Channel).to receive(:deliver_aggregated).with(notification_ids).exactly(1).times
+            expect(Service1Channel).to receive(:deliver_aggregated).with(notification_ids, {}).exactly(1).times
+            expect(Service2Channel).to receive(:deliver_aggregated).with(notification_ids, {}).exactly(1).times
 
             perform
           end
@@ -231,6 +257,17 @@ module NotifyUser
 
           expect(@notification.reload.state).to eq 'sent_as_aggregation_parent'
           expect(other_notification.reload.state).to eq 'sent'
+        end
+
+        it 'sends the channel options' do
+          allow(TestNotification).to receive(:channels) do
+            { service1: { sound: 'custom_sound.wav' }, service2: { sound: 'custom_sound.wav' } }
+          end
+
+          expect(Service1Channel).to receive(:deliver)
+            .with(kind_of(Integer), hash_including(sound: 'custom_sound.wav'))
+
+          perform
         end
       end
     end
@@ -270,20 +307,20 @@ module NotifyUser
         let(:deliver) { subject.deliver }
 
         it 'notifies aggregated channel' do
-          allow(TestNotification).to receive(:channels) { { service_1: {} } }
+          allow(TestNotification).to receive(:channels) { { service1: {} } }
 
-          expect(TestNotification).to receive(:notify_aggregated_channels!).with(subject.id, { service_1: {} })
+          expect(TestNotification).to receive(:notify_aggregated_channels!).with(subject.id, { service1: {} })
 
           deliver
         end
 
         context 'with multiple channels' do
           before :each do
-            allow(TestNotification).to receive(:channels) { { service_1: {}, service_2: {} } }
+            allow(TestNotification).to receive(:channels) { { service1: {}, service2: {} } }
           end
 
           it 'notifies multiple channels' do
-            expect(TestNotification).to receive(:notify_aggregated_channels!).with(subject.id, { service_1: {}, service_2: {} })
+            expect(TestNotification).to receive(:notify_aggregated_channels!).with(subject.id, { service1: {}, service2: {} })
 
             deliver
           end
@@ -330,7 +367,7 @@ module NotifyUser
         context 'aggregate_per as Array' do
           before :each do
             @time_intervals = [0, 3, 10, 30]
-            @channels = { service_1: {aggregate_per: @time_intervals} }
+            @channels = { service1: {aggregate_per: @time_intervals} }
             allow(TestNotification).to receive(:channels) { @channels }
           end
 
@@ -919,6 +956,38 @@ module NotifyUser
           'foo' => 'bar',
           'bar' => 'baz'
         })
+      end
+    end
+
+    describe 'notification sounds' do
+      it 'passes sound when not aggregated' do
+        allow(TestNotification).to receive(:channels) do
+          {
+            service1: { aggregate_per: false, sound: 'custom_sound.wav' },
+            service2: { aggregate_per: false, sound: 'custom_sound.wav' }
+          }
+        end
+
+        expect(Service1Channel).to receive(:deliver).with(kind_of(Integer), hash_including(sound: 'custom_sound.wav'))
+        expect(Service2Channel).to receive(:deliver).with(kind_of(Integer), hash_including(sound: 'custom_sound.wav'))
+
+        TestNotification.create({target: user}).deliver
+      end
+
+      it 'passes sound when one aggregated notification' do
+        allow(TestNotification).to receive(:channels) do
+          {
+            service1: { aggregate_per: [0, 2, 60], sound: 'custom_sound.wav' },
+            service2: { aggregate_per: [0, 2, 60], sound: 'custom_sound.wav' }
+          }
+        end
+
+        expect(Service1Channel).to receive(:deliver)
+          .with(kind_of(Integer), hash_including(sound: 'custom_sound.wav'))
+        expect(Service2Channel).to receive(:deliver)
+          .with(kind_of(Integer), hash_including(sound: 'custom_sound.wav'))
+
+        TestNotification.create({target: user}).deliver
       end
     end
   end

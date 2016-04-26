@@ -483,11 +483,12 @@ module NotifyUser
 
     def self.mutli_deliver(notifications, channel_class)
       return if notifications.empty? || notifications.first.user_has_unsubscribed?(channel_class.name)
+      options = channels[channel_class.name.underscore.gsub('_channel', '').to_sym]
 
       if notifications.length == 1
-        channel_class.delay.deliver(notifications.first.id)
+        channel_class.delay.deliver(notifications.first.id, options)
       else
-        channel_class.delay.deliver_aggregated(notifications.map(&:id))
+        channel_class.delay.deliver_aggregated(notifications.map(&:id), options)
       end
     end
   end
