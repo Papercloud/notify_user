@@ -2,8 +2,6 @@
 
 source "https://rubygems.org"
 
-ENV['RAILS_VERSION'] = "4.0.4"
-
 gem "jquery-rails"
 gem "turbolinks"
 gem "rails", "~> 4.0.0"
