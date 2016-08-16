@@ -38,6 +38,10 @@ module NotifyUser
       ChannelPresenter.present(notification, length)
     end
 
+    def count_for_target(target)
+      BaseNotification.unread_count_for_target(target)
+    end
+
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
 
@@ -52,7 +56,7 @@ module NotifyUser
 
       push_options = {
         alert: mobile_message,
-        badge: @notification.count_for_target,
+        badge: count_for_target(@notification.target),
         category: @notification.params[:category] || @notification.type,
         custom_data: @notification.sendable_params,
         sound: @options[:sound] || 'default'
