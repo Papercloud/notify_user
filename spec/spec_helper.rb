@@ -26,11 +26,12 @@ require 'rspec/rails'
 require 'capybara/rails'
 require 'factory_girl_rails'
 require 'rspec-sidekiq'
-require 'sidekiq/testing'
 require 'awesome_print'
 require 'timecop'
+require 'shoulda-matchers'
+require 'test_after_commit'
 
-Sidekiq::Testing.inline!
+Rails.application.routes.default_url_options[:host]= 'localhost:5000'
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
@@ -38,6 +39,8 @@ RSpec.configure do |config|
 
   # Use FactoryGirl shortcuts
   config.include FactoryGirl::Syntax::Methods
+  config.include(Shoulda::Matchers::ActiveModel, type: :model)
+  config.include(Shoulda::Matchers::ActiveRecord, type: :model)
 
   def mailer_should_render_template(mailer, template)
     original_method = mailer.method(:_render_template)

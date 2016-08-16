@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "pry"
   s.add_development_dependency "appraisal"
   s.add_development_dependency "timecop"
+  s.add_development_dependency "shoulda-matchers", "~> 3.1"
 
   s.test_files = Dir["spec/**/*"]
 end
