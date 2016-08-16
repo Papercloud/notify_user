@@ -3,8 +3,8 @@ ENV['RAILS_ENV'] ||= 'test'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH << File.expand_path('../support', __FILE__)
 
-# Use Rails 4 by default if you just do 'rspec spec'
-ENV['BUNDLE_GEMFILE'] ||= 'gemfiles/rails40.gemfile'
+# Use Rails 4.2 by default if you just do 'rspec spec'
+ENV['BUNDLE_GEMFILE'] ||= 'gemfiles/rails_4.2.gemfile'
 
 ENV['BUNDLE_GEMFILE'] = File.expand_path(ENV['BUNDLE_GEMFILE'])
 require 'bundler'
