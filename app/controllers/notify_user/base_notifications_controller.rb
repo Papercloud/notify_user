@@ -27,13 +27,13 @@ class NotifyUser::BaseNotificationsController < ApplicationController
 
   def mark_read
     @notifications = NotifyUser::BaseNotification.for_target(@user).where('id IN (?)', params[:ids])
-    @notifications.update_all(state: :read)
+    @notifications.update_all(read_at: Time.zone.now)
     render json: @notifications
   end
 
   def mark_all
-    @notifications = NotifyUser::BaseNotification.for_target(@user).where('state != ?', 'read')
-    @notifications.update_all(state: :read)
+    @notifications = NotifyUser::BaseNotification.for_target(@user).where('read_at IS NULL')
+    @notifications.update_all(read_at: Time.zone.now)
     render json: @notifications
   end
 
@@ -58,7 +58,7 @@ class NotifyUser::BaseNotificationsController < ApplicationController
     render json: {status: "OK"}, status: 201
   end
 
-  #get
+  # GET
   def read
     @notification = NotifyUser::BaseNotification.for_target(@user).where('id = ?', params[:id]).first
     unless @notification.read?

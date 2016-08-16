@@ -61,23 +61,28 @@ module NotifyUser
         expect(response.body).to have_content('Mr. Blobby')
       end
 
-      it 'reading a notification marks it as read and takes to redirect action' do
+      it 'reading a notification marks it as read' do
+        expect do
+          get :read, id: notification.id
+          notification.reload
+        end.to change(notification, :read_at).from(nil)
+      end
+
+      it 'reading a notification takes to redirect action' do
         get :read, id: notification.id
-        @notification = BaseNotification.where(id: notification.id).first
-        expect(@notification.state).to eq 'read'
         expect(response.body).to have_content('set redirect logic')
       end
 
       it "reading a notification twice doesn't throw an exception" do
+        notification.update_attributes(read_at: Time.zone.now)
         expect do
-          get :read, id: notification.id
           get :read, id: notification.id
         end.not_to raise_error
       end
 
       it 'marks all unread messages as read' do
         get :mark_all
-        notifications = BaseNotification.for_target(user).where('state IN (?)', '["pending","sent"]')
+        notifications = BaseNotification.for_target(user).where('read_at IS NULL')
         expect(notifications.length).to eq 0
       end
     end
