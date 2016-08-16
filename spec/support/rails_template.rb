@@ -9,6 +9,7 @@ generate :model, 'user email:string'
 
 generate "notify_user:install"
 generate "notify_user:notification NewPostNotification"
+generate "notify_user:notification TestNotification"
 
 gem_dir = File.expand_path('..',File.dirname(__FILE__))
 
