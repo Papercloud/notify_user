@@ -2,12 +2,11 @@ class CreateNotifyUserNotifications < ActiveRecord::Migration
   def change
     create_table :notify_user_notifications do |t|
       t.string :type
+      t.json :params
+      t.datetime :read_at
+
       t.integer :target_id
       t.string :target_type
-      t.json :params
-      t.string :state
-      t.datetime :sent_time
-
       t.integer :group_id
       t.integer :parent_id
 
