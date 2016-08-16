@@ -26,15 +26,19 @@ module NotifyUser
 
     private
 
+    def mobile_message(notification, length)
+      ChannelPresenter.present(notification, length)
+    end
+
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
       mobile_message = ''
 
       if @notification.parent_id
         parent = @notification.class.find(@notification.parent_id)
-        mobile_message = parent.mobile_message(space_allowance)
+        mobile_message = mobile_message(parent, space_allowance)
       else
-        mobile_message = @notification.mobile_message(space_allowance)
+        mobile_message = mobile_message(@notification, space_allowance)
       end
 
       {

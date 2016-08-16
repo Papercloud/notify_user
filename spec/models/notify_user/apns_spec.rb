@@ -4,7 +4,7 @@ require 'support/test_apn_connection'
 module NotifyUser
   describe Apns do
     let(:user) { create(:user, email: 'user@example.com') }
-    let(:notification) { create(:notify_user_notification, target: user) }
+    let(:notification) { create(:notify_user_notification, params: {}, target: user) }
 
     describe 'initialisation' do
       before :each do
@@ -13,7 +13,7 @@ module NotifyUser
 
       describe 'push options' do
         it 'sets the mobile message' do
-          expect(@apns.push_options[:alert]).to eq notification.mobile_message
+          expect(@apns.push_options[:alert]).to eq "New Post Notification happened with {}"
         end
 
         it 'sets the badge to 1' do
@@ -21,7 +21,7 @@ module NotifyUser
         end
 
         it 'sets the notification category' do
-          expect(@apns.push_options[:category]).to eq notification.class.name
+          expect(@apns.push_options[:category]).to eq "NewPostNotification"
         end
 
         it 'sets the custom data with params' do

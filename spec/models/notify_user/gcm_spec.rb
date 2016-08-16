@@ -4,7 +4,7 @@ require 'support/test_gcm_connection'
 module NotifyUser
   describe Gcm, type: :model do
     let(:user) { create(:user) }
-    let(:notification) { create(:notify_user_notification, target: user) }
+    let(:notification) { create(:notify_user_notification, params: {}, target: user) }
     let(:user_tokens) { ['a_token'] }
 
     before :each do
@@ -20,8 +20,8 @@ module NotifyUser
         expect(@gcm.push_options).to include(
           data: {
             notification_id: notification.id,
-            message: notification.mobile_message,
-            type: notification.class.name,
+            message: "New Post Notification happened with {}",
+            type: "NewPostNotification",
             unread_count: 1,
             custom_data: notification.sendable_params
           }

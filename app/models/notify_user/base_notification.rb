@@ -97,33 +97,6 @@ module NotifyUser
         .count
     end
 
-    def self.aggregate_message(notifications)
-      string = ActionView::Base.new(
-             ActionController::Base.view_paths).render(
-             :template => self.class.views[:mobile_sdk][:aggregate_path].call(self), :formats => [:html],
-             :locals => { :notifications => notifications})
-
-      return ::CGI.unescapeHTML("#{string}")
-    end
-
-    def message
-      string = ActionView::Base.new(
-             ActionController::Base.view_paths).render(
-             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
-             :locals => { :params => self.params, :notification => self})
-
-      return ::CGI.unescapeHTML("#{string}")
-    end
-
-    def mobile_message(length=115)
-      string = truncate(ActionView::Base.new(
-             ActionController::Base.view_paths).render(
-             :template => self.class.views[:mobile_sdk][:template_path].call(self), :formats => [:html],
-             :locals => { :params => self.params, :notification => self}), :length => length)
-
-      return ::CGI.unescapeHTML("#{string}")
-    end
-
     ## Public Interface
     def to(user)
       self.target = user

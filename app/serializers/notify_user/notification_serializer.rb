@@ -5,7 +5,7 @@ class NotifyUser::NotificationSerializer < ActiveModel::Serializer
   attributes :id, :type, :message, :read, :params, :created_at
 
   def message
-    object.message
+    NotifyUser::ChannelPresenter.present(object)
   end
 
   def read
