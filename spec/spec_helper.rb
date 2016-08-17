@@ -11,7 +11,7 @@ require 'bundler'
 Bundler.setup
 
 ENV['RAILS_ENV'] = 'test'
-ENV['RAILS_ROOT'] = File.expand_path("../dummy/rails-#{ENV['RAILS_VERSION']}", __FILE__)
+ENV['RAILS_ROOT'] = File.expand_path("../dummy", __FILE__)
 
 # Create the test app if it doesn't exists
 system 'rake setup' unless File.exist?(ENV['RAILS_ROOT'])
