@@ -16,7 +16,7 @@ class CreateNotifyUserNotifications < ActiveRecord::Migration
     add_index :notify_user_notifications, :group_id
     add_index :notify_user_notifications, :parent_id
     add_index :notify_user_notifications, :target_id
-    add_index :notify_user_deliveries, :created_at
-    add_index :notify_user_deliveries, :read_at
+    add_index :notify_user_notifications, :created_at
+    add_index :notify_user_notifications, :read_at
   end
 end
