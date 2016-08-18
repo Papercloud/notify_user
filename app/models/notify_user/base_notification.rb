@@ -2,17 +2,10 @@ require 'sidekiq'
 
 module NotifyUser
   class BaseNotification < ActiveRecord::Base
-    if ActiveRecord::VERSION::MAJOR < 4
-      attr_accessible :params, :target, :type, :group_id, :parent_id
-
-      # Params for creating the notification message.
-      serialize :params, JSON
-    end
-
     # Override point in case of collisions, plus keeps the table name tidy.
     self.table_name = "notify_user_notifications"
 
-    # The user to send the notification to
+    # The object (usually a user) to send the notification to
     belongs_to :target, polymorphic: true
 
     has_many :deliveries, foreign_key: 'notification_id'
@@ -29,8 +22,7 @@ module NotifyUser
 
     ## Channels
     class_attribute :channels
-    self.channels = {
-    }
+    self.channels = {}
 
     ## Restricting the params to be sent
     class_attribute :sendable_attributes
