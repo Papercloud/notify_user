@@ -15,8 +15,7 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
 
-  s.add_dependency "rails", ">= 3.2"
-  s.add_dependency "aasm"
+  s.add_dependency "rails", ">= 4.0"
   s.add_dependency "sidekiq", ">= 3.0.0"
   s.add_dependency "kaminari"
   s.add_dependency "active_model_serializers"
