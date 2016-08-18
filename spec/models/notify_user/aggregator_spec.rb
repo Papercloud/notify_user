@@ -13,10 +13,11 @@ module NotifyUser
 
       context 'with grouping' do
         before :each do
-          NewPostNotification.class_eval do
-            channel :apns, aggregate_per: [0, 3, 10, 30, 60]
-            self.aggregate_grouping = true
-          end
+          allow(NewPostNotification).to receive(:channels) {{
+              apns: { aggregate_per: [0, 3, 10, 30, 60] }
+          }}
+
+          allow(NewPostNotification).to receive(:aggregate_grouping) { true }
         end
 
         it 'returns true for a pending notification' do
@@ -79,10 +80,11 @@ module NotifyUser
 
       context 'without grouping' do
         before :each do
-          NewPostNotification.class_eval do
-            channel :apns, aggregate_per: [0, 3, 10, 30, 60]
-            self.aggregate_grouping = false
-          end
+          allow(NewPostNotification).to receive(:channels) {{
+              apns: { aggregate_per: [0, 3, 10, 30, 60] }
+          }}
+
+          allow(NewPostNotification).to receive(:aggregate_grouping) { false }
         end
 
         it 'returns true for a pending notification' do
@@ -141,10 +143,11 @@ module NotifyUser
 
       context 'without grouping' do
         before :each do
-          NewPostNotification.class_eval do
-            channel :apns, aggregate_per: [0, 3, 10, 30, 60]
-            self.aggregate_grouping = false
-          end
+          allow(NewPostNotification).to receive(:channels) {{
+              apns: { aggregate_per: [0, 3, 10, 30, 60] }
+          }}
+
+          allow(NewPostNotification).to receive(:aggregate_grouping) { false }
         end
 
         it 'returns the first interval in seconds if there are no previous unread notifications' do
