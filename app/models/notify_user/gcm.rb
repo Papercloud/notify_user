@@ -26,14 +26,6 @@ module NotifyUser
 
     private
 
-    def mobile_message(notification, length)
-      ChannelPresenter.present(notification, length)
-    end
-
-    def count_for_target(target)
-      BaseNotification.unread_count_for_target(target)
-    end
-
     def setup_options
       space_allowance = PAYLOAD_LIMIT - used_space
       mobile_message = ''
