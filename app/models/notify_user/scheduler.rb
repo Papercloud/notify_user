@@ -31,11 +31,11 @@ module NotifyUser
       last_send_time = aggregator.last_send_time
       delay_time = aggregator.delay_time_in_seconds
 
-      validate_delay_time(last_send_time, delay_time)
+      validated_delay_time(last_send_time, delay_time)
     end
 
     # Calculate the estimated send time:
-    def validate_delay_time(last_send_time, delay_time)
+    def validated_delay_time(last_send_time, delay_time)
       send_epoch = last_send_time.to_i + delay_time
       send_time_from_now = send_epoch - Time.zone.now.to_i
 
