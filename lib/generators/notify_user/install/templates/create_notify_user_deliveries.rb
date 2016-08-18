@@ -11,5 +11,6 @@ class CreateNotifyUserDeliveries < ActiveRecord::Migration
     end
 
     add_index :notify_user_deliveries, :notification_id
+    add_index :notify_user_deliveries, :sent_at
   end
 end
