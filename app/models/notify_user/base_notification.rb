@@ -79,7 +79,7 @@ module NotifyUser
       end
 
       save.tap do |success|
-        Scheduler.schedule(self) if deliver
+        Scheduler.schedule(self) if deliver && success
       end
     end
 
