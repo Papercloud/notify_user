@@ -14,7 +14,7 @@ module NotifyUser
     end
 
     def delay_time_in_seconds
-      delay_time_in_minutes = aggregation_intervals[aggregation_interval] || aggregation_intervals.last
+      delay_time_in_minutes = aggregation_intervals[next_interval_index] || aggregation_intervals.last
       delay_time_in_minutes * 60
     end
 
@@ -57,7 +57,7 @@ module NotifyUser
         .order(created_at: :desc)
     end
 
-    def aggregation_interval
+    def next_interval_index
       unread_notifications_since_last_read.count
     end
   end
