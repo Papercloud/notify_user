@@ -47,7 +47,7 @@ module NotifyUser
           expect(aggregator.has_pending_deliveries?).to eq false
         end
 
-        it 'returns false if there is no current pending notiifcation' do
+        it 'returns false if there is no current pending notifcation' do
           notification = create_notification_for_user(@user, { group_id: '1' })
           delivery = create(:delivery, notification: notification, sent_at: Time.zone.now)
 
@@ -57,7 +57,7 @@ module NotifyUser
           expect(aggregator.has_pending_deliveries?).to eq false
         end
 
-        it 'returns false if there is pending notifications have been read' do
+        it 'returns false if there are pending notifications that have been read already' do
           notification = create_notification_for_user(@user, { group_id: '1', read_at: Time.zone.now })
           delivery = create(:delivery, notification: notification)
 
@@ -67,7 +67,7 @@ module NotifyUser
           expect(aggregator.has_pending_deliveries?).to eq false
         end
 
-        it 'returns false if there is pending notifications for another user' do
+        it 'returns false if there are pending notifications for another user' do
           notification = create_notification_for_user(create(:user), { group_id: '1' })
           delivery = create(:delivery, notification: notification)
 
@@ -114,7 +114,7 @@ module NotifyUser
           expect(aggregator.has_pending_deliveries?).to eq false
         end
 
-        it 'returns false if there is pending notifications have been read' do
+        it 'returns false if there are pending notifications that have been read already' do
           notification = create_notification_for_user(@user, { read_at: Time.zone.now })
           delivery = create(:delivery, notification: notification)
 
@@ -144,7 +144,7 @@ module NotifyUser
       context 'without grouping' do
         before :each do
           allow(NewPostNotification).to receive(:channels) {{
-              apns: { aggregate_per: [0, 3, 10, 30, 60] }
+              apns: { aggregate_per: [1, 3, 10, 30, 60] }
           }}
 
           allow(NewPostNotification).to receive(:aggregate_grouping) { false }
@@ -154,7 +154,7 @@ module NotifyUser
           new_notification = create_notification_for_user(@user, { })
 
           aggregator = described_class.new(new_notification, new_notification.class.channels[:apns][:aggregate_per])
-          expect(aggregator.delay_time_in_seconds).to eq 0
+          expect(aggregator.delay_time_in_seconds).to eq 60 # 1 * 60
         end
 
         it 'returns the third interval in seconds if there are two previous unread notifications' do
@@ -172,7 +172,7 @@ module NotifyUser
           new_notification = create_notification_for_user(@user, { })
 
           aggregator = described_class.new(new_notification, new_notification.class.channels[:apns][:aggregate_per])
-          expect(aggregator.delay_time_in_seconds).to eq 0
+          expect(aggregator.delay_time_in_seconds).to eq 60 # 1 * 60
         end
       end
     end
