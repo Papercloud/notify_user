@@ -104,7 +104,7 @@ module NotifyUser
           expect(aggregator.has_pending_deliveries?).to eq false
         end
 
-        it 'returns false if there is no current pending notiifcation' do
+        it 'returns false if there is no current pending notififcation' do
           notification = create_notification_for_user(@user, { })
           delivery = create(:delivery, notification: notification, sent_at: Time.zone.now)
 
