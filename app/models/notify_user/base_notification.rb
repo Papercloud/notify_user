@@ -112,28 +112,30 @@ module NotifyUser
         .where(group_id: group_id)
     end
 
-    # Scopes:
-    def self.for_target(target)
-      where(target: target)
-    end
+    class << self
+      # Notifications for a given target:
+      def for_target(target)
+        where(target: target)
+      end
 
-    # Get the unread count for a given target:
-    def self.unread_count_for_target(target)
-      for_target(target)
-        .where('parent_id IS NULL')
-        .where('read_at IS NULL')
-        .count
-    end
+      # Get the unread count for a given target:
+      def self.unread_count_for_target(target)
+        for_target(target)
+          .where('parent_id IS NULL')
+          .where('read_at IS NULL')
+          .count
+      end
 
-    # Configure a channel
-    def self.channel(name, options={})
-      channels_clone = self.channels.clone
-      channels_clone[name] = options
-      self.channels = channels_clone
-    end
+      # Configure a channel
+      def channel(name, options={})
+        channels_clone = self.channels.clone
+        channels_clone[name] = options
+        self.channels = channels_clone
+      end
 
-    def self.allow_sendable_attributes(*args)
-      self.sendable_attributes = *args
+      def allow_sendable_attributes(*args)
+        self.sendable_attributes = *args
+      end
     end
 
     private
