@@ -13,6 +13,7 @@ module NotifyUser
         channel_class = (channel_name + "_channel").camelize.constantize
 
         channel_class.deliver(delivery.notification_id, channel_options)
+        delivery.update(sent_at: Time.zone.now)
       end
     end
   end
