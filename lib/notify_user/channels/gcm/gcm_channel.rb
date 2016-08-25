@@ -2,9 +2,9 @@ class GcmChannel
   class << self
 
   	def default_options
-  	  {
-  	    description: "Push Notifications"
-  	  }
+      {
+        description: "Push Notifications"
+      }
   	end
 
     def deliver(notification_id, options={})
