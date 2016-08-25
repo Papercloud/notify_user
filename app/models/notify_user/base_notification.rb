@@ -119,7 +119,7 @@ module NotifyUser
       end
 
       # Get the unread count for a given target:
-      def self.unread_count_for_target(target)
+      def unread_count_for_target(target)
         for_target(target)
           .where('parent_id IS NULL')
           .where('read_at IS NULL')
