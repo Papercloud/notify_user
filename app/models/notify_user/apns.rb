@@ -40,17 +40,17 @@ module NotifyUser
       mobile_message = ''
       if @notification.parent_id
         parent = @notification.class.find(@notification.parent_id)
-        mobile_message = parent.mobile_message(space_allowance)
+        mobile_message = mobile_message(parent, space_allowance)
       else
-        mobile_message = @notification.mobile_message(space_allowance)
+        mobile_message = mobile_message(@notification, space_allowance)
       end
       mobile_message.gsub!('\n', "\n")
 
       push_options = {
         alert: mobile_message,
-        badge: @notification.count_for_target,
+        badge: count_for_target(@notification.target),
         category: @notification.params[:category] || @notification.type,
-        custom_data: @notification.params,
+        custom_data: @notification.sendable_params,
         sound: @options[:sound] || 'default'
       }
 

@@ -1,8 +1,10 @@
 addons:
   postgresql: 9.3
 rvm:
-  - 1.9.3
-  - 2.1.1
+  - 2.0.0
+  - 2.1.0
+  - 2.2.0
+  - 2.3.0
 gemfile:
   - gemfiles/rails_4.0.gemfile
   - gemfiles/rails_4.1.gemfile

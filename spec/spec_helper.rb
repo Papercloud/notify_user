@@ -3,15 +3,15 @@ ENV['RAILS_ENV'] ||= 'test'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH << File.expand_path('../support', __FILE__)
 
-# Use Rails 4 by default if you just do 'rspec spec'
-ENV['BUNDLE_GEMFILE'] ||= 'gemfiles/rails40.gemfile'
+# Use Rails 4.2 by default if you just do 'rspec spec'
+ENV['BUNDLE_GEMFILE'] ||= 'gemfiles/rails_4.2.gemfile'
 
 ENV['BUNDLE_GEMFILE'] = File.expand_path(ENV['BUNDLE_GEMFILE'])
 require 'bundler'
 Bundler.setup
 
 ENV['RAILS_ENV'] = 'test'
-ENV['RAILS_ROOT'] = File.expand_path("../dummy/rails-#{ENV['RAILS_VERSION']}", __FILE__)
+ENV['RAILS_ROOT'] = File.expand_path("../dummy", __FILE__)
 
 # Create the test app if it doesn't exists
 system 'rake setup' unless File.exist?(ENV['RAILS_ROOT'])
@@ -25,11 +25,13 @@ require 'pry'
 require 'rspec/rails'
 require 'capybara/rails'
 require 'factory_girl_rails'
-require 'sidekiq/testing'
+require 'rspec-sidekiq'
 require 'awesome_print'
 require 'timecop'
+require 'shoulda-matchers'
+require 'test_after_commit'
 
-Sidekiq::Testing.inline!
+Rails.application.routes.default_url_options[:host]= 'localhost:5000'
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
@@ -37,6 +39,8 @@ RSpec.configure do |config|
 
   # Use FactoryGirl shortcuts
   config.include FactoryGirl::Syntax::Methods
+  config.include(Shoulda::Matchers::ActiveModel, type: :model)
+  config.include(Shoulda::Matchers::ActiveRecord, type: :model)
 
   def mailer_should_render_template(mailer, template)
     original_method = mailer.method(:_render_template)

@@ -6,6 +6,10 @@ module NotifyUser
     let(:notification) { NotifyUser.send_notification('new_post_notification').to(user).with(name: 'Mr. Blobby') }
     let(:unsubscribe) { Unsubscribe.create(target: user, type: 'NewPostNotification') }
 
+    before :each do
+      allow(Scheduler).to receive(:schedule)
+    end
+
     describe 'self.unsubscribe' do
       it "creates unsubscribe object if it doesn't exist" do
         expect do

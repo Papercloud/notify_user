@@ -32,9 +32,9 @@ module NotifyUser
 
       if @notification.parent_id
         parent = @notification.class.find(@notification.parent_id)
-        mobile_message = parent.mobile_message(space_allowance)
+        mobile_message = mobile_message(parent, space_allowance)
       else
-        mobile_message = @notification.mobile_message(space_allowance)
+        mobile_message = mobile_message(@notification, space_allowance)
       end
 
       {
@@ -42,8 +42,8 @@ module NotifyUser
           notification_id: @notification.id,
           message: mobile_message,
           type: @options[:category] || @notification.type,
-          unread_count: @notification.count_for_target,
-          custom_data: @notification.params,
+          unread_count: count_for_target(@notification.target),
+          custom_data: @notification.sendable_params,
         }
       }
     end

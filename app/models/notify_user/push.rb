@@ -20,6 +20,14 @@ module NotifyUser
 
     attr_accessor :device_tokens
 
+    def mobile_message(notification, length)
+      ChannelPresenter.present(notification, length)
+    end
+
+    def count_for_target(target)
+      BaseNotification.unread_count_for_target(target)
+    end
+
     def device_tokens
       @device_tokens = @devices.map(&:token)
     end
