@@ -29,6 +29,7 @@ module NotifyUser
 
     attr_reader :notification, :aggregation_intervals
 
+    # Unread notifications for the target that have yet to be sent out:
     def unread_unsent_notifications
       @unread_unsent_notifications ||= notification.class.for_target(notification.target)
         .joins(:deliveries)
@@ -36,11 +37,14 @@ module NotifyUser
         .where('notify_user_notifications.read_at IS NULL AND notify_user_deliveries.sent_at IS NULL')
     end
 
+    # Unread notifications yet to be sent out, belonging to be a particular group:
     def unread_unsent_notifications_for_group
       @unread_unsent_notifications_for_group ||= unread_unsent_notifications.where('notify_user_notifications.group_id = ?', notification.group_id)
     end
 
-    # Finding the appropriate delay time:
+    # Finding the last notification read by the target:
+    # The way we decided on an aggregation interval to use is based /
+    # on the number of unread notifications since the last read one.
     def last_read_notification
       @last_read_notification ||= notification.class.for_target(notification.target)
         .where.not(read_at: nil)
@@ -48,6 +52,7 @@ module NotifyUser
         .first
     end
 
+    # Collection of unread notifications between now and the last read notification:
     def unread_notifications_since_last_read
       notification.class.for_target(notification.target)
         .where(group_id: notification.group_id)
@@ -57,6 +62,7 @@ module NotifyUser
         .order(created_at: :desc)
     end
 
+    # Index pointing to the aggregation interval to use:
     def next_interval_index
       unread_notifications_since_last_read.count
     end
