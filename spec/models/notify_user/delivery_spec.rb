@@ -18,10 +18,10 @@ module NotifyUser
       end
 
       it 'schedules a delivery worker for the channel' do
-        delivery = build(:delivery, deliver_in: 0, notification: @notification, channel: 'apns')
+        delivery = build(:delivery, deliver_in: 0, notification: @notification, channel: 'apns', id: 3749)
 
         TestAfterCommit.with_commits(true) do
-          expect(NotifyUser::DeliveryWorker).to receive(:perform_in).with(0.seconds)
+          expect(NotifyUser::DeliveryWorker).to receive(:perform_in).with(0.seconds, 3749)
           delivery.save
         end
       end
