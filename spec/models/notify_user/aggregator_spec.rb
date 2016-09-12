@@ -136,9 +136,26 @@ module NotifyUser
       end
     end
 
-    describe '#delay_time' do
+    describe '#delay_time_in_seconds' do
       before :each do
         @user = create(:user)
+      end
+
+      context 'wihout aggregation' do
+        before :each do
+          allow(NewPostNotification).to receive(:channels) {{
+              apns: { aggregate_per: false }
+          }}
+
+          allow(NewPostNotification).to receive(:aggregate_grouping) { false }
+        end
+
+        it 'returns 0 seconds for all deliveries' do
+          new_notification = create_notification_for_user(@user, { })
+
+          aggregator = described_class.new(new_notification, new_notification.class.channels[:apns][:aggregate_per])
+          expect(aggregator.delay_time_in_seconds).to eq 0
+        end
       end
 
       context 'without grouping' do

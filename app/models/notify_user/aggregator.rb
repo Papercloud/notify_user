@@ -14,6 +14,7 @@ module NotifyUser
     end
 
     def delay_time_in_seconds
+      return 0 unless aggregation_intervals
       delay_time_in_minutes = aggregation_intervals[next_interval_index] || aggregation_intervals.last
       delay_time_in_minutes * 60
     end
