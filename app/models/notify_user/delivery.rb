@@ -13,7 +13,7 @@ module NotifyUser
     private
 
     def deliver!
-      DeliveryWorker.perform_in(deliver_in)
+      DeliveryWorker.perform_in(deliver_in, id)
     end
   end
 end
