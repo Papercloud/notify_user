@@ -25,9 +25,11 @@ module NotifyUser
         where(target: target, type: type, group_id: group_id).destroy_all
       end
 
-      def has_unsubscribed_from?(target, type, group_id = nil, channel_name = nil)
-        opts = { target: target, type: type, group_id: group_id, channel_name: channel_name }.compact
-        exists?(opts)
+      def has_unsubscribed_from?(target, type, group_id = nil, channel = nil)
+        return true if where(target_id: target.id, target_type: target.class.base_class, type: type).any?
+        return true if where(target_id: target.id, target_type: target.class.base_class, type: type, group_id: group_id).any? if group_id.present?
+        return true if where(target_id: target.id, target_type: target.class.base_class, type: channel).any? if channel.present?
+        false
       end
     end
   end

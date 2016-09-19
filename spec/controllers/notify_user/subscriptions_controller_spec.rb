@@ -18,7 +18,7 @@ module NotifyUser
         Unsubscribe.unsubscribe!(@user, 'NewPostNotification')
 
         get :index
-        expect(json.length).to eq 1
+        expect(json[:unsubscribes].length).to eq 1
       end
     end
 

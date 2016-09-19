@@ -3,17 +3,17 @@ module NotifyUser
     before_filter :authenticate!
 
     def create
-      @notification = NotifyUser::BaseNotification.for_target(@user).where(id: params[:notification_ids], read_at: nil)
-      @notification.update_all(read_at: Time.zone.now)
+      @notifications = NotifyUser::BaseNotification.for_target(@user).where(id: params[:notification_ids], read_at: nil)
+      @notifications.update_all(read_at: Time.zone.now)
 
-      render json: @notifications, status: :created
+      render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, adapter: :json, status: :created
     end
 
     def create_all
       @notifications = NotifyUser::BaseNotification.for_target(@user).where(read_at: nil)
       @notifications.update_all(read_at: Time.zone.now)
 
-      render json: @notifications, status: :created
+      render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, adapter: :json, status: :created
     end
 
     private

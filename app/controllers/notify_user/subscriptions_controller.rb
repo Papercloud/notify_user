@@ -3,8 +3,9 @@ module NotifyUser
     before_filter :authenticate!
 
     def index
-      subscriptions = NotifyUser::Unsubscribe.for_target(@user)
-      render json: subscriptions
+      render json: paginated_collection, adapter: :json, meta: {
+        pagination: { per_page: paginated_collection.limit_value, total_pages: paginated_collection.total_pages, total_objects: paginated_collection.total_count }
+      }
     end
 
     def create
@@ -23,6 +24,22 @@ module NotifyUser
     end
 
     private
+
+    def collection
+      @collection ||= NotifyUser::Unsubscribe.for_target(@user)
+    end
+
+    def paginated_collection
+      @paginated_collection ||= collection.page(page_number).per(per_page)
+    end
+
+    def page_number
+      params[:page] || 1
+    end
+
+    def per_page
+      params[:per_page] || 25
+    end
 
     def authenticate!
       method(NotifyUser.authentication_method).call
