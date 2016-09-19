@@ -1,8 +1,6 @@
 Rails.application.routes.draw do
   namespace :notify_user do
     resources :notifications, only: [:index]
-    put 'notifications/mark_read' => 'notifications#mark_read'
-    get 'notifications/notifications_count' => 'notifications#notifications_count'
     get 'notifications/unsubscribe' => 'notifications#unsubscribe'
     get 'notifications/subscribe' => 'notifications#subscribe'
     get 'notifications/unauth_unsubscribe' => 'notifications#unauth_unsubscribe'
@@ -13,5 +11,7 @@ Rails.application.routes.draw do
 
     post 'notifications/mark_read', to: 'reads#create'
     post 'notifications/mark_all', to: 'reads#create_all'
+
+    get 'notifications/count', to: 'unread_notifications#index_count'
   end
 end
