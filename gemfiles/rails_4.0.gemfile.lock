@@ -3,6 +3,7 @@ PATH
   specs:
     notify_user (0.3.2)
       active_model_serializers (~> 0.10.0)
+      apnotic (~> 1.0.1)
       connection_pool
       gcm
       houston
@@ -43,6 +44,9 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
     addressable (2.4.0)
+    apnotic (1.0.1)
+      connection_pool (~> 2.0)
+      net-http2 (>= 0.14, < 2)
     appraisal (2.1.0)
       bundler
       rake
@@ -121,6 +125,7 @@ GEM
     houston (2.2.4)
       commander (~> 4.4)
       json
+    http-2 (0.8.3)
     httparty (0.14.0)
       multi_xml (>= 0.5.2)
     httpclient (2.8.3)
@@ -143,6 +148,8 @@ GEM
     minitest (4.7.5)
     multi_json (1.12.1)
     multi_xml (0.6.0)
+    net-http2 (0.14.1)
+      http-2 (~> 0.8.2)
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
     pg (0.18.4)
