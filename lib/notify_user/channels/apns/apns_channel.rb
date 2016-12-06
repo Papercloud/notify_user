@@ -16,7 +16,7 @@ class ApnsChannel
 
       devices = fetch_devices(notification, options[:device_method])
 
-      NotifyUser::Apns.new([notification], devices, options).push if devices.any?
+      NotifyUser::ApnsHttp.new([notification], devices, options).push if devices.any?
     end
 
     def deliver_aggregated(notification_ids, options={})
@@ -28,7 +28,7 @@ class ApnsChannel
 
       devices = fetch_devices(notifications.first, options[:device_method])
 
-      NotifyUser::Apns.new(notifications, devices, options).push if devices.any?
+      NotifyUser::ApnsHttp.new(notifications, devices, options).push if devices.any?
     end
 
     private
