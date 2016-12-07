@@ -11,7 +11,7 @@ module NotifyUser
         buildable.badge = count_for_target(notification.target)
         buildable.category = notification.params[:category] || notification.type
         buildable.sound = options[:sound] || 'default'
-        buildable.custom_payload = notification.sendable_params
+        buildable.custom_payload = { "custom_data" => notification.sendable_params }
         buildable.topic = ENV['APN_TOPIC']
 
         return buildable
@@ -23,7 +23,7 @@ module NotifyUser
         buildable.category = notification.params[:category] || notification.type
         buildable.sound = ''
         buildable.content_available = true
-        buildable.custom_payload = notification.sendable_params
+        buildable.custom_payload = { "custom_data" => notification.sendable_params }
         buildable.topic = ENV['APN_TOPIC']
 
         return buildable

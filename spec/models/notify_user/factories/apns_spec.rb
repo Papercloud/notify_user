@@ -30,7 +30,7 @@ describe NotifyUser::Factories::Apns do
       end
 
       it 'sets the custom data with params' do
-        expect(@apns.custom_payload).to eq({})
+        expect(@apns.custom_payload).to eq({"custom_data"=>{}})
       end
 
       it 'has a default sound' do
@@ -70,7 +70,7 @@ describe NotifyUser::Factories::Apns do
       end
 
       it 'sets the custom data with params' do
-        expect(@apns.custom_payload).to eq({})
+        expect(@apns.custom_payload).to eq({"custom_data"=>{}})
       end
 
       it 'has no sound' do

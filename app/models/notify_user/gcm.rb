@@ -8,8 +8,6 @@ module NotifyUser
 
     def initialize(notifications, devices, options)
       super(notifications, devices, options)
-
-      @push_options = setup_options
     end
 
     def push
@@ -26,31 +24,15 @@ module NotifyUser
 
     private
 
-    def setup_options
-      space_allowance = PAYLOAD_LIMIT - used_space
-      mobile_message = ''
-
-      if @notification.parent_id
-        parent = @notification.class.find(@notification.parent_id)
-        mobile_message = mobile_message(parent, space_allowance)
-      else
-        mobile_message = mobile_message(@notification, space_allowance)
-      end
-
-      {
-        data: {
-          notification_id: @notification.id,
-          message: mobile_message,
-          type: @options[:category] || @notification.type,
-          unread_count: count_for_target(@notification.target),
-          custom_data: @notification.sendable_params,
-        }
-      }
+    def build_notification
+      return Factories::Gcm.build(@notification, @options)
     end
 
     def send_notifications
       return unless device_tokens.any?
-      response = client.send(device_tokens, @push_options)
+      notification_data = build_notification()
+
+      response = client.send(device_tokens, notification_data)
       # should be checking for errors in the response here
       return true
     end

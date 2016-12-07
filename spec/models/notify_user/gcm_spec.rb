@@ -13,22 +13,6 @@ module NotifyUser
       allow_any_instance_of(Gcm).to receive(:client).and_return(@client)
     end
 
-    describe 'initialisation' do
-      it 'initialises the correct push options' do
-        @gcm = Gcm.new([notification], [], {})
-
-        expect(@gcm.push_options).to include(
-          data: {
-            notification_id: notification.id,
-            message: "New Post Notification happened with {}",
-            type: "NewPostNotification",
-            unread_count: 1,
-            custom_data: notification.sendable_params
-          }
-        )
-      end
-    end
-
     describe 'push' do
       before :each do
         @gcm = Gcm.new([notification], [], {})

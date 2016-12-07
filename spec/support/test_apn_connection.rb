@@ -1,6 +1,6 @@
 class TestAPNConnection
-  def closed?
-    true
+  def write(notification)
+    return true
   end
 
   def open; end
