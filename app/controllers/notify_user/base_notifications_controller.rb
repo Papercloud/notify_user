@@ -21,20 +21,20 @@ class NotifyUser::BaseNotificationsController < ApplicationController
   def respond_to_method
     respond_to do |format|
       format.html
-      format.json {render :json => @notifications, meta: { pagination: { per_page: @notifications.limit_value, total_pages: @notifications.total_pages, total_objects: @notifications.total_count } }}
+      format.json {render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, adapter: :json, meta: { pagination: { per_page: @notifications.limit_value, total_pages: @notifications.total_pages, total_objects: @notifications.total_count } }}
     end
   end
 
   def mark_read
     @notifications = NotifyUser::BaseNotification.for_target(@user).where('id IN (?)', params[:ids])
     @notifications.update_all(read_at: Time.zone.now)
-    render json: @notifications
+    render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, adapter: :json
   end
 
   def mark_all
     @notifications = NotifyUser::BaseNotification.for_target(@user).where('read_at IS NULL')
     @notifications.update_all(read_at: Time.zone.now)
-    render json: @notifications
+    render json: @notifications, each_serializer: NotifyUser::NotificationSerializer, adapter: :json
   end
 
   def notifications_count

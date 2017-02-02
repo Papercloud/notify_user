@@ -18,11 +18,11 @@ describe NotifyUser::NotificationSerializer, type: :model do
 
   describe 'root' do
     it 'has a notifications root' do
-      expect(subject['notifications']).not_to be_nil
+      expect(subject).not_to be_nil
     end
 
     it 'has the correct attributes in the root' do
-      expect(subject['notifications'].keys).to match_array(attributes)
+      expect(subject.keys).to match_array(attributes)
     end
   end
 end
