@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 4.0"
   s.add_dependency "sidekiq", ">= 3.0.0"
   s.add_dependency "kaminari"
-  s.add_dependency "active_model_serializers"
+  s.add_dependency "active_model_serializers", "~> 0.10.0"
   s.add_dependency "pubnub"
   s.add_dependency "houston"
   s.add_dependency "connection_pool"

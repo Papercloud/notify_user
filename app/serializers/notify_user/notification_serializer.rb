@@ -1,7 +1,5 @@
 class NotifyUser::NotificationSerializer < ActiveModel::Serializer
-  require 'cgi'
-  root :notifications
-
+  type 'notification'
   attributes :id, :type, :message, :read, :params, :created_at
 
   def message
