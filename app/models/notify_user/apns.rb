@@ -39,6 +39,8 @@ module NotifyUser
             (response.status == '400' && response.body['reason'] == 'BadDeviceToken')
           Rails.logger.info "Invalid token encountered, removing device. Token: #{device.token}."
           device.destroy
+        else
+          Rails.logger.info "Notification for token: #{device.token} responded with status #{response.status}"
         end
       end
 
