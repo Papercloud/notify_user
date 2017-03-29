@@ -69,7 +69,7 @@ module NotifyUser
         end
 
         it 'calls the log method on delivery' do
-          expect(@delivery).to receive(:log_response_for_device).with(@device, @mock_status)
+          expect(@delivery).to receive(:log_response_for_device).with(@device.id, @mock_status)
 
           @apns.push
         end

@@ -8,6 +8,7 @@ module NotifyUser
 
     def initialize(notifications, devices, options)
       super(notifications, devices, options)
+      @delivery = delivery_for_notification('gcm')
     end
 
     def push
@@ -24,6 +25,8 @@ module NotifyUser
 
     private
 
+    attr_accessor :delivery
+
     def build_notification
       return Factories::Gcm.build(@notification, @options)
     end
@@ -33,6 +36,8 @@ module NotifyUser
       notification_data = build_notification()
 
       response = client.send(device_tokens, notification_data)
+
+      log_response_to_delivery('gcm', response)
       # should be checking for errors in the response here
       return true
     end

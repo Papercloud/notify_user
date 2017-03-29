@@ -49,6 +49,23 @@ module NotifyUser
           @gcm.push
         end
       end
+
+      describe 'Delivery logging' do
+        before do
+          @mock_status = instance_double("status", status: "200", body: {})
+          @delivery = instance_double('Delivery')
+          @device = create_device_double
+
+          allow(@gcm).to receive(:device_tokens) { [@device.token] }
+          allow(@gcm).to receive(:delivery) { @delivery }
+        end
+
+        it 'calls the log method on delivery' do
+          expect(@delivery).to receive(:log_response_for_device).with('gcm', anything)
+
+          @gcm.push
+        end
+      end
     end
   end
 end

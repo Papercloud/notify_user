@@ -32,7 +32,7 @@ module NotifyUser
       let(:device) { create_device_double }
       let(:response) { instance_double('status', status: '200', body: {}) }
 
-      subject { delivery.log_response_for_device(device, response) }
+      subject { delivery.log_response_for_device(device.id, response) }
 
       context 'No previous responses' do
         it 'updates the responses of the delivery' do

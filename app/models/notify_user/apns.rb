@@ -6,7 +6,7 @@ module NotifyUser
 
     def initialize(notifications, devices, options)
       super(notifications, devices, options)
-      @delivery = apns_delivery_for_notification
+      @delivery = delivery_for_notification('apns')
       @devices = devices
     end
 
@@ -36,27 +36,16 @@ module NotifyUser
 
         raise "Timeout sending a push notification" unless response
 
-        log_response_to_delivery(device, response)
+        log_response_to_delivery(device.id, response)
 
         if response.status == '410' ||
             (response.status == '400' && response.body['reason'] == 'BadDeviceToken')
           Rails.logger.info "Invalid token encountered, removing device. Token: #{device.token}."
           device.destroy
-        else
-          Rails.logger.info "Notification for token: #{device.token} responded with status #{response.status}"
         end
       end
 
       return true
-    end
-
-    def apns_delivery_for_notification
-      Delivery.find_by(notification: @notification, channel: 'apns')
-    end
-
-    def log_response_to_delivery(device, response)
-      return unless delivery.present?
-      delivery.log_response_for_device(device, response)
     end
   end
 end
