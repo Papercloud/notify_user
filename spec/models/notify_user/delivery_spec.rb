@@ -26,5 +26,35 @@ module NotifyUser
         end
       end
     end
+
+    describe '#log_response_for_device' do
+      let!(:delivery) { create(:delivery) }
+      let(:device) { create_device_double }
+      let(:response) { instance_double('status', status: '200', body: {}) }
+
+      subject { delivery.log_response_for_device(device, response) }
+
+      context 'No previous responses' do
+        it 'updates the responses of the delivery' do
+          expect do
+            subject
+            delivery.reload
+          end.to change(delivery, :responses).to({ device.id => { 'status' => '200', 'body' => {} } })
+        end
+      end
+
+      context 'with previous responses' do
+        before do
+          delivery.update(responses: { '1234' => { status: 400 } })
+        end
+
+        it 'merges the responses hash' do
+          expect do
+            subject
+            delivery.reload
+          end.to change(delivery, :responses).to({"1234"=>{"status"=>400}, "1"=>{"status"=>"200", "body"=>{}}})
+        end
+      end
+    end
   end
 end

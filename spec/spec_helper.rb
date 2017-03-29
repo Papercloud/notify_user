@@ -57,7 +57,9 @@ RSpec.configure do |config|
   def create_device_double(options = {})
     device = instance_double('Device')
     token = options[:token] || 'token'
+    id = options[:id] || '1'
     allow(device).to receive(:token) { token }
+    allow(device).to receive(:id) { id }
     device
   end
 end

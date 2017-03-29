@@ -56,6 +56,24 @@ module NotifyUser
           @apns.push
         end
       end
+
+      describe 'Delivery logging' do
+        before do
+          @mock_status = instance_double("status", status: "200", body: {})
+          @delivery = instance_double('Delivery')
+          @device = create_device_double
+
+          allow(@connection).to receive(:write) { @mock_status }
+          allow(@apns).to receive(:devices) { [@device] }
+          allow(@apns).to receive(:delivery) { @delivery }
+        end
+
+        it 'calls the log method on delivery' do
+          expect(@delivery).to receive(:log_response_for_device).with(@device, @mock_status)
+
+          @apns.push
+        end
+      end
     end
   end
 end

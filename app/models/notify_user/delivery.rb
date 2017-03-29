@@ -10,6 +10,11 @@ module NotifyUser
 
     after_commit :deliver!, on: :create
 
+    def log_response_for_device(device, response)
+      current_responses = responses || {}
+      self.update(responses: current_responses.merge({ device.id => { status: response.status, body: response.body } }))
+    end
+
     private
 
     def deliver!
