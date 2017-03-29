@@ -4,6 +4,7 @@ class CreateNotifyUserDeliveries < ActiveRecord::Migration
       t.datetime :sent_at
       t.string :channel
       t.integer :deliver_in
+      t.json :responses
 
       t.integer :notification_id
 
