@@ -2,13 +2,6 @@ require_relative 'apn_connection'
 
 module NotifyUser
   class Apns < Push
-    attr_accessor :push_options
-
-    def initialize(notifications, devices, options)
-      super(notifications, devices, options)
-
-      @devices = devices
-    end
 
     def push
       APNConnection::POOL.with do |connection|
@@ -18,31 +11,39 @@ module NotifyUser
 
     private
 
-    attr_accessor :devices
+    def send_notifications(connection)
+      device = fetch_device(delivery.notification, delivery.device_token)
+      fail "Device not registered for target" unless device
 
-    def build_notification(device)
-      if @options[:silent]
-        return Factories::Apns.build_silent(@notification, device.token, @options)
+      notification = build_notification(delivery.notification, device)
+      response = connection.write(notification)
+
+      fail "Timeout sending a push notification" unless response
+
+      log_response_to_delivery(response)
+      handle_response(response, device)
+    end
+
+    def fetch_device(notification, device_token)
+      notification.target.devices.find_by(token: device_token)
+    end
+
+    def build_notification(notification, device)
+      if options[:silent]
+        return Factories::Apns.build_silent(notification, device.token, options)
       else
-        return Factories::Apns.build(@notification, device.token, @options)
+        return Factories::Apns.build(notification, device.token, options)
       end
     end
 
-    def send_notifications(connection)
-      devices.each_with_index do |device, index|
-        notification = build_notification(device)
-        response = connection.write(notification)
+    def log_response_to_delivery(response)
+      delivery.update(status: response.status, reason: response.body['reason'])
+    end
 
-        raise "Timeout sending a push notification" unless response
-
-        if response.status == '410' ||
-            (response.status == '400' && response.body['reason'] == 'BadDeviceToken')
-          Rails.logger.info "Invalid token encountered, removing device. Token: #{device.token}."
-          device.destroy
-        end
+    def handle_response(response, device)
+      if response.status == '410' || (response.status == '400' && response.body['reason'] == 'BadDeviceToken')
+        device.destroy
       end
-
-      return true
     end
   end
 end

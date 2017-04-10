@@ -4,8 +4,11 @@ class CreateNotifyUserDeliveries < ActiveRecord::Migration
       t.datetime :sent_at
       t.string :channel
       t.integer :deliver_in
+      t.string :status
+      t.string :reason
 
       t.integer :notification_id
+      t.string :device_token
 
       t.timestamps
     end
