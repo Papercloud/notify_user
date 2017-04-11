@@ -15,14 +15,14 @@ module NotifyUser
 
   class ApnsDeliveryGenerator < DeliveryGenerator
     def generate(notification, options)
-      fetch_devices(notification).each do |device|
-        Delivery.create!(options.merge(device: device))
+      fetch_device_tokens(notification).each do |token|
+        Delivery.create!(options.merge(device_token: token))
       end
     end
 
     private
 
-    def fetch_devices(notification)
+    def fetch_device_tokens(notification)
       # TODO: Figure out how to make this configureable, at the moment it's locked to how Dre works:
       devices = notification.target.devices
       devices.ios.pluck(:token)
@@ -34,14 +34,14 @@ module NotifyUser
 
   class GcmDeliveryGenerator < DeliveryGenerator
     def generate(notification, options)
-      fetch_devices(notification).each do |device|
-        Delivery.create!(options.merge(device: device))
+      fetch_device_tokens(notification).each do |token|
+        Delivery.create!(options.merge(device_token: token))
       end
     end
 
     private
 
-    def fetch_devices(notification)
+    def fetch_device_tokens(notification)
       # TODO: Figure out how to make this configureable, at the moment it's locked to how Dre works:
       devices = notification.target.devices
       devices.android.pluck(:token)

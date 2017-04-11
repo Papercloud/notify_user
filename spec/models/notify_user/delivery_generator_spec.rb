@@ -36,21 +36,21 @@ module NotifyUser
 
       it 'creates no delivery if the user has no devices' do
         generator = ApnsDeliveryGenerator.new
-        allow(generator).to receive(:fetch_devices) { [] }
+        allow(generator).to receive(:fetch_device_tokens) { [] }
 
         expect{ generator.generate(notification, options) }.not_to change(Delivery, :count)
       end
 
       it 'creates a delivery if the user has a device' do
         generator = ApnsDeliveryGenerator.new
-        allow(generator).to receive(:fetch_devices) { ['test'] }
+        allow(generator).to receive(:fetch_device_tokens) { ['test'] }
 
         expect{ generator.generate(notification, options) }.to change(Delivery, :count).by(1)
       end
 
       it 'creates multiple deliveries if the user has multiple devices' do
         generator = ApnsDeliveryGenerator.new
-        allow(generator).to receive(:fetch_devices) { ['test', 'test'] }
+        allow(generator).to receive(:fetch_device_tokens) { ['test', 'test'] }
 
         expect{ generator.generate(notification, options) }.to change(Delivery, :count).by(2)
       end
@@ -65,21 +65,21 @@ module NotifyUser
 
       it 'creates no delivery if the user has no devices' do
         generator = GcmDeliveryGenerator.new
-        allow(generator).to receive(:fetch_devices) { [] }
+        allow(generator).to receive(:fetch_device_tokens) { [] }
 
         expect{ generator.generate(notification, options) }.not_to change(Delivery, :count)
       end
 
       it 'creates a delivery if the user has a device' do
         generator = GcmDeliveryGenerator.new
-        allow(generator).to receive(:fetch_devices) { ['test'] }
+        allow(generator).to receive(:fetch_device_tokens) { ['test'] }
 
         expect{ generator.generate(notification, options) }.to change(Delivery, :count).by(1)
       end
 
       it 'creates multiple deliveries if the user has multiple devices' do
         generator = GcmDeliveryGenerator.new
-        allow(generator).to receive(:fetch_devices) { ['test', 'test'] }
+        allow(generator).to receive(:fetch_device_tokens) { ['test', 'test'] }
 
         expect{ generator.generate(notification, options) }.to change(Delivery, :count).by(2)
       end
