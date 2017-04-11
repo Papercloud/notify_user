@@ -26,7 +26,7 @@ describe ApnsChannel do
     end
   end
 
-  context 'with stubbed Apns push and Notification mobile message' do
+  context 'with stubbed APNS push and Notification mobile message' do
     before :each do
       allow_any_instance_of(NotifyUser::Apns).to receive(:push)
       allow_any_instance_of(TestNotification).to receive(:mobile_message) { 'Notification message' }
@@ -55,9 +55,9 @@ describe ApnsChannel do
         described_class.deliver(delivery.id, {})
       end
 
-      it 'raises an error if the argument is an actual notification object' do
+      it 'raises an error if the argument is an actual delivery object' do
         expect do
-          described_class.deliver(notification)
+          described_class.deliver(delivery)
         end.to raise_error RuntimeError
       end
     end

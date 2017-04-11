@@ -8,7 +8,7 @@ class ApnsChannel
   	end
 
     def deliver(delivery_id, options={})
-      if delivery_id.is_a? NotifyUser::BaseNotification
+      if delivery_id.is_a? NotifyUser::Delivery
         raise RuntimeError, "Must pass delivery id, not the delivery itself"
       end
 
