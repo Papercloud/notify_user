@@ -1,10 +1,10 @@
 module NotifyUser
   class Push
-    def initialize(notifications, devices, options)
-      @notifications = notifications
-      @notification = notifications.first
 
-      @devices = devices
+    attr_reader :delivery, :options
+
+    def initialize(delivery, options)
+      @delivery = delivery
       @options = options
     end
 
@@ -13,12 +13,5 @@ module NotifyUser
       raise "Base Push class should not be used."
     end
 
-    private
-
-    attr_accessor :device_tokens
-
-    def device_tokens
-      @device_tokens = @devices.map(&:token)
-    end
   end
 end

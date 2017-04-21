@@ -5,47 +5,67 @@ module NotifyUser
   describe Gcm, type: :model do
     let(:user) { create(:user) }
     let(:notification) { create(:notify_user_notification, params: {}, target: user) }
-    let(:user_tokens) { ['a_token'] }
+    let(:delivery) { create(:delivery, notification: notification) }
 
     before :each do
-      allow_any_instance_of(Gcm).to receive(:device_tokens) { user_tokens }
       @client = TestGCMConnection.new
       allow_any_instance_of(Gcm).to receive(:client).and_return(@client)
     end
 
     describe 'push' do
       before :each do
-        @gcm = Gcm.new([notification], [], {})
+        @gcm = Gcm.new(delivery, {})
+
+        # Mock device fetching:
+        @device = create_device_double
+        allow(@gcm).to receive(:fetch_device) { @device }
       end
 
       context 'without errors' do
         before :each do
-          # Stub out send method with a successful response object, or maybe,
-          # initialize TestGCMConnection with new(:success)
-          # This would keep the spec file clean...
-        end
+          @mock_status = {
+            body: "{\"multicast_id\":7271457233098108570,\"success\":1,\"failure\":0,\"canonical_ids\":0,\"results\":[{\"message_id\":\"1\"}]}",
+            status_code: 200,
+            response: "success"
+          }
 
-        it 'returns true if no error' do
-          expect(@gcm.push).to eq true
+          allow(@client).to receive(:send) { @mock_status }
         end
 
         it 'sends to the device token of the notification target' do
-          expect(@client).to receive(:send).with(user_tokens, kind_of(Hash))
+          expect(@client).to receive(:send).with('token', kind_of(Hash))
           @gcm.push
         end
+      end
 
-        it 'does not try to send to an empty token' do
-          user_tokens = []
-          allow_any_instance_of(Gcm).to receive(:device_tokens) { user_tokens }
-          expect_any_instance_of(GCM).not_to receive(:send)
-          @gcm.push
+      context 'with an error' do
+        before :each do
+          @mock_status = {
+            body: "{\"multicast_id\":7271457233098108570,\"success\":0,\"failure\":1,\"canonical_ids\":0,\"results\":[{\"error\":\"InvalidRegistration\"}]}",
+            status_code: 200,
+            response: "success"
+          }
+
+          allow(@client).to receive(:send) { @mock_status }
+          allow(@device).to receive(:destroy)
         end
 
-        it 'sends multiple notifications' do
-          multiple_tokens = %w(token_1 token_2 token_3)
-          allow(@gcm).to receive(:device_tokens) { multiple_tokens }
-          expect(@client).to receive(:send).once
-            .with(multiple_tokens, kind_of(Hash))
+        it 'records the status on the delivery' do
+          expect do
+            @gcm.push
+            delivery.reload
+          end.to change(delivery, :status).to '200'
+        end
+
+        it 'records the reason on the delivery' do
+          expect do
+            @gcm.push
+            delivery.reload
+          end.to change(delivery, :reason).to 'InvalidRegistration'
+        end
+
+        it 'removes the bad device' do
+          expect(@device).to receive(:destroy) { true }
           @gcm.push
         end
       end

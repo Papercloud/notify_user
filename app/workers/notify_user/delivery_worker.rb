@@ -12,7 +12,7 @@ module NotifyUser
         channel_options = delivery.notification.class.channels[channel_name.to_sym] || {}
         channel_class = (channel_name + "_channel").camelize.constantize
 
-        channel_class.deliver(delivery.notification_id, channel_options)
+        channel_class.deliver(delivery.id, channel_options)
         delivery.update(sent_at: Time.zone.now)
       end
     end

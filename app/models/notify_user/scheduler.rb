@@ -14,11 +14,13 @@ module NotifyUser
         return if aggregator.has_pending_deliveries?
 
         # Create the delivery:
-        delivery = Delivery.create!({
+        options = {
           notification: notification,
           deliver_in: delay_time(aggregator),
           channel: channel.to_s
-        })
+        }
+
+        DeliveryGenerator.for(channel).generate(notification, options)
       end
     end
 
