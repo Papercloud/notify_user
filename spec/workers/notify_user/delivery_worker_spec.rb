@@ -6,11 +6,15 @@ RSpec.describe NotifyUser::DeliveryWorker, type: :model do
       described_class.new
     end
 
+    before :each do
+      allow(ApnsChannel).to receive(:deliver)
+    end
+
     it 'performs delivery via the required channel' do
       notification = create(:notify_user_notification)
       delivery = create(:delivery, notification: notification, channel: 'apns')
 
-      expect(ApnsChannel).to receive(:deliver).with(notification.id, anything)
+      expect(ApnsChannel).to receive(:deliver).with(delivery.id, anything)
       subject.perform(delivery.id)
     end
 

@@ -4,17 +4,11 @@ module NotifyUser
   class Gcm < Push
     PAYLOAD_LIMIT = 4096
 
-    attr_accessor :client, :push_options
-
-    def initialize(notifications, devices, options)
-      super(notifications, devices, options)
-
-      @push_options = setup_options
-    end
-
     def push
       send_notifications
     end
+
+    private
 
     def client
       @client ||= GCM.new(ENV['GCM_API_KEY'])
@@ -24,35 +18,36 @@ module NotifyUser
       payload.to_json.bytesize <= PAYLOAD_LIMIT
     end
 
-    private
+    def send_notifications
+      device = fetch_device(delivery.notification, delivery.device_token)
+      fail "Device not registered for target" unless device
 
-    def setup_options
-      space_allowance = PAYLOAD_LIMIT - used_space
-      mobile_message = ''
+      notification_data = build_notification(delivery.notification)
+      response = client.send(device.token, notification_data)
 
-      if @notification.parent_id
-        parent = @notification.class.find(@notification.parent_id)
-        mobile_message = mobile_message(parent, space_allowance)
-      else
-        mobile_message = mobile_message(@notification, space_allowance)
-      end
-
-      {
-        data: {
-          notification_id: @notification.id,
-          message: mobile_message,
-          type: @options[:category] || @notification.type,
-          unread_count: count_for_target(@notification.target),
-          custom_data: @notification.sendable_params,
-        }
-      }
+      log_response_to_delivery(response)
+      handle_response(response, device)
     end
 
-    def send_notifications
-      return unless device_tokens.any?
-      response = client.send(device_tokens, @push_options)
-      # should be checking for errors in the response here
-      return true
+    def fetch_device(notification, device_token)
+      notification.target.devices.find_by(token: device_token)
+    end
+
+    def build_notification(notification)
+      return Factories::Gcm.build(notification, options)
+    end
+
+    def log_response_to_delivery(response)
+      body = JSON.parse(response[:body])
+      delivery.update(status: response[:status_code], reason: body['results'][0]['error'])
+    end
+
+    def handle_response(response, device)
+      body = JSON.parse(response[:body])
+
+      if body['failure'] > 0 && (body['results'][0]['error'] == 'InvalidRegistration' || body['results'][0]['error'] == 'NotRegistered')
+        device.destroy
+      end
     end
   end
 end
