@@ -60,7 +60,7 @@ module NotifyUser
             expect do
               post :create, notification_ids: [@notification.id]
               @notification.reload
-            end.not_to change(@notification, :read_at)
+            end.not_to change(@notification.read_at, :to_s)
           end
         end
       end
@@ -88,7 +88,7 @@ module NotifyUser
         expect do
           post :create_all
           read_notification.reload
-        end.not_to change(read_notification, :read_at)
+        end.not_to change(read_notification.read_at, :to_s)
       end
     end
   end
