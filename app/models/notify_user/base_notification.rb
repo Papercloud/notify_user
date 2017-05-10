@@ -92,8 +92,8 @@ module NotifyUser
     end
 
     # Return whether or not the target has unsubscribed from this notification:
-    def target_has_unsubscribed?(channel_name=nil)
-      return Unsubscribe.has_unsubscribed_from?(target, type, group_id, channel_name)
+    def target_has_unsubscribed?(channel = nil)
+      return Unsubscribe.has_unsubscribed_from?(target, type, group_id, channel)
     end
 
     def read?

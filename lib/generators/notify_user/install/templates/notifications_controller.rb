@@ -1,4 +1,4 @@
-class NotifyUser::NotificationsController < NotifyUser::BaseNotificationsController 
+class NotificationsController < NotifyUser::NotificationsController
 	def redirect_logic(notification)
 		render :text => "set redirect logic in notify_user/notifications_controller.rb"
 		# notification redirect logic goes here

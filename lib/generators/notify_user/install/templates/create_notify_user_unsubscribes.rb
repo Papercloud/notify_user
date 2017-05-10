@@ -1,11 +1,13 @@
 class CreateNotifyUserUnsubscribes < ActiveRecord::Migration
   def change
     create_table :notify_user_unsubscribes do |t|
-      t.string :type
       t.integer :target_id
       t.string :target_type
-
       t.integer :group_id
+
+      t.string :type
+      t.string :channel
+
       t.timestamps
     end
 

@@ -20,7 +20,7 @@ class NotifyUser::InstallGenerator < Rails::Generators::Base
   end
 
   def copy_notifications_controller
-    template "notifications_controller.rb", "app/controllers/notify_user/notifications_controller.rb"
+    template "notifications_controller.rb", "app/controllers/notifications_controller.rb"
   end
 
   # This is defined in ActiveRecord::Generators::Base, but that inherits from NamedBase, so it expects a name argument

@@ -192,16 +192,16 @@ module NotifyUser
         expect(notification.target_has_unsubscribed?).to eq false
       end
 
-      it "reutns true if target unsubscribed from channel" do
-        Unsubscribe.create({ target: user, type: "action_mailer" })
+      it "returns true if target unsubscribed from channel" do
+        Unsubscribe.create({ target: user, type: NewPostNotification.name, channel: "action_mailer" })
 
         notification = NewPostNotification.create({ target: user })
-        expect(notification.target_has_unsubscribed?(:action_mailer)).to eq true
+        expect(notification.target_has_unsubscribed?("action_mailer")).to eq true
       end
 
       it "returns false if target hasn't unsubscribed from channel" do
         notification = NewPostNotification.create({ target: user })
-        expect(notification.target_has_unsubscribed?(:action_mailer)).to eq false
+        expect(notification.target_has_unsubscribed?("action_mailer")).to eq false
       end
 
       it "returns true if target unsubscribed from type and group_id" do
@@ -212,7 +212,7 @@ module NotifyUser
       end
 
       it "returns true if target unsubcribed from type but pass in group_id" do
-        Unsubscribe.create({target: user, type: NewPostNotification.name})
+        Unsubscribe.create({ target: user, type: NewPostNotification.name })
 
         notification = NewPostNotification.create({ target: user, group_id: 1 })
         expect(notification.target_has_unsubscribed?).to eq true
