@@ -297,7 +297,7 @@ module NotifyUser
         self.channels.each do |channel_name, options|
           if(options[:aggregate_per] == false)
             self.mark_as_sent!
-            self.class.delay.deliver_notification_channel(self.id, channel_name)
+            DeliverNotificationChannel.enqueue(self.class, self.id, channel_name, run_at: 5.seconds.from_now)
           else
             # only notifies channels if no pending aggregate notifications
             unless aggregation_pending?
@@ -305,10 +305,10 @@ module NotifyUser
 
               # adds fallback support for integer or array of integers
               if options[:aggregate_per].kind_of?(Array)
-                self.class.delay_until(delay_time(options)).notify_aggregated_channel(self.id, channel_name)
+                NotifyAggregatedChannel.enqueue(self.class, self.id, channel_name, run_at: delay_time(options))
               else
                 a_interval = options[:aggregate_per] ? options[:aggregate_per].minutes : self.aggregate_per
-                self.class.delay_for(a_interval).notify_aggregated_channel(self.id, channel_name)
+                NotifyAggregatedChannel.enqueue(self.class, self.id, channel_name, run_at: a_interval.minutes.from_now )
               end
             end
           end

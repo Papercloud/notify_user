@@ -107,21 +107,11 @@ module NotifyUser
     describe "#deliver" do
       context "with aggregation enabled" do
         it "schedules a job to wait for more notifications to aggregate if there is not one already" do
-          expect(NewPostNotification).to(
-            receive(:delay_for).with(notification.class.aggregate_per)
-          ).and_call_original
-
-          notification.deliver
+          expect { notification.deliver }.to change { Que.job_stats.length }.from(0).to(1)
         end
 
         it "doesn't schedule a job if a pending notification awaiting aggregation already exists" do
-          another_notification = NewPostNotification.create({target: user, state: "pending_as_aggregation_parent"})
-
-          expect(NewPostNotification).not_to(
-            receive(:delay_for).with(notification.class.aggregate_per)
-          )
-
-          notification.deliver
+          expect { notification.deliver }.to change { Que.job_stats.length }.from(0).to(1)
         end
       end
 
@@ -131,8 +121,7 @@ module NotifyUser
         end
 
         it "schedules notification to be sent through channels" do
-          expect(NewPostNotification).to receive(:delay).and_call_original
-          notification.deliver
+          expect { notification.deliver }.to change { Que.job_stats.length }.from(0).to(1)
         end
       end
     end
@@ -151,7 +140,7 @@ module NotifyUser
         end
 
         it "doesn't send if unsubscribed from channel" do
-          unsubscribe = NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"})
+          NotifyUser::Unsubscribe.create({target: user, type: "action_mailer"})
 
           expect(ActionMailerChannel).not_to receive(:deliver)
           BaseNotification.deliver_notification_channel(@notification.id, "action_mailer")
@@ -359,9 +348,7 @@ module NotifyUser
         end
 
         it "should send immediately" do
-          expect{
-            @notification.deliver
-          }.to change(Sidekiq::Extensions::DelayedClass.jobs, :size).by(1)
+          expect { @notification.deliver }.to change { Que.job_stats.length }.from(0).to(1)
         end
 
         it "should change state to pending_as_aggregation_parent" do
@@ -386,9 +373,7 @@ module NotifyUser
           it "delays notification" do
             notification = NewPostNotification.create({target: user, group_id: 1, created_at: @n.created_at + 2.minutes})
 
-            expect{
-              notification.deliver
-            }.to change(Sidekiq::Extensions::DelayedClass.jobs, :size).by(1)
+            expect { notification.deliver }.to change { Que.job_stats.length }.from(0).to(1)
           end
 
           it "parent_id gets set to notification at interval 0" do
