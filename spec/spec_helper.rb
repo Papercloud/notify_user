@@ -28,6 +28,7 @@ require 'factory_girl_rails'
 require 'sidekiq/testing'
 require 'awesome_print'
 require 'timecop'
+require 'que'
 
 Sidekiq::Testing.inline!
 
